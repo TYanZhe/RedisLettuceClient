@@ -1,0 +1,52 @@
+package cn.org.tpeach.nosql.redis.command.list;
+
+import cn.org.tpeach.nosql.enums.RedisVersion;
+import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
+import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * @author tyz
+ * @Title: LpopList
+ * @ProjectName RedisLark
+ * @Description: TODO
+ * @date 2019-07-03 0:37
+ * @since 1.0.0
+ */
+public class RpopList extends JedisDbCommand<String> {
+    private static final Logger logger = LoggerFactory.getLogger(RpopList.class);
+    private String key;
+
+    /**
+     * 命令：RPOP key
+     *
+     * @param id
+     * @param db
+     * @param key
+     */
+    public RpopList(String id, int db, String key) {
+        super(id, db);
+        this.key = key;
+    }
+
+    /**
+     * 移除并返回列表key的尾元素。
+     * 时间复杂度：O(1)
+     *
+     * @param redisLarkContext
+     * @return 列表的尾元素。当key不存在时，返回nil。
+     */
+    @Override
+    public String concreteCommand(RedisLarkContext redisLarkContext) {
+        super.concreteCommand(redisLarkContext);
+        logger.info("[runCommand] RPOP {} {}", key);
+        final String response = redisLarkContext.rpop(key);
+        return response;
+    }
+
+    @Override
+    public RedisVersion getSupportVersion() {
+        return RedisVersion.REDIS_1_0;
+    }
+}
