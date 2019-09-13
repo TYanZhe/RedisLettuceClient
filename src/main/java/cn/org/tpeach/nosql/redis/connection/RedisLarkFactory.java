@@ -2,19 +2,17 @@ package cn.org.tpeach.nosql.redis.connection;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.org.tpeach.nosql.annotation.Component;
-import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.exception.ServiceException;
 import cn.org.tpeach.nosql.framework.BeanContext;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
  * @author tyz
@@ -65,12 +63,8 @@ public class RedisLarkFactory {
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
 				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			Throwable ex = e.getCause();
-			if(ex instanceof JedisConnectionException){
-				logger.error("连接失败",ex);
-			}else{
-				logger.error("反射加载"+redisStructure.getService()+"失败",ex);
-			}
 
+			logger.error("反射加载"+redisStructure.getService()+"失败",ex);
 //			while (ex != null) {
 //				Throwable tex = ex.getCause();
 //				if (tex == null) {

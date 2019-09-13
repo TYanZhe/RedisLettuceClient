@@ -27,6 +27,6 @@ public class ConfigConstant {
 	public static final String LANGUAGE = "language";
 	public static final String COUNTRY = "country";
 	public static final String FONTSIZE = "font-size";
-	
+	public static final String DEFAULT_FONTSIZE = "14";
 
 }

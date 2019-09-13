@@ -139,7 +139,7 @@ public enum ConfigParser {
 			mapper.put(ConfigConstant.COUNTRY, ConfigMapper.builder().value(ConfigConstant.Local.CN).comment("中文").build());
 			entries.put(ConfigConstant.Section.LOCAL, mapper);
 			mapper = new LinkedHashMap<>(1);
-			mapper.put(ConfigConstant.FONTSIZE, ConfigMapper.builder().value("16").build());
+			mapper.put(ConfigConstant.FONTSIZE, ConfigMapper.builder().value(ConfigConstant.DEFAULT_FONTSIZE).build());
 			entries.put(ConfigConstant.Section.FONT, mapper);
 			writhConfigFile();
 		} else {
@@ -155,7 +155,7 @@ public enum ConfigParser {
 			if (entries.get(ConfigConstant.Section.FONT) == null) {
 				Map<String, Object> newMapper = new LinkedHashMap<>();
 				Map<String, ConfigMapper> mapper = new LinkedHashMap<>(1);
-				mapper.put(ConfigConstant.FONTSIZE, ConfigMapper.builder().value("16").build());
+				mapper.put(ConfigConstant.FONTSIZE, ConfigMapper.builder().value(ConfigConstant.DEFAULT_FONTSIZE).build());
 				entries.put(ConfigConstant.Section.FONT, mapper);
 				newMapper.put(ConfigConstant.Section.FONT, mapper);
 				IOUtil.fileAppendFW(file, parseWrite(newMapper));

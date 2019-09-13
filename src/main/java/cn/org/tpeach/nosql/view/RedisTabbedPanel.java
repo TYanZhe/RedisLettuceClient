@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 import java.util.function.Consumer;
 
@@ -77,10 +76,12 @@ import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 import cn.org.tpeach.nosql.view.table.RTableModel;
+import io.lettuce.core.ScanCursor;
+import io.lettuce.core.ScoredValue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import redis.clients.jedis.Tuple;
+
 
 @Getter
 @Setter
@@ -121,6 +122,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
     protected RedisKeyInfo redisKeyInfo;
     private PageBean pageBean = new PageBean();
+  
     /**
      *
      */
@@ -164,6 +166,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             this.redisKeyInfo.setType(RedisType.STRING);
             this.redisKeyInfo.setTtl(-1L);
             this.redisKeyInfo.setIdleTime(0L);
+            this.redisKeyInfo.setCursor(ScanCursor.INITIAL);
         }
         this.initComponents();
         this.initValueInfoPanel();
@@ -332,13 +335,12 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         if (name == null) {
             return;
         }
-        boolean valid = true;
         if (StringUtils.isNotBlank(name)) {
-            ResultRes<Long> resultRes = BaseController.dispatcher(() -> redisConnectService.remamenx(redisKeyInfo.getId(), redisKeyInfo.getDb(), redisKeyInfo.getKey(), name));
+            ResultRes<Boolean> resultRes = BaseController.dispatcher(() -> redisConnectService.remamenx(redisKeyInfo.getId(), redisKeyInfo.getDb(), redisKeyInfo.getKey(), name));
 
             if (!resultRes.isRet()) {
                 SwingTools.showMessageErrorDialog(null, "重命名失败:" + resultRes.getMsg());
-            } else if (resultRes.getData() != 1) {
+            } else if (!resultRes.getData()) {
                 SwingTools.showMessageErrorDialog(null, "Cant't rename name: Key with new name already exist in database or original key was removed");
             } else {
                 redisKeyInfo.setKey(name);
@@ -352,7 +354,11 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 }
                 tree.updateUI();
             }
+        }else{
+            SwingTools.showMessageErrorDialog(null, "重命名失败:名称不能为空" );
+            this.renameKey();
         }
+
 
     }
 
@@ -384,9 +390,9 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 if (newTTL.equals(redisKeyInfo.getTtl().intValue())) {
                     return;
                 }
-                ResultRes<Long> resultRes = BaseController.dispatcher(() -> redisConnectService.expireKey(redisKeyInfo.getId(), redisKeyInfo.getDb(), redisKeyInfo.getKey(), newTTL));
-                if (resultRes.isRet() && resultRes.getData() == 1) {
-                    redisKeyInfo.setTtl(resultRes.getData());
+                ResultRes<Boolean> resultRes = BaseController.dispatcher(() -> redisConnectService.expireKey(redisKeyInfo.getId(), redisKeyInfo.getDb(), redisKeyInfo.getKey(), newTTL));
+                if (resultRes.isRet() && resultRes.getData()) {
+                    redisKeyInfo.setTtl(Long.valueOf(newTTL));
                     keyTTLField.setText(newTTL + "");
                 } else if (!resultRes.isRet()) {
                     SwingTools.showMessageErrorDialog(null, "设置TTL失败:" + resultRes.getMsg());
@@ -442,7 +448,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             case SET:
                 columnNames.add("MEMBER");
                 headersIcon.add(PublicConstant.Image.database);
-                Set<String> set = redisKeyInfo.getValueSet();
+                List<String> set = redisKeyInfo.getValueSet();
                 for (String s : set) {
                     rowData = new Vector<String>();
                     rowData.add((data.size() + 1) + "");
@@ -469,14 +475,14 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 columnNames.add("MEMBER");
                 headersIcon.add(PublicConstant.Image.database);
                 headersIcon.add(PublicConstant.Image.database);
-                Set<Tuple> zset = redisKeyInfo.getValueZSet();
-                Iterator<Tuple> iterator = zset.iterator();
+                List<ScoredValue<String>> valueZSet = redisKeyInfo.getValueZSet();
+                Iterator<ScoredValue<String>> iterator = valueZSet.iterator();
                 while (iterator.hasNext()) {
-                    Tuple tuple = iterator.next();
+                    final ScoredValue<String> next = iterator.next();
                     rowData = new Vector<String>();
                     rowData.add((data.size() + 1) + "");
-                    rowData.add(tuple.getScore() + "");
-                    rowData.add(tuple.getElement());
+                    rowData.add(next.getScore() + "");
+                    rowData.add(next.getValue());
                     data.add(rowData);
                 }
                 break;
@@ -1320,8 +1326,13 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             SwingTools.showMessageErrorDialog(null, item.getType() + "不是KEY");
             return;
         }
-
-        ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.getRedisKeyInfo(item.getId(), item.getDb(), item.getKey(), pageBean));
+        ScanCursor cursor;
+        if(redisKeyInfo == null){
+            cursor = ScanCursor.INITIAL;
+        }else{
+            cursor = redisKeyInfo.getCursor();
+        }
+        ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.getRedisKeyInfo(item.getId(), item.getDb(), item.getKey(),cursor, pageBean));
         if (resultRes.isRet()) {
             redisKeyInfo = resultRes.getData();
         } else {

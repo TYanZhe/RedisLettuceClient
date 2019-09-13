@@ -7,26 +7,26 @@ package cn.org.tpeach.nosql.redis.command.set;
 
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.AbstractScanCommand;
-import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import redis.clients.jedis.ScanResult;
+import io.lettuce.core.ScanCursor;
+import io.lettuce.core.ValueScanCursor;
 
 /**
  *
  * @author Administrator
  */
-public class SscanSet extends AbstractScanCommand<ScanResult<String>> {
+public class SscanSet extends AbstractScanCommand<ValueScanCursor<String>> {
 
 
-    public SscanSet(String id, int db, String key, String cursor, Integer count) {
-        super(id, db, key, cursor, count);
+    public SscanSet(String id, int db, String key, ScanCursor scanCursor, Integer count) {
+        super(id, db, key, scanCursor, count);
     }
 
 
     @Override
-    public ScanResult<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public ValueScanCursor<String> concreteCommand(RedisLarkContext redisLarkContext) {
          super.concreteCommand(redisLarkContext);
-        ScanResult<String> response = redisLarkContext.sscan(key, cursor, scanParams);
+         ValueScanCursor<String> response = redisLarkContext.sscan(key, scanCursor, scanArgs);
         return response;
     }
 

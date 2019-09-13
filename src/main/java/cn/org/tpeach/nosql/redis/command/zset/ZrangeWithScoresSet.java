@@ -1,13 +1,14 @@
 package cn.org.tpeach.nosql.redis.command.zset;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import redis.clients.jedis.Tuple;
-
-import java.util.Set;
+import io.lettuce.core.ScoredValue;
 
 /**
  * @author tyz
@@ -17,7 +18,7 @@ import java.util.Set;
  * @date 2019-07-09 10:43
  * @since 1.0.0
  */
-public class ZrangeWithScoresSet extends JedisDbCommand<Set<Tuple>> {
+public class ZrangeWithScoresSet extends JedisDbCommand<List<ScoredValue<String>>> {
     private static final Logger logger = LoggerFactory.getLogger(ZrangeWithScoresSet.class);
     private String key;
     private long start;
@@ -46,10 +47,10 @@ public class ZrangeWithScoresSet extends JedisDbCommand<Set<Tuple>> {
      * @return 指定区间内，带有score值(可选)的有序集成员的列表。
      */
     @Override
-    public Set<Tuple> concreteCommand(RedisLarkContext redisLarkContext) {
+    public List<ScoredValue<String>> concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         logger.info("[runCommand] ZRANGE  {} {} {}", key,start,stop);
-        final Set<Tuple> response = redisLarkContext.zrangeWithScores(key,start,stop);
+        final List<ScoredValue<String>> response = redisLarkContext.zrangeWithScores(key,start,stop);
         return response;
     }
 

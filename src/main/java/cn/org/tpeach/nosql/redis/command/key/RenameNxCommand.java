@@ -12,7 +12,7 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @date 2019-09-03 10:26
  * @since 1.0.0
  */
-public class RenameNxCommand extends JedisDbCommand<Long> {
+public class RenameNxCommand extends JedisDbCommand<Boolean> {
     private String oldkey;
     private String newkey;
     /**
@@ -33,9 +33,9 @@ public class RenameNxCommand extends JedisDbCommand<Long> {
      * @return 修改成功时，返回1。如果newkey已经存在，返回0。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-;        final Long response = redisLarkContext.renamenx(oldkey,newkey);
+;        final Boolean response = redisLarkContext.renamenx(oldkey,newkey);
         return response;
     }
 
