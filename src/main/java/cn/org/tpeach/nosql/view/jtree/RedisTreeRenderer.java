@@ -2,6 +2,7 @@ package cn.org.tpeach.nosql.view.jtree;
 
 import java.awt.*;
 import java.util.Enumeration;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -10,6 +11,7 @@ import javax.swing.tree.TreeNode;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.enums.RedisType;
+import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import lombok.Getter;
@@ -66,8 +68,9 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 				this.setText(redisTreeItem.getName());
 			}
 			// 按路径层次赋予不同的图标
-
-			if (paths.length == 2) {
+			if(RedisType.LOADING.equals(redisTreeItem.getType())) {
+				icon = treeNode.getIcon();
+			}else if (paths.length == 2) {
 				// 设置图标 服务图标
 				// 按展開情況再賦予不同的圖標
 				if (expanded) {
@@ -102,38 +105,10 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 				setIcon(icon);
 			}
 
-			if(keyFilterField != null  ){
-				if (matchesFilter(treeNode)) {
-					if (redisTreeItem.getType().equals(RedisType.KEY) && StringUtils.isNotBlank(keyFilterField.getText())) {
-						this.setForeground(Color.RED);
-					} else {
-						this.setForeground(Color.BLACK);
-					}
-
-//			if(null != treeNode.getWidth() && null != treeNode.getHeight()){
-//				this.setPreferredSize( new Dimension( treeNode.getWidth(), treeNode.getHeight()) );
-//			}
-//			this.setPreferredSize( new Dimension( 200, 28) );
-				}else if (containsMatchingChild(treeNode)) {
-					this.setForeground(Color.GRAY);
-					if(null != treeNode.getWidth() && null != treeNode.getHeight()){
-//				this.setPreferredSize( new Dimension( treeNode.getWidth(), treeNode.getHeight()) );
-
-					}
-//			this.setPreferredSize( new Dimension( 200, 28) );
-				}else {
-					if(this.getPreferredSize().width != 0){
-						treeNode.setWidth(this.getPreferredSize().width);
-					}
-					if(this.getPreferredSize().height != 0){
-						treeNode.setHeight(this.getPreferredSize().height);
-					}
-//			this.setPreferredSize( new Dimension( 0, 0 ) );
-				}
-			}
+//			filterTreeNode(treeNode, redisTreeItem);
 
 		}
-
+		
 		this.setIcon(icon);
 		// 通过mouseRow判断鼠标是否悬停在当前行
 		if (mouseRow == row) {
@@ -149,6 +124,42 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 
 		return this;
 
+	}
+
+	/**
+	 * @param treeNode
+	 * @param redisTreeItem
+	 */
+	private void filterTreeNode(RTreeNode treeNode, RedisTreeItem redisTreeItem) {
+		if(keyFilterField != null  ){
+			if (matchesFilter(treeNode)) {
+				if (redisTreeItem.getType().equals(RedisType.KEY) && StringUtils.isNotBlank(keyFilterField.getText())) {
+					this.setForeground(Color.RED);
+				} else {
+					this.setForeground(Color.BLACK);
+				}
+
+//			if(null != treeNode.getWidth() && null != treeNode.getHeight()){
+//				this.setPreferredSize( new Dimension( treeNode.getWidth(), treeNode.getHeight()) );
+//			}
+//			this.setPreferredSize( new Dimension( 200, 28) );
+			}else if (containsMatchingChild(treeNode)) {
+				this.setForeground(Color.GRAY);
+				if(null != treeNode.getWidth() && null != treeNode.getHeight()){
+//				this.setPreferredSize( new Dimension( treeNode.getWidth(), treeNode.getHeight()) );
+
+				}
+//			this.setPreferredSize( new Dimension( 200, 28) );
+			}else {
+				if(this.getPreferredSize().width != 0){
+					treeNode.setWidth(this.getPreferredSize().width);
+				}
+				if(this.getPreferredSize().height != 0){
+					treeNode.setHeight(this.getPreferredSize().height);
+				}
+//			this.setPreferredSize( new Dimension( 0, 0 ) );
+			}
+		}
 	}
 
 	@Override

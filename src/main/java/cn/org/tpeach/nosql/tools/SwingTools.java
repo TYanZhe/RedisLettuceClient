@@ -13,8 +13,12 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -32,8 +36,10 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.exception.ServiceException;
+import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
@@ -150,12 +156,73 @@ public class SwingTools {
 		return addTreeNode(parentNode, parentItem, parentItem.getId(), key, name, parentItem.getDb(),
 				RedisType.KEY_NAMESPACE, path, tipText);
 	}
+	public static <T> void addLoadingTreeNode(JTree redisTree,RTreeNode parentNode, RedisTreeItem parentItem,Supplier<ResultRes<T>> request,Consumer<ResultRes<T>> after) {
+		List<String> list = new ArrayList<>(1);
+		list.add("");
+		try {
+			RTreeNode loadingTreeNode = addTreeNode(parentNode, parentItem, parentItem.getId(), null, "loading...", parentItem.getDb(), RedisType.LOADING, null, null);
+			loadingTreeNode.setIcon(PublicConstant.Image.loading01);
+			redisTree.expandPath(new TreePath(parentNode.getPath()));
+			LarkFrame.executorService.execute(()->{
+				while (!list.isEmpty()) {
+					for(int i=0;i<7;i++) {
+						switch (i) {
+						case 0:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading02);
+							break;
+						case 1:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading03);
+							break;
+						case 2:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading04);
+							break;
+						case 3:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading05);
+							break;
+						case 4:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading06);
+							break;
+						case 5:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading07);
+							break;
+						case 6:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading01);
+							break;
+						default:
+							break;
+						}
+						if(!list.isEmpty() &&parentNode.getChildCount()>0) {
+							DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
+							defaultModel.reload(loadingTreeNode);
+						}
+						try {
+							TimeUnit.MILLISECONDS.sleep(300);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					
+				}
+				});	
+			
+			
+			ResultRes<T> resultRes = request.get();
+			list.clear();
+			parentNode.removeAllChildren();
+			after.accept(resultRes);
+			redisTree.updateUI();
 
+			
+		}finally {
+			list.clear();
+		}
+	
+	}
 	/**
 	 * 展开某个节点的所有子节点
 	 * 
 	 * @param aTree
-	 * @param aNode
+	 * @param node
 	 */
 	public static void expandTreeNode(JTree aTree, DefaultMutableTreeNode node) {
 		if (node.isLeaf()) {
@@ -182,8 +249,9 @@ public class SwingTools {
 
 		try {
 			DefaultTableCellRenderer tcr = new DefaultTableCellRenderer() {
+				@Override
 				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-						boolean hasFocus, int row, int column) {
+															   boolean hasFocus, int row, int column) {
 					if (row % 2 == 0)
 						setBackground(oddBackground); // 设置奇数行底色
 					else if (row % 2 == 1)

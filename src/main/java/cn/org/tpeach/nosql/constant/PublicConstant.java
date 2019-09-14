@@ -67,6 +67,13 @@ public class PublicConstant {
         public static ImageIcon separator_v_solid = IOUtil.getImageIcon("image/base/separator_v_solid.png");
         public static ImageIcon resultset_refresh = IOUtil.getImageIcon("image/menu/resultset_refresh.png");
         public static ImageIcon refresh = IOUtil.getImageIcon("image/base/refresh.png");
+        public static ImageIcon loading01 = IOUtil.getImageIcon("image/base/loading01.png");
+        public static ImageIcon loading02 = IOUtil.getImageIcon("image/base/loading02.png");
+        public static ImageIcon loading03 = IOUtil.getImageIcon("image/base/loading03.png");
+        public static ImageIcon loading04 = IOUtil.getImageIcon("image/base/loading04.png");
+        public static ImageIcon loading05 = IOUtil.getImageIcon("image/base/loading05.png");
+        public static ImageIcon loading06 = IOUtil.getImageIcon("image/base/loading06.png");
+        public static ImageIcon loading07 = IOUtil.getImageIcon("image/base/loading07.png");
         //菜單
         public static ImageIcon copy = IOUtil.getImageIcon("image/menu/copy.png");
         public static ImageIcon paste = IOUtil.getImageIcon("image/menu/paste.png");

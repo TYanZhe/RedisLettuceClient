@@ -145,6 +145,9 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         final RedisStructure redisStructure = super.executeJedisCommand(new RedisStructureCommand(id));
         if(RedisStructure.SINGLE.equals(redisStructure)){
             ScanCommand command = new ScanCommand(id, db, ScanCursor.INITIAL, 10000);
+            if(StringUtils.isNotBlank(pattern)) {
+            	command.match(pattern);
+            }
             KeyScanCursor<String> scanResult = command.execute();
             return scanResult.getKeys();
         }else if(RedisStructure.CLUSTER.equals(redisStructure)){

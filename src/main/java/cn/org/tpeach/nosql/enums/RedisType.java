@@ -21,9 +21,9 @@ public enum RedisType {
 	ZSET("zset"),
 	HASH("hash"),
 	ROOT("root"),
-	
-	
-	
+
+
+	LOADING("loading"),
 	UNKNOWN("unknown");
 	
 	private String type;

@@ -5,7 +5,7 @@ package cn.org.tpeach.nosql.view.common;
 
 import java.util.*;
 
-import javax.swing.JTree;
+import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
@@ -135,31 +135,39 @@ public class ServiceManager {
 	}
 	
 	public void openConnectRedisTree(RTreeNode treeNode,RedisTreeItem redisTreeItem,JTree redisTree) {
-        ResultRes<String[]> resServer = BaseController.dispatcher(() -> redisConnectService.getDbAmountAndSize(redisTreeItem.getId()));
-        if (resServer.isRet()) {
-            ArraysUtil.each(resServer.getData(), (index, item) -> SwingTools.addDatabaseTreeNode(treeNode,redisTreeItem, item, index, redisTreeItem.getPath() + "/" + item));
-            redisTree.expandPath(new TreePath(treeNode.getPath()));
-        } else {
-            SwingTools.showMessageErrorDialog(null, resServer.getMsg(), "连接数据库异常");
-        }
+		SwingTools.addLoadingTreeNode(redisTree,treeNode,redisTreeItem,
+				()->BaseController.dispatcher(() -> redisConnectService.getDbAmountAndSize(redisTreeItem.getId())),
+				res ->{
+					if (res.isRet()) {
+						ArraysUtil.each(res.getData(), (index, item) -> SwingTools.addDatabaseTreeNode(treeNode,redisTreeItem, item, index, redisTreeItem.getPath() + "/" + item));
+						redisTree.expandPath(new TreePath(treeNode.getPath()));
+					} else {
+						SwingTools.showMessageErrorDialog(null, res.getMsg(), "连接数据库异常");
+					}
+
+				});
 	}
 	
-	public void openDbRedisTree(RTreeNode treeNode,RedisTreeItem redisTreeItem,JTree redisTree) {
-        ResultRes<Collection<String>> resDatabase = BaseController.dispatcher(() -> redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb()));
-        if (resDatabase.isRet()) {
-            final Collection<String> keys = resDatabase.getData();
-            treeNode.removeAllChildren();
-            this.drawRedisKeyTree(treeNode, redisTreeItem, keys);
-            
-            DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
-            String name = redisTreeItem.getName();
-			redisTreeItem.setName(name.substring(0, name.lastIndexOf("("))+"("+redisConnectService.getDbKeySize(redisTreeItem.getId(), redisTreeItem.getDb())+")");
+	public void openDbRedisTree(RTreeNode treeNode, RedisTreeItem redisTreeItem, JTree redisTree, JTextField keyFilterField) {
+		SwingTools.addLoadingTreeNode(redisTree,treeNode,redisTreeItem,
+				()->BaseController.dispatcher(() -> redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyFilterField.getText())),
+				resDatabase ->{
+					if (resDatabase.isRet()) {
+						final Collection<String> keys = resDatabase.getData();
+						treeNode.removeAllChildren();
+						this.drawRedisKeyTree(treeNode, redisTreeItem, keys);
+
+						DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
+						String name = redisTreeItem.getName();
+						redisTreeItem.setName(name.substring(0, name.lastIndexOf("("))+"("+redisConnectService.getDbKeySize(redisTreeItem.getId(), redisTreeItem.getDb())+")");
 //            SwingTools.expandTreeNode(redisTree, treeNode);
-            redisTree.expandPath(new TreePath(treeNode.getPath()));
-            defaultModel.reload(treeNode);
-        	
-        }else{
-			SwingTools.showMessageErrorDialog(null, resDatabase.getMsg(), "连接数据库异常");//TODO 国际化
-		}
+						redisTree.expandPath(new TreePath(treeNode.getPath()));
+						defaultModel.reload(treeNode);
+
+					}else{
+						SwingTools.showMessageErrorDialog(null, resDatabase.getMsg(), "连接数据库异常");//TODO 国际化
+					}
+				});
+
 	}
 }

@@ -313,8 +313,8 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //	    TreePath path = redisTree.getPathForRow(row);
 
         JPopupMenu connectPopMenu = menuManager.getConnectPopMenu(redisTree);
-        JPopupMenu serverTreePopMenu = menuManager.getServerTreePopMenu(redisTree);
-        JPopupMenu dbTreePopMenu = menuManager.getDBTreePopMenu(redisTree);
+        JPopupMenu serverTreePopMenu = menuManager.getServerTreePopMenu(redisTree,(RTabbedPane) redisDataTabbedPane);
+        JPopupMenu dbTreePopMenu = menuManager.getDBTreePopMenu(redisTree,keyFilterField);
         JPopupMenu keyTreePopMenu = menuManager.getKeyTreePopMenu(redisTree, (RTabbedPane) redisDataTabbedPane);
         JPopupMenu keyNameSpaceTreePopMenu = menuManager.getKeyNameSpaceTreePopMenu(redisTree);
         // JTree上没有任何项被选中
@@ -341,13 +341,24 @@ public class RedisMainWindow extends javax.swing.JFrame {
         } else if (evt.getButton() == MouseEvent.BUTTON3) {//右键
             if (path.length == 2) {
                 serverTreePopMenu.show(redisTree, x, y);
-                if(childCount > 0){
-                    //连接
-                    serverTreePopMenu.getComponent(0).setEnabled(false);
-                    //断开连接
-                    serverTreePopMenu.getComponent(1).setEnabled(true);
-                    //重新加载
-                    serverTreePopMenu.getComponent(3).setEnabled(true);
+                if(childCount > 0 ){
+                	if(childCount == 1 && RedisType.LOADING.equals(((RedisTreeItem)((RTreeNode) treeNode.getChildAt(0)).getUserObject()).getType())) {
+                        serverTreePopMenu.getComponent(0).setEnabled(false);
+                        serverTreePopMenu.getComponent(1).setEnabled(false);
+                        serverTreePopMenu.getComponent(2).setEnabled(false);
+                        serverTreePopMenu.getComponent(3).setEnabled(false);
+                        serverTreePopMenu.getComponent(4).setEnabled(false);
+                        serverTreePopMenu.getComponent(5).setEnabled(false);
+                        serverTreePopMenu.getComponent(6).setEnabled(false);
+                	}else {
+                        //连接
+                        serverTreePopMenu.getComponent(0).setEnabled(false);
+                        //断开连接
+                        serverTreePopMenu.getComponent(1).setEnabled(true);
+                        //重新加载
+                        serverTreePopMenu.getComponent(3).setEnabled(true);
+                	}
+        
                 }else{
                     serverTreePopMenu.getComponent(0).setEnabled(true);
                     serverTreePopMenu.getComponent(1).setEnabled(false);
@@ -444,7 +455,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                         LarkFrame.executorService.execute(() -> serviceManager.openConnectRedisTree(treeNode, redisTreeItem, redisTree));
                         break;
                     case DATABASE:
-                        serviceManager.openDbRedisTree(treeNode, redisTreeItem, redisTree);
+                        serviceManager.openDbRedisTree(treeNode, redisTreeItem, redisTree,keyFilterField);
                         break;
                     case KEY:
                         RTreeNode node = (RTreeNode) redisTree.getLastSelectedPathComponent(); // 获得右键选中的节点
@@ -628,9 +639,9 @@ public class RedisMainWindow extends javax.swing.JFrame {
     private void keyFilterFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyFilterFieldActionPerformed
         // TODO add your handling code here:
         String keyPattern = keyFilterField.getText();
-        if (StringUtils.isNotBlank(keyPattern)) {
-            redisTree.updateUI();
-        }
+//        if (StringUtils.isNotBlank(keyPattern)) {
+//            redisTree.updateUI();
+//        }
     }//GEN-LAST:event_keyFilterFieldActionPerformed
 
 

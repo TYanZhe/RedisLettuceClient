@@ -19,6 +19,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -92,7 +93,7 @@ public enum MenuManager {
 		d.open();
 	}
 	
-	public JPopupMenu getServerTreePopMenu(JComponent componet) {
+	public JPopupMenu getServerTreePopMenu(JComponent componet,RTabbedPane topTabbedPane) {
 		JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
 		if(componet instanceof JTree) {
 			JTree tree =  (JTree) componet;
@@ -125,20 +126,45 @@ public enum MenuManager {
 					DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 					RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
 					//判断是否打开
-					final ResultRes<RedisConnectInfo> resultRes = BaseController.dispatcher(() -> redisConfigService.getRedisConfigById(redisTreeItem.getId()));
-					if(resultRes.isRet()){
-						
-						AddRedisServerDialog d = new AddRedisServerDialog(LarkFrame.frame,resultRes.getData());
-						d.getResult((item)->{
-							//销毁旧连接
-							RedisLarkPool.destory(redisTreeItem.getId());
-							redisTreeItem.setName(item.getName());
-							tree.updateUI();
-						});
-						d.open();
-					}else{
-						SwingTools.showMessageErrorDialog(tree,"获取配置失败");
+					int childCount = node.getChildCount();
+					boolean valid = true;
+					if(childCount > 0){
+						valid = false;
+						int conform = SwingTools.showConfirmDialogYNC(null, "连接已打开，编辑将会关闭连接，是否继续？", "编辑确认");
+						if(conform == JOptionPane.YES_OPTION){
+							disConnecect(tree);
+							//删除包含的标签
+							int tabCount = topTabbedPane.getTabCount();
+							for(int i=tabCount-1;i>=0;i--) {
+								Component component = topTabbedPane.getComponentAt(i);
+								if(component instanceof RedisTabbedPanel) {
+									RedisTabbedPanel tabPanel = (RedisTabbedPanel) component;
+									
+									if(redisTreeItem.getId().equals(((RedisTreeItem)tabPanel.getTreeNode().getUserObject()).getId())) {
+										topTabbedPane.remove(i);
+									}
+								}
+							}
+							valid = true;
+						}
 					}
+					if(valid) {
+						final ResultRes<RedisConnectInfo> resultRes = BaseController.dispatcher(() -> redisConfigService.getRedisConfigById(redisTreeItem.getId()));
+						if(resultRes.isRet()){
+							
+							AddRedisServerDialog d = new AddRedisServerDialog(LarkFrame.frame,resultRes.getData());
+							d.getResult((item)->{
+								//销毁旧连接
+								RedisLarkPool.destory(redisTreeItem.getId());
+								redisTreeItem.setName(item.getName());
+								tree.updateUI();
+							});
+							d.open();
+						}else{
+							SwingTools.showMessageErrorDialog(tree,"获取配置失败");
+						}
+					}
+
 				}
 			});
 			delItem.addActionListener(e->{
@@ -161,13 +187,7 @@ public enum MenuManager {
 				}
 			});
 			disConnectItem.addActionListener(e->{
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
-				RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
-				DefaultTreeModel defaultModel = (DefaultTreeModel)tree.getModel();
-				RedisLarkPool.destory(redisTreeItem.getId());
-				node.removeAllChildren();
-//				tree.updateUI();
-				defaultModel.reload();
+				disConnecect(tree);
 			});
 			reloadItem.addActionListener(e->{
 				RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
@@ -194,8 +214,23 @@ public enum MenuManager {
 
 		return popMenu;
 	}
+
+	/**
+	 * @param tree
+	 */
+	private void disConnecect(JTree tree) {
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
+		RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
+		DefaultTreeModel defaultModel = (DefaultTreeModel)tree.getModel();
+		RedisLarkPool.destory(redisTreeItem.getId());
+		node.removeAllChildren();
+//				tree.updateUI();
+		defaultModel.reload(node);
+	}
 	
-	public JPopupMenu getDBTreePopMenu(JTree tree) {
+
+	
+	public JPopupMenu getDBTreePopMenu(JTree tree, JTextField keyFilterField) {
 		JPopupMenu popMenu =new JRedisPopupMenu();// 菜单
 		JMenuItem batchDelItem = getJMenuItem(I18nKey.RedisResource.DELETES,PublicConstant.Image.delete);
 		batchDelItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DELETE, java.awt.event.InputEvent.CTRL_MASK));
@@ -231,7 +266,7 @@ public enum MenuManager {
     				d.setVisible(false);
     				int confirm = SwingTools.showConfirmDialogYNC(null,"删除 "+d.getKeyPattern()+" 数量: "+number+", 是否重新加载db"+redisTreeItem.getDb(), "删除成功");
     				if(confirm == JOptionPane.YES_OPTION){
-    					ServiceManager.getInstance().openDbRedisTree(node, redisTreeItem, tree);
+    					ServiceManager.getInstance().openDbRedisTree(node, redisTreeItem, tree,keyFilterField);
     				}
     				d.close();
     			});
@@ -247,7 +282,7 @@ public enum MenuManager {
 		reloadItem.addActionListener(e -> {
 			RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); 
 			RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
-			ServiceManager.getInstance().openDbRedisTree(node, redisTreeItem, tree);
+			ServiceManager.getInstance().openDbRedisTree(node, redisTreeItem, tree,keyFilterField);
 			
 		});
 		flushDbItem.addActionListener(e -> {
