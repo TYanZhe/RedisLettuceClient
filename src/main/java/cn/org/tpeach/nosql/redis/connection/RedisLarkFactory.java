@@ -64,7 +64,7 @@ public class RedisLarkFactory {
 				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			Throwable ex = e.getCause();
 
-			logger.error("反射加载"+redisStructure.getService()+"失败",ex);
+//			logger.error("反射加载"+redisStructure.getService()+"失败",ex);
 //			while (ex != null) {
 //				Throwable tex = ex.getCause();
 //				if (tex == null) {

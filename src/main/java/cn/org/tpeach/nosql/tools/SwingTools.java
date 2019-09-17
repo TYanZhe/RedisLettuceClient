@@ -16,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -163,6 +164,7 @@ public class SwingTools {
 			RTreeNode loadingTreeNode = addTreeNode(parentNode, parentItem, parentItem.getId(), null, "loading...", parentItem.getDb(), RedisType.LOADING, null, null);
 			loadingTreeNode.setIcon(PublicConstant.Image.loading01);
 			redisTree.expandPath(new TreePath(parentNode.getPath()));
+			CountDownLatch countDownLatch = new CountDownLatch(1);
 			LarkFrame.executorService.execute(()->{
 				while (!list.isEmpty()) {
 					for(int i=0;i<7;i++) {
@@ -191,7 +193,7 @@ public class SwingTools {
 						default:
 							break;
 						}
-						if(!list.isEmpty() &&parentNode.getChildCount()>0) {
+						if(!list.isEmpty() && parentNode.getChildCount() == 1) {
 							DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
 							defaultModel.reload(loadingTreeNode);
 						}
@@ -201,13 +203,19 @@ public class SwingTools {
 							e.printStackTrace();
 						}
 					}
-					
 				}
+				countDownLatch.countDown();
 				});	
 			
 			
 			ResultRes<T> resultRes = request.get();
 			list.clear();
+			try {
+				countDownLatch.await();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			parentNode.removeAllChildren();
 			after.accept(resultRes);
 			redisTree.updateUI();

@@ -146,6 +146,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         this.setIconImage(PublicConstant.Image.logo.getImage());
         initComponents();
         ((PlaceholderTextField) keyFilterField).setPlaceholder("请输入检索键的表达式");
+        keyFilterField.setText("*");
         redisTreeRenderer.setKeyFilterField(keyFilterField);
         //去掉树线条
         redisTree.putClientProperty("JTree.lineStyle", "None");
