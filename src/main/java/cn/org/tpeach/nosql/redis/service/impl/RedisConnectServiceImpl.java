@@ -141,7 +141,9 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
 
     @Override
     public Collection<String> getKeys(String id, int db, String pattern) {
-
+    	if(StringUtils.isBlank(pattern)) {
+    		pattern = "*";
+    	}
         final RedisStructure redisStructure = super.executeJedisCommand(new RedisStructureCommand(id));
         if(RedisStructure.SINGLE.equals(redisStructure)){
             ScanCommand command = new ScanCommand(id, db, ScanCursor.INITIAL, 10000);

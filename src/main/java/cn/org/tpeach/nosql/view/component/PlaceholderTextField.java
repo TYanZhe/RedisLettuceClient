@@ -95,7 +95,8 @@ public class PlaceholderTextField extends JTextField {
         }
         //绘制提示语
         final Graphics2D graphics = (Graphics2D) pG;
-        Font font = new Font("宋体",Font.PLAIN,14);
+//        Font font = new Font("宋体",Font.PLAIN,14);
+        Font font = this.getFont();
         graphics.setFont(font);
         //消除文字锯齿
         graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);

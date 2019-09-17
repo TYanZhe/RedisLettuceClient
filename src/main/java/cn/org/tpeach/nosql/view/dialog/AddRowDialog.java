@@ -75,9 +75,9 @@ public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
 
         scoreField = new PlaceholderTextField(20);
         scoreField.setPlaceholder("score");
-        hashKeyArea = new RTextArea(5, 20);
+        hashKeyArea = new RTextArea(4, 20);
         hashKeyArea.setLineWrap(true);
-        valueHashArea = new RTextArea(5, 20);
+        valueHashArea = new RTextArea(4, 20);
         valueHashArea.setLineWrap(true);
 
         switch (t.getType()) {
@@ -90,8 +90,8 @@ public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
                 panel.add(textAreaPanel);
                 break;
             case HASH:
-                panel.add(SwingTools.createTextRow(fieldHashLabel, hashKeyArea.getJScrollPane(), this.getWidth(), rowHeight * 3));
-                JPanel valueHashAreaPanel = (JPanel) SwingTools.createTextRow(valueHashLabel, valueHashArea.getJScrollPane(), 0.3, 0.7, this.getWidth(), rowHeight * 3, null, new Insets(13, 10, 0, 0), new Insets(13, 10, 0, 30));
+                panel.add(SwingTools.createTextRow(fieldHashLabel, hashKeyArea.getJScrollPane(), this.getWidth(), (int) (rowHeight * 3)));
+                JPanel valueHashAreaPanel = (JPanel) SwingTools.createTextRow(valueHashLabel, valueHashArea.getJScrollPane(), 0.3, 0.7, this.getWidth(), (int) (rowHeight * 3), null, new Insets(13, 10, 0, 0), new Insets(13, 10, 0, 30));
                 panel.add(valueHashAreaPanel);
             case ZSET:
                 valueArea = new RTextArea(8, 20);
