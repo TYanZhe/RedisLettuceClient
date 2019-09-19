@@ -151,6 +151,7 @@ public class PublicConstant {
         public static Color grapInputColor = new Color(225, 225, 225);
 
         public static Color tableHeaderForeground = Color.BLACK;
+        public static Color tableHeaderBackground = new Color(219,229,241);
         public static Color tableSelectBackground = new Color(126, 186, 234);
         public static Color tableForeground = Color.BLACK;
         public static Color tableGridColor = new Color(240,240,240);
@@ -158,5 +159,11 @@ public class PublicConstant {
         public static Color tableOddForeground = new Color(218, 228, 240) ;
         public static Color tableEvenBackground = new Color(254, 254, 254);
         public static Color statePanelColor = new Color(180, 222, 239);
+    }
+
+    public final static class StingType{
+        public static final  String BINARY = "Binary";
+        public static final  String TEXT = "Text";
+        public static final  String INDEX = "Index";
     }
 }

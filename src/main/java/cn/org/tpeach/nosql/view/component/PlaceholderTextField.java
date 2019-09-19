@@ -107,8 +107,11 @@ public class PlaceholderTextField extends JTextField {
         Rectangle2D rect = font.getStringBounds(placeholder, ((Graphics2D)graphics).getFontRenderContext());
         //向画板上写字
 //        graphics.drawString(placeholder, getInsets().left, pG.getFontMetrics().getMaxAscent() + getInsets().top);
-        
-        graphics.drawString(placeholder, getInsets().left+2, (int)(this.getHeight() - (rect.getHeight() / 2)));
+        int height = this.getHeight();
+        int rectHeight = (int) rect.getHeight();
+        int y =  getInsets().top + rectHeight  - (height - rectHeight)/2;
+
+        graphics.drawString(placeholder, getInsets().left+2, y);
     }
 
     public void setPlaceholder(final String placeholder) {

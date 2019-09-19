@@ -1,6 +1,10 @@
 package cn.org.tpeach.nosql.tools;
 
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static java.util.regex.Pattern.compile;
 
 /**
  * 提取org.apache.commons.lang.StringUtils常用方法
@@ -10,7 +14,7 @@ import java.util.UUID;
  */
 public class StringUtils {
 	public static final String EMPTY = "";
-
+	public static final String BLANK = " ";
 	public static boolean isEmpty(String str) {
 		return str == null || str.length() == 0;
 	}
@@ -108,5 +112,138 @@ public class StringUtils {
 
 	public static String getUUID(){
 		return UUID.randomUUID().toString().replaceAll("-", "");
+	}
+
+	/**
+	 *  判断是文本还是字符串
+	 * 1、如果字符串含有空字符（‘\0’），则认为是二进制格式
+	 * 2、文本的合法字符为ascii码从32到126的字符，加上'\n','\r','\t','\b'
+	 * 3、超过30%的字符串高位时1（ascii大于126）或其它奇怪字符，则认为是二进制格式
+	 * @param s
+	 * @return
+	 */
+	public static boolean isText(String s){
+		if(StringUtils.isNotBlank(s)){
+			char[] chars = s.toCharArray();
+			int textCount = 0;
+			int length = chars.length;
+			for (char c : chars) {
+				Character.UnicodeBlock ub = Character.UnicodeBlock.of(c);
+				if(0 == c){
+					return false;
+				}else if((c >= 32 && c <= 126) || (c==8 || c==9 || c==10 || c==13) || (c >= 0x4E00 &&  c <= 0x9FA5)
+						|| ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS
+						|| ub == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS
+						|| ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A
+						|| ub == Character.UnicodeBlock.GENERAL_PUNCTUATION
+						|| ub == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION
+						|| ub == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS){
+					textCount++;
+				}
+			}
+			int percent = textCount / length;
+			if(percent < 0.7){
+				return false;
+			}
+
+		}
+		return true;
+	}
+
+	/**
+	 * byte——>hexString
+	 *
+	 * @param bytes
+	 * @param isBlankSpace 是否按空格分开
+	 * @return
+	 */
+	public static String bytesToHexString(byte[] bytes, boolean isBlankSpace) {
+		if (bytes == null || bytes.length <= 0) {
+			return null;
+		}
+		StringBuffer stringBuffer = new StringBuffer();
+		boolean flag = false;
+		for (byte b : bytes) {
+			int v = b & 0xFF;
+			String hex = Integer.toHexString(v);
+			if (flag && isBlankSpace) {
+				stringBuffer.append(BLANK);
+			} else {
+				flag = true;
+			}
+			if (v < 0x10) {
+				stringBuffer.append('0' + hex);
+			} else {
+				stringBuffer.append(hex);
+			}
+
+		}
+		return stringBuffer.toString().toUpperCase();
+	}
+	/**
+	 * int——>hexString
+	 *
+	 * @return
+	 */
+	public static String intToHexString(int b) {
+		if(b >= 0x00 && b <= 0xFF){
+			return numToHex8(b);
+		}else if(b > 0xFF && b <= 0xFFFF){
+			return numToHex16( b);
+		}else {
+			return numToHex32( b);
+		}
+
+	}
+	/**
+	 * 去除前面多余的零
+	 * @param b
+	 * @return
+	 */
+	public static String intToHexStringSmall(int b) {
+		String hexString = intToHexString(b);
+		Pattern pattern = compile("0*(\\S*)");
+		Matcher matcher = pattern.matcher(hexString);
+		if(matcher.find()){
+			String group = matcher.group(1);
+			return group.length() % 2 == 0 ? group : "0"+group;
+		}
+		return hexString;
+	}
+	//使用1字节就可以表示b
+	public static String numToHex8(int b) {
+		return String.format("%02x", b).toUpperCase();
+	}
+	//需要使用2字节表示b
+	public static String numToHex16(int b) {
+		return String.format("%04x", b).toUpperCase();
+	}
+	//需要使用4字节表示b
+	public static String numToHex32(int b) {
+		return String.format("%08x", b).toUpperCase();
+	}
+
+	public static String repeat(String origin,int repeatCount){
+		if(origin == null){
+			return null;
+		}else if(EMPTY.equals(origin) || repeatCount == 1){
+			return origin;
+		}
+		if(repeatCount<=0){
+			return EMPTY;
+		}
+
+		StringBuilder buf = new StringBuilder();
+		for(int i=0;i<repeatCount;i++){
+			buf.append(origin);
+		}
+		return buf.toString();
+	}
+	public static String repeat(char ch, int repeat) {
+		char[] buf = new char[repeat];
+		for (int i = repeat - 1; i >= 0; i--) {
+			buf[i] = ch;
+		}
+		return new String(buf);
 	}
 }

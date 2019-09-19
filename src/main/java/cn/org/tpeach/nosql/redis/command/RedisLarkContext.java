@@ -293,7 +293,9 @@ public class RedisLarkContext {
     public Long zadd(String key, double score, String member) {
         return redisLark.zadd(key, score, member);
     }
-
+    public Long zadd(String key, ScoredValue<String>... scoredValues) {
+        return redisLark.zadd(key, scoredValues);
+    }
     public List<String> zrange(final String key, final long start, final long stop) {
         return redisLark.zrange(key, start, stop);
     }
@@ -420,5 +422,6 @@ public class RedisLarkContext {
     public ScanIterator<ScoredValue<String>> zscanIterator(String key, int count, String pattren){
         return redisLark.zscanIterator(key,count,pattren);
     }
+
 
 }

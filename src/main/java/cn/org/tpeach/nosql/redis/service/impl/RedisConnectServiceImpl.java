@@ -9,6 +9,7 @@ import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.redis.command.key.*;
 import cn.org.tpeach.nosql.redis.command.server.RedisStructureCommand;
+import cn.org.tpeach.nosql.tools.MapUtils;
 import io.lettuce.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -222,9 +223,12 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
      * @return
      */
     @Override
-    public RedisKeyInfo getRedisKeyInfo(String id, int db, String key,ScanCursor cursor, PageBean pageBean) {
+    public RedisKeyInfo getRedisKeyInfo(String id, int db, String key,ScanCursor cursor,String pattern, PageBean pageBean) {
         if (pageBean == null) {
             pageBean = new PageBean();
+        }
+        if(StringUtils.isNotBlank(pattern)){
+            pattern = "*"+pattern.trim()+"*";
         }
         //获取类型
         String typeStr = super.executeJedisCommand(new TypeCommand(id, db, key));
@@ -262,14 +266,31 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                 pageBean.setTotal(size);
 //                Set<String> set = super.executeJedisCommand(new SmembersSet(id, db, key));
 //                ScanResult<String> sscanResult = super.executeJedisCommand(new SscanSet(id, db, key, pageBean.getStartIndex() + "", pageBean.getRows()));
-                ValueScanCursor<String> sscanResult;
+
+                SscanSet sscanSetCommand;
                 if(pageBean.isFirstPage()) {
-                	sscanResult = super.executeJedisCommand(new SscanSet(id, db, key, ScanCursor.INITIAL, pageBean.getRows()));
+                    sscanSetCommand = new SscanSet(id, db, key, ScanCursor.INITIAL, pageBean.getRows());
                 }else {
-                	sscanResult = super.executeJedisCommand(new SscanSet(id, db, key,cursor, pageBean.getRows()));
+                    sscanSetCommand =  new SscanSet(id, db, key,cursor, pageBean.getRows());
                 }
-               
-                redisKeyInfo.setValueSet(sscanResult.getValues());
+                if(StringUtils.isNotBlank(pattern)){
+                    sscanSetCommand.match(pattern);
+                    sscanSetCommand.count(size);
+                }
+                ValueScanCursor<String> sscanResult = super.executeJedisCommand(sscanSetCommand);
+                List<String> values = sscanResult.getValues();
+//                if(CollectionUtils.isEmpty(values)  && StringUtils.isNotBlank(pattern)){
+//                    sscanSetCommand.count(size);
+//                    sscanResult = super.executeJedisCommand(sscanSetCommand);
+//                    values = sscanResult.getValues();
+//                }
+
+                if(values.size() > pageBean.getRows()){
+                    for(int i = values.size() -1;i>=pageBean.getRows();i--){
+                        values.remove(i);
+                    }
+                }
+                redisKeyInfo.setValueSet(values);
                 redisKeyInfo.setCursor(new ScanCursor(sscanResult.getCursor(),sscanResult.isFinished()));
                 break;
             case HASH:
@@ -286,13 +307,37 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
 //                    }
 //                }
                 
-                MapScanCursor<String, String> hscanResult;
+
+                HscanHash hscanHashCommand;
                 if(pageBean.isFirstPage()) {
-                	hscanResult =  super.executeJedisCommand(new HscanHash(id, db, key, ScanCursor.INITIAL , pageBean.getRows()));
+                    hscanHashCommand = new HscanHash(id, db, key, ScanCursor.INITIAL , pageBean.getRows());
                 }else {
-                	hscanResult = super.executeJedisCommand(new HscanHash(id, db, key, cursor , pageBean.getRows()));
+                    hscanHashCommand = new HscanHash(id, db, key, cursor , pageBean.getRows());
                 }
-                redisKeyInfo.setValueHash(hscanResult.getMap());
+                if(StringUtils.isNotBlank(pattern)){
+                    hscanHashCommand.match(pattern);
+                    hscanHashCommand.count(size);
+                }
+                MapScanCursor<String, String> hscanResult = super.executeJedisCommand(hscanHashCommand);
+                Map<String, String> resultMap = hscanResult.getMap();
+//                if(MapUtils.isEmpty(resultMap) && StringUtils.isNotBlank(pattern)) {
+//                    hscanHashCommand.count(size);
+//                    hscanResult = super.executeJedisCommand(hscanHashCommand);
+//                    resultMap = hscanResult.getMap();
+//                }
+                if(resultMap.size() > pageBean.getRows()){
+                    Set<String> keySet = resultMap.keySet();
+                    Iterator<String> iterator = keySet.iterator();
+                    int index = 0;
+                    while (iterator.hasNext()){
+                        iterator.next();
+                        index ++;
+                        if(index > pageBean.getRows()){
+                            iterator.remove();
+                        }
+                    }
+                }
+                redisKeyInfo.setValueHash(resultMap);
                 redisKeyInfo.setCursor(new ScanCursor(hscanResult.getCursor(),hscanResult.isFinished()));
                 break;
             case ZSET:
@@ -305,15 +350,31 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
 //                if(CollectionUtils.isNotEmpty(result2)){
 //                	zset.addAll(result2);
 //                }
-                ScoredValueScanCursor<String> zscanResult;
+                ZscanSet zscanSetCommand;
                 if(pageBean.isFirstPage()) {
-                	zscanResult =  super.executeJedisCommand(new ZscanSet(id, db, key, ScanCursor.INITIAL, pageBean.getRows()));
+                    zscanSetCommand =  new ZscanSet(id, db, key, ScanCursor.INITIAL, pageBean.getRows());
                 }else {
-                	zscanResult = super.executeJedisCommand(new ZscanSet(id, db, key, cursor, pageBean.getRows()));
+                    zscanSetCommand = new ZscanSet(id, db, key, cursor, pageBean.getRows());
                 }
+                if(StringUtils.isNotBlank(pattern)){
+                    zscanSetCommand.match(pattern);
+                    zscanSetCommand.count(size);
+                }
+                ScoredValueScanCursor<String> zscanResult = super.executeJedisCommand(zscanSetCommand);
+                List<ScoredValue<String>> zscanResultValues = zscanResult.getValues();
+//                if(CollectionUtils.isEmpty(zscanResultValues)  && StringUtils.isNotBlank(pattern)){
+//                    zscanSetCommand.count(size);
+//                    zscanResult = super.executeJedisCommand(zscanSetCommand);
+//                    zscanResultValues = zscanResult.getValues();
+//                }
 
+                if(zscanResultValues.size() > pageBean.getRows()){
+                    for(int i = zscanResultValues.size() -1;i>=pageBean.getRows();i--){
+                        zscanResultValues.remove(i);
+                    }
+                }
                 redisKeyInfo.setCursor(new ScanCursor(zscanResult.getCursor(),zscanResult.isFinished()));
-                redisKeyInfo.setValueZSet(zscanResult.getValues());
+                redisKeyInfo.setValueZSet(zscanResultValues);
                 break;
             default:
                 break;
