@@ -4,19 +4,26 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
 public class OnlyReadArea extends JTextArea {
     /**
-	 * 
+	 * 是否限制最多显示条数，超过删除，显示最新
 	 */
+    @Getter
+    @Setter
+    private boolean limit = true;
 	private static final long serialVersionUID = -7569933228127917215L;
 	private final PrintStream printStream = new PrintStream(this.new AreaOutputStream());
     @Getter
@@ -70,11 +77,29 @@ public class OnlyReadArea extends JTextArea {
         this.setFont(new Font("宋体",Font.PLAIN,14));
         setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         setForeground(Color.GREEN.darker().darker().darker());
+        this.addMouseListener(new MouseAdapter()   {
+            @Override
+            public void mouseEntered(MouseEvent mouseEvent)   {
+                //鼠标进入Text区后变为文本输入指针
+                OnlyReadArea.this.setCursor(new   Cursor(Cursor.TEXT_CURSOR));
+            }
+            @Override
+            public void mouseExited(MouseEvent  mouseEvent)   {
+                //鼠标离开Text区后恢复默认形态
+                OnlyReadArea.this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
+        this.getCaret().addChangeListener(new ChangeListener()   {
+            @Override
+            public void stateChanged(ChangeEvent e)   {
+                //使Text区的文本光标显示
+                OnlyReadArea.this.getCaret().setVisible(true);
+            }
+        });
     }
 
     @Override
     public final boolean isEditable() {
-
         return false;
     }
 
@@ -118,15 +143,18 @@ public class OnlyReadArea extends JTextArea {
     }
 
     private Document autoClear(){
+
         Document doc = null;
         try {
             doc = this.getDocument();
-            if (entries >= maxEntries) {
-                int endOfs = this.getLineEndOffset(entries - maxEntries);
-                doc.remove(0, endOfs);
-                entries = entries - 1;
+            if(limit){
+                if (entries >= maxEntries) {
+                    int endOfs = this.getLineEndOffset(entries - maxEntries);
+                    doc.remove(0, endOfs);
+                    entries = entries - 1;
+                }
+                entries = entries + 1;
             }
-            entries = entries + 1;
         } catch (BadLocationException e) {
             e.printStackTrace();
         }

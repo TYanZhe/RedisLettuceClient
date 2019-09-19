@@ -5,7 +5,8 @@ package cn.org.tpeach.nosql.view.dialog;
 
 import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
-import java.awt.BorderLayout;
+
+import java.awt.*;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -18,7 +19,7 @@ import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RTextArea;
-import java.awt.Insets;
+
 import java.awt.event.ActionEvent;
 import lombok.Setter;
 
@@ -75,9 +76,9 @@ public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
 
         scoreField = new PlaceholderTextField(20);
         scoreField.setPlaceholder("score");
-        hashKeyArea = new RTextArea(4, 20);
+        hashKeyArea = new RTextArea(3, 20);
         hashKeyArea.setLineWrap(true);
-        valueHashArea = new RTextArea(4, 20);
+        valueHashArea = new RTextArea(3, 20);
         valueHashArea.setLineWrap(true);
 
         switch (t.getType()) {
@@ -85,19 +86,20 @@ public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
                 break;
             case LIST:
             case SET:
-                valueArea = new RTextArea(11, 20);
-                textAreaPanel = (JPanel) SwingTools.createTextRow(valueLabel, valueArea.getJScrollPane(), 0.2, 0.8, this.getWidth(), rowHeight * 6, null, new Insets(10, 0, 0, 0), new Insets(10, 10, 0, 30));
+                valueArea = new RTextArea(8, 20);
+                valueArea.setLineWrap(true);
+                textAreaPanel = SwingTools.createTextRow(valueLabel, valueArea.getJScrollPane(), 0.2, 0.8, this.getWidth(), rowHeight * 7, null, new Insets(0, 0, 0, 0), new Insets(0, 10, 0, 30));
                 panel.add(textAreaPanel);
                 break;
             case HASH:
                 panel.add(SwingTools.createTextRow(fieldHashLabel, hashKeyArea.getJScrollPane(), this.getWidth(), (int) (rowHeight * 3)));
-                JPanel valueHashAreaPanel = (JPanel) SwingTools.createTextRow(valueHashLabel, valueHashArea.getJScrollPane(), 0.3, 0.7, this.getWidth(), (int) (rowHeight * 3), null, new Insets(13, 10, 0, 0), new Insets(13, 10, 0, 30));
+                JPanel valueHashAreaPanel =  SwingTools.createTextRow(valueHashLabel, valueHashArea.getJScrollPane(), 0.3, 0.7, this.getWidth(), (int) (rowHeight * 3), null, new Insets(13, 10, 0, 0), new Insets(13, 10, 0, 30));
                 panel.add(valueHashAreaPanel);
             case ZSET:
-                valueArea = new RTextArea(8, 20);
+                valueArea = new RTextArea(6, 20);
                 scorePanel = SwingTools.createTextRow(scoreLable, scoreField, this.getWidth(), rowHeight);
                 panel.add(scorePanel);
-                textAreaPanel = (JPanel) SwingTools.createTextRow(valueLabel, valueArea.getJScrollPane(), this.getWidth(), rowHeight * 5);
+                textAreaPanel = SwingTools.createTextRow(valueLabel, valueArea.getJScrollPane(), this.getWidth(), rowHeight * 5);
                 panel.add(textAreaPanel);
 
                 break;

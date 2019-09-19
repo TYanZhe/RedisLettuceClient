@@ -32,6 +32,7 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -104,7 +105,6 @@ public class SwingTools {
 	 * @param redisType
 	 * @param key
 	 * @param name
-	 * @param imageIcon
 	 * @param path
 	 * @param tipText
 	 * @return
@@ -160,70 +160,75 @@ public class SwingTools {
 	public static <T> void addLoadingTreeNode(JTree redisTree,RTreeNode parentNode, RedisTreeItem parentItem,Supplier<ResultRes<T>> request,Consumer<ResultRes<T>> after) {
 		List<String> list = new ArrayList<>(1);
 		list.add("");
-		try {
-			RTreeNode loadingTreeNode = addTreeNode(parentNode, parentItem, parentItem.getId(), null, "loading...", parentItem.getDb(), RedisType.LOADING, null, null);
-			loadingTreeNode.setIcon(PublicConstant.Image.loading01);
-			redisTree.expandPath(new TreePath(parentNode.getPath()));
-			CountDownLatch countDownLatch = new CountDownLatch(1);
-			LarkFrame.executorService.execute(()->{
-				while (!list.isEmpty()) {
-					for(int i=0;i<7;i++) {
-						switch (i) {
-						case 0:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading02);
-							break;
-						case 1:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading03);
-							break;
-						case 2:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading04);
-							break;
-						case 3:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading05);
-							break;
-						case 4:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading06);
-							break;
-						case 5:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading07);
-							break;
-						case 6:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading01);
-							break;
-						default:
-							break;
-						}
-						if(!list.isEmpty() && parentNode.getChildCount() == 1) {
-							DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
-							defaultModel.reload(loadingTreeNode);
-						}
-						try {
-							TimeUnit.MILLISECONDS.sleep(300);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
+		RTreeNode loadingTreeNode = addTreeNode(parentNode, parentItem, parentItem.getId(), null, "loading...", parentItem.getDb(), RedisType.LOADING, null , "loading...");
+		loadingTreeNode.setIcon(PublicConstant.Image.loading01);
+//		loadingTreeNode.setEnabled(false);
+		redisTree.expandPath(new TreePath(parentNode.getPath()));
+		CountDownLatch countDownLatch = new CountDownLatch(1);
+		DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
+//		defaultModel.reload(parentNode);
+		LarkFrame.executorService.execute(()->{
+			while (!list.isEmpty()) {
+				for(int i=0;i<7;i++) {
+					switch (i) {
+					case 0:
+						loadingTreeNode.setIcon(PublicConstant.Image.loading02);
+						break;
+					case 1:
+						loadingTreeNode.setIcon(PublicConstant.Image.loading03);
+						break;
+					case 2:
+						loadingTreeNode.setIcon(PublicConstant.Image.loading04);
+						break;
+					case 3:
+						loadingTreeNode.setIcon(PublicConstant.Image.loading05);
+						break;
+					case 4:
+						loadingTreeNode.setIcon(PublicConstant.Image.loading06);
+						break;
+					case 5:
+						loadingTreeNode.setIcon(PublicConstant.Image.loading07);
+						break;
+					case 6:
+						loadingTreeNode.setIcon(PublicConstant.Image.loading01);
+						break;
+					default:
+						break;
+					}
+					if(!list.isEmpty() && parentNode.getChildCount() == 1) {
+
+						defaultModel.reload(loadingTreeNode);
+					}
+					try {
+						TimeUnit.MILLISECONDS.sleep(300);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
 					}
 				}
-				countDownLatch.countDown();
-				});	
-			
-			
-			ResultRes<T> resultRes = request.get();
-			list.clear();
-			try {
-				countDownLatch.await();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
-			parentNode.removeAllChildren();
-			after.accept(resultRes);
-			redisTree.updateUI();
+			countDownLatch.countDown();
+			});
+
+		LarkFrame.executorService.execute(()->{
+			try {
+				ResultRes<T> resultRes = request.get();
+				list.clear();
+				try {
+					countDownLatch.await();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				parentNode.removeAllChildren();
+				after.accept(resultRes);
+				redisTree.updateUI();
+			}finally {
+				list.clear();
+			}
+		});
+
 
 			
-		}finally {
-			list.clear();
-		}
+
 	
 	}
 	/**
@@ -380,6 +385,35 @@ public class SwingTools {
 				UIManager.put(key, fontRes);
 			}
 		}
+	}
+	/**
+	 *
+	 * @param table
+	 *            表格
+	 * @param columnIndex
+	 *            要设置的列下标
+	 * @param c
+	 *            颜色
+	 */
+	public static void setTableHeaderColor(JTable table, int columnIndex, Color c) {
+		TableColumn column = table.getTableHeader().getColumnModel().getColumn(columnIndex);
+		DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
+			/** serialVersionUID */
+			private static final long serialVersionUID = 43279841267L;
+
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+														   boolean hasFocus, int row, int column) {
+
+				setHorizontalAlignment(JLabel.CENTER);
+				((DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer())
+						.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);// 表头内容居中
+
+				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			}
+		};
+		cellRenderer.setBackground(c);
+		column.setHeaderRenderer(cellRenderer);
 	}
 
 }

@@ -49,7 +49,7 @@ public interface IRedisConnectService {
 
     RedisKeyInfo addSingleKeyInfo(RedisKeyInfo keyInfo);
 
-    RedisKeyInfo getRedisKeyInfo(String id, int db, String key, ScanCursor cursor,PageBean pageBean);
+    RedisKeyInfo getRedisKeyInfo(String id, int db, String key, ScanCursor cursor,String pattern,PageBean pageBean);
 
     String flushDb(String id, int db);
 

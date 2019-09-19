@@ -68,6 +68,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
     private double treeDataDividerLocation = 0.2;
 
     private AboutDialog aboutDialog;
+    public OnlyReadArea logArea = new OnlyReadArea();
     //--------------------------服务相关开始--------------------
     IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
@@ -189,7 +190,9 @@ public class RedisMainWindow extends javax.swing.JFrame {
 
         });
         JPanel jPanel = new JPanel();
+        jPanel.setLayout(new BorderLayout());
         jPanel.setBackground(Color.WHITE);
+        jPanel.add( new EasyJSP(logArea).hiddenHorizontalScrollBar(),BorderLayout.CENTER);
         ((RTabbedPane) logTabbedPane).addTab(LarkFrame.getI18nText(I18nKey.RedisResource.LOG), PublicConstant.Image.logo_16, jPanel, false);
         initTree();
         intToolBar();
@@ -328,10 +331,11 @@ public class RedisMainWindow extends javax.swing.JFrame {
         Object[] path = pathForLocation.getPath();
         redisTree.setSelectionPath(pathForLocation);
         RTreeNode treeNode = (RTreeNode) redisTree.getLastSelectedPathComponent();
-        int childCount = treeNode.getChildCount();
-        if (!treeNode.isEnabled()) {
+        RedisTreeItem item = (RedisTreeItem) treeNode.getUserObject();
+        if (!treeNode.isEnabled() || RedisType.LOADING.equals(item.getType())) {
             return;
         }
+        int childCount = treeNode.getChildCount();
         //双击连接名称进行连接 如果已经有子节点 则展开 缩放
         if (evt.getModifiers() == InputEvent.BUTTON1_MASK && evt.getClickCount() == 2 && path.length == 2) {
 
@@ -375,7 +379,6 @@ public class RedisMainWindow extends javax.swing.JFrame {
                     dbTreePopMenu.getComponent(2).setEnabled(false);
                 }
             } else if (path.length >= 4) {
-                RedisTreeItem item = (RedisTreeItem) treeNode.getUserObject();
                 if (item.getType().equals(RedisType.KEY)) {
                     keyTreePopMenu.show(redisTree, x, y);
                 } else if (item.getType().equals(RedisType.KEY_NAMESPACE)) {

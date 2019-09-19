@@ -23,6 +23,10 @@ public abstract class AbstractScanCommand<T> extends JedisDbCommand<T>  {
     public void match(String pattern){
         this.scanArgs.match(pattern);
     }
+
+    public void count(Integer count){
+        this.scanArgs.limit(count);
+    }
     
 
 }

@@ -14,7 +14,7 @@ public class HscanHash extends AbstractScanCommand<MapScanCursor<String, String>
      * @param id
      * @param db
      * @param key
-     * @param cursor
+     * @param scanCursor
      * @param count
      */
     public HscanHash(String id, int db, String key, ScanCursor scanCursor, Integer count) {

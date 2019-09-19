@@ -3,8 +3,10 @@ package cn.org.tpeach.nosql.redis.command;
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.framework.BeanContext;
+import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.command.string.GetString;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkFactory;
+import cn.org.tpeach.nosql.view.RedisMainWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +46,7 @@ public abstract class JedisCommand<T> implements ICommand<T> {
         }
         final T t = concreteCommand(redisLarkContext);
         logger.info("Response received : {} ",t);
+//        ((RedisMainWindow)LarkFrame.frame).logArea.println("Response received :   "+t);
         return t;
     }
 

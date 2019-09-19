@@ -137,7 +137,7 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 			this.setLayout(new BorderLayout());
 			Box hbox = Box.createHorizontalBox();
 			ic = new JLabel(icon);
-			ic.setSize(24, 24);
+			ic.setSize(20, 20);
 			text = new JLabel();
 			this.setText(title);
 			text.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
