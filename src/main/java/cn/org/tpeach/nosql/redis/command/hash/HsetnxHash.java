@@ -12,7 +12,7 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @date 2019-07-02 21:51
  * @since 1.0.0
  */
-public class HsetnxHash extends JedisDbCommand<Long> {
+public class HsetnxHash extends JedisDbCommand<Boolean> {
     private String key;
     private String field;
     private String value;
@@ -41,9 +41,9 @@ public class HsetnxHash extends JedisDbCommand<Long> {
      * @return 设置成功，返回1。如果给定域已经存在且没有操作被执行，返回0
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final Long response = redisLarkContext.hsetnx(key, field, value);
+        final Boolean response = redisLarkContext.hsetnx(key, field, value);
         return response;
     }
 

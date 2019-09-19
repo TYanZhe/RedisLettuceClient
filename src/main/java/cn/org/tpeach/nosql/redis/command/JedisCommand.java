@@ -55,7 +55,7 @@ public abstract class JedisCommand<T> implements ICommand<T> {
      public boolean extraSupportVersion(RedisLarkContext redisLarkContext){
         //集群需3.0以上
         final RedisVersion redisVersion = redisLarkContext.getRedisVersion();
-        return redisLarkContext.getRedisStructure() != RedisStructure.CLUSTER || redisVersion.getCode() > RedisVersion.REDIS_3_0.getCode();
+        return redisLarkContext.getRedisStructure() != RedisStructure.CLUSTER || redisVersion.getCode() >= RedisVersion.REDIS_3_0.getCode();
     }
     /**
      * 实际执行的命令

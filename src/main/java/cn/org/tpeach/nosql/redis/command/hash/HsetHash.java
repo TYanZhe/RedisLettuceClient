@@ -11,7 +11,7 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @date 2019-07-02 22:12
  * @since 1.0.0
  */
-public class HsetHash extends JedisDbCommand<Long> {
+public class HsetHash extends JedisDbCommand<Boolean> {
     private String key;
     private String field;
     private String value;
@@ -37,9 +37,9 @@ public class HsetHash extends JedisDbCommand<Long> {
      * @return 如果field是哈希表中的一个新建域，并且值设置成功，返回1。如果哈希表中域field已经存在且旧值已被新值覆盖，返回0
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final Long response = redisLarkContext.hset(key, field, value);
+        final Boolean response = redisLarkContext.hset(key, field, value);
         return response;
     }
 

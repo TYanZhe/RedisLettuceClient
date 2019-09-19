@@ -1,11 +1,10 @@
 package cn.org.tpeach.nosql.redis.command.hash;
 
+import java.util.List;
+
 import cn.org.tpeach.nosql.enums.RedisVersion;
-import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-
-import java.util.Set;
 
 /**
  * @author tyz
@@ -15,7 +14,7 @@ import java.util.Set;
  * @date 2019-07-02 22:12
  * @since 1.0.0
  */
-public class HkeysHash extends JedisDbCommand<Set<String>> {
+public class HkeysHash extends JedisDbCommand<List<String>> {
 
     private String key;
 
@@ -38,9 +37,9 @@ public class HkeysHash extends JedisDbCommand<Set<String>> {
      * @return 一个包含哈希表中所有域的表。当key不存在时，返回一个空表。
      */
     @Override
-    public Set<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public List<String> concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final Set<String> response = redisLarkContext.hkeys(key);
+        final List<String> response = redisLarkContext.hkeys(key);
         return response;
     }
 

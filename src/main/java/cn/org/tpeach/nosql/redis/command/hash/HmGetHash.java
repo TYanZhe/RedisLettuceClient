@@ -1,14 +1,11 @@
 package cn.org.tpeach.nosql.redis.command.hash;
 
-import cn.org.tpeach.nosql.enums.RedisType;
+import java.util.List;
+
 import cn.org.tpeach.nosql.enums.RedisVersion;
-import cn.org.tpeach.nosql.exception.ServiceException;
-import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-
-import java.util.List;
-import java.util.Map;
+import io.lettuce.core.KeyValue;
 /**
  * @author tyz
  * @Title: HgetHash
@@ -17,7 +14,7 @@ import java.util.Map;
  * @date 2019-07-02 22:12
  * @since 1.0.0
  */
-public class HmGetHash extends JedisDbCommand<List<String>> {
+public class HmGetHash extends JedisDbCommand<List<KeyValue<String, String>>> {
 
     private String key;
     private String[] fields;
@@ -44,9 +41,9 @@ public class HmGetHash extends JedisDbCommand<List<String>> {
      * @return 一个包含多个给定域的关联值的表，表值的排列顺序和给定域参数的请求顺序一样。
      */
     @Override
-    public List<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public List<KeyValue<String, String>> concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final List<String> response = redisLarkContext.hmget(key, fields);
+        final List<KeyValue<String, String>> response = redisLarkContext.hmget(key, fields);
         return response;
     }
 

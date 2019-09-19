@@ -43,7 +43,7 @@ public class HmSetHash extends JedisDbCommand<String> {
     @Override
     public String concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        if(redisLarkContext.exists(key)){
+        if(redisLarkContext.exists(key) > 0){
             final String type = redisLarkContext.type(key);
             if(RedisType.HASH != RedisType.getRedisType(type)){
                 throw new ServiceException("Key exist, and type is not hash");

@@ -1,13 +1,14 @@
 package cn.org.tpeach.nosql.redis.command.server;
 
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.redis.command.string.GetString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * @author tyz
@@ -17,7 +18,7 @@ import java.util.List;
  * @date 2019-07-03 08:48
  * @since 1.0.0
  */
-public class ConfigGet extends JedisCommand<List<String>> {
+public class ConfigGet extends JedisCommand<Map<String, String>> {
 	final static Logger logger = LoggerFactory.getLogger(GetString.class);
 	private String pattern;
 	/**
@@ -40,8 +41,8 @@ public class ConfigGet extends JedisCommand<List<String>> {
 	 * @return 给定配置参数的值。
 	 */
 	@Override
-	public List<String> concreteCommand(RedisLarkContext redisLarkContext) {
-		final List<String> response = redisLarkContext.configGet(pattern);
+	public Map<String, String> concreteCommand(RedisLarkContext redisLarkContext) {
+		final Map<String, String> response = redisLarkContext.configGet(pattern);
 		return response;
 	}
 

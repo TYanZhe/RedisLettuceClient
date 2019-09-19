@@ -1,51 +1,56 @@
 package cn.org.tpeach.nosql.redis.service.impl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import cn.org.tpeach.nosql.bean.PageBean;
-import cn.org.tpeach.nosql.redis.command.connection.PingCommand;
-import cn.org.tpeach.nosql.redis.command.hash.*;
+import cn.org.tpeach.nosql.enums.RedisStructure;
+import cn.org.tpeach.nosql.enums.RedisVersion;
+import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.redis.command.key.*;
-import cn.org.tpeach.nosql.redis.command.list.LlenList;
-import cn.org.tpeach.nosql.redis.command.list.LrangeList;
-import cn.org.tpeach.nosql.redis.command.list.LsetList;
-import cn.org.tpeach.nosql.redis.command.set.ScardSet;
-import cn.org.tpeach.nosql.redis.command.set.SmembersSet;
-import cn.org.tpeach.nosql.redis.command.zset.ZcardSet;
-import cn.org.tpeach.nosql.redis.command.zset.ZrangeWithScoresSet;
-import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.redis.command.server.RedisStructureCommand;
+import io.lettuce.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.org.tpeach.nosql.annotation.Component;
+import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.exception.ServiceException;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
+import cn.org.tpeach.nosql.redis.command.connection.PingCommand;
 import cn.org.tpeach.nosql.redis.command.connection.SelectCommand;
+import cn.org.tpeach.nosql.redis.command.hash.HdelHash;
+import cn.org.tpeach.nosql.redis.command.hash.HlenHash;
+import cn.org.tpeach.nosql.redis.command.hash.HscanHash;
+import cn.org.tpeach.nosql.redis.command.hash.HsetHash;
+import cn.org.tpeach.nosql.redis.command.hash.HsetnxHash;
 import cn.org.tpeach.nosql.redis.command.list.LdelRowList;
+import cn.org.tpeach.nosql.redis.command.list.LlenList;
 import cn.org.tpeach.nosql.redis.command.list.LpushList;
+import cn.org.tpeach.nosql.redis.command.list.LrangeList;
+import cn.org.tpeach.nosql.redis.command.list.LsetList;
 import cn.org.tpeach.nosql.redis.command.list.RpushList;
 import cn.org.tpeach.nosql.redis.command.server.DbSizeCommand;
 import cn.org.tpeach.nosql.redis.command.server.FlushDbCommand;
-import cn.org.tpeach.nosql.redis.command.server.GetDbAmount;
 import cn.org.tpeach.nosql.redis.command.set.SAddSet;
+import cn.org.tpeach.nosql.redis.command.set.ScardSet;
 import cn.org.tpeach.nosql.redis.command.set.SremSet;
 import cn.org.tpeach.nosql.redis.command.set.SscanSet;
 import cn.org.tpeach.nosql.redis.command.string.GetString;
 import cn.org.tpeach.nosql.redis.command.string.SetString;
 import cn.org.tpeach.nosql.redis.command.string.SetexString;
 import cn.org.tpeach.nosql.redis.command.zset.ZAddSet;
+import cn.org.tpeach.nosql.redis.command.zset.ZcardSet;
 import cn.org.tpeach.nosql.redis.command.zset.ZremSet;
 import cn.org.tpeach.nosql.redis.command.zset.ZscanSet;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.redis.service.BaseRedisService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.Tuple;
+import cn.org.tpeach.nosql.tools.StringUtils;
+
 
 /**
  * @author tyz
@@ -82,28 +87,36 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         return super.executeJedisCommand(new GetString(id, db, key));
     }
 
-    @Override
-    @Deprecated
-    public Integer getDbAmount(String id) {
-        return super.executeJedisCommand(new GetDbAmount(id));
-    }
+//    @Override
+//    @Deprecated
+//    public Integer getDbAmount(String id) {
+//        return super.executeJedisCommand(new GetDbAmount(id));
+//    }
 
     @Override
     public String[] getDbAmountAndSize(String id) {
+        final RedisStructure redisStructure = super.executeJedisCommand(new RedisStructureCommand(id));
         String ping = super.executeJedisCommand(new PingCommand(id));
         if(!"PONG".equals(ping)){
             throw new ServiceException("Ping命令执行失败");
         }
-        SelectCommand selectCommand = new SelectCommand(id, 0);
-        Integer dbAmount = 100;
-        for (int i = 0; i < dbAmount; i++) {
-            try {
-                selectCommand.setDb(i);
-                executeJedisCommand(selectCommand);
-            } catch (Exception e) {
-                dbAmount = i;
-                break;
-            }
+
+
+
+//        SelectCommand selectCommand = new SelectCommand(id, 0);
+//        int dbAmount = 100;
+//        for (int i = 0; i < dbAmount; i++) {
+//            try {
+//                selectCommand.setDb(i);
+//                executeJedisCommand(selectCommand);
+//            } catch (Exception e) {
+//                dbAmount = i;
+//                break;
+//            }
+//        }
+        int dbAmount = 1;
+        if(RedisStructure.SINGLE.equals(redisStructure)){
+            dbAmount = 16;
         }
         final String[] s = new String[dbAmount];
         IntStream.range(0, dbAmount).forEach(dbIndex -> s[dbIndex] = "db" + dbIndex + "("
@@ -128,10 +141,19 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
 
     @Override
     public Collection<String> getKeys(String id, int db, String pattern) {
-        ScanCommand command = new ScanCommand(id, db, ScanParams.SCAN_POINTER_START, 10000);
-        command.match(pattern);
-        ScanResult<String> scanResult = command.execute();
-        return scanResult.getResult();
+
+        final RedisStructure redisStructure = super.executeJedisCommand(new RedisStructureCommand(id));
+        if(RedisStructure.SINGLE.equals(redisStructure)){
+            ScanCommand command = new ScanCommand(id, db, ScanCursor.INITIAL, 10000);
+            KeyScanCursor<String> scanResult = command.execute();
+            return scanResult.getKeys();
+        }else if(RedisStructure.CLUSTER.equals(redisStructure)){
+            final ScanIterator<String> scan = super.executeJedisCommand(new ScanIteratorCommand(id, 10000, pattern));
+            final List<String> collect = scan.stream().collect(Collectors.toList());
+            Collections.sort(collect);
+            return collect;
+        }
+        return null;
 //        return super.executeJedisCommand(new KeysCommand(id, db, pattern));
     }
 
@@ -141,7 +163,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     }
 
     @Override
-    public Long expireKey(String id, int db, String key, int seconds) {
+    public Boolean expireKey(String id, int db, String key, int seconds) {
         if (seconds < 0) {
             return super.executeJedisCommand(new PersistCommand(id, db, key));
         }
@@ -195,7 +217,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
      * @return
      */
     @Override
-    public RedisKeyInfo getRedisKeyInfo(String id, int db, String key, PageBean pageBean) {
+    public RedisKeyInfo getRedisKeyInfo(String id, int db, String key,ScanCursor cursor, PageBean pageBean) {
         if (pageBean == null) {
             pageBean = new PageBean();
         }
@@ -214,6 +236,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         redisKeyInfo.setTtl(ttl);
         redisKeyInfo.setKey(key);
         redisKeyInfo.setDb(db);
+        redisKeyInfo.setCursor(ScanCursor.INITIAL);
         //获取值
         int size = 0;
         switch (type) {
@@ -233,40 +256,59 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                 size = super.executeJedisCommand(new ScardSet(id, db, key)).intValue();
                 pageBean.setTotal(size);
 //                Set<String> set = super.executeJedisCommand(new SmembersSet(id, db, key));
-                ScanResult<String> sscanResult = super.executeJedisCommand(new SscanSet(id, db, key, pageBean.getStartIndex() + "", pageBean.getRows()));
-                List<String> result = sscanResult.getResult();
-                Set<String> set = new LinkedHashSet<>();
-                if(CollectionUtils.isNotEmpty(result)){
-                	set.addAll(result);
+//                ScanResult<String> sscanResult = super.executeJedisCommand(new SscanSet(id, db, key, pageBean.getStartIndex() + "", pageBean.getRows()));
+                ValueScanCursor<String> sscanResult;
+                if(pageBean.isFirstPage()) {
+                	sscanResult = super.executeJedisCommand(new SscanSet(id, db, key, ScanCursor.INITIAL, pageBean.getRows()));
+                }else {
+                	sscanResult = super.executeJedisCommand(new SscanSet(id, db, key,cursor, pageBean.getRows()));
                 }
-                redisKeyInfo.setValueSet(set);
+               
+                redisKeyInfo.setValueSet(sscanResult.getValues());
+                redisKeyInfo.setCursor(new ScanCursor(sscanResult.getCursor(),sscanResult.isFinished()));
                 break;
             case HASH:
                 //hscan field数量 >= 512，开始分页
                 size = super.executeJedisCommand(new HlenHash(id, db, key)).intValue();
                 pageBean.setTotal(size);
                 Map<String, String> map = new LinkedHashMap<>();
-                ScanResult<Map.Entry<String, String>> hscanResult = super.executeJedisCommand(new HscanHash(id, db, key, pageBean.getStartIndex() + "", pageBean.getRows()));
+//                ScanResult<Map.Entry<String, String>> hscanResult = super.executeJedisCommand(new HscanHash(id, db, key, pageBean.getStartIndex() + "", pageBean.getRows()));
 //                String cursor = hscanResult.getCursor();// 返回0 说明遍历完成
-                List<Map.Entry<String, String>> scanResult = hscanResult.getResult();
-                if(CollectionUtils.isNotEmpty(scanResult)){
-                    for (Map.Entry<String, String> entry : scanResult) {
-                        map.put(entry.getKey(),entry.getValue());
-                    }
+//                List<Map.Entry<String, String>> scanResult = hscanResult.getResult();
+//                if(CollectionUtils.isNotEmpty(scanResult)){
+//                    for (Map.Entry<String, String> entry : scanResult) {
+//                        map.put(entry.getKey(),entry.getValue());
+//                    }
+//                }
+                
+                MapScanCursor<String, String> hscanResult;
+                if(pageBean.isFirstPage()) {
+                	hscanResult =  super.executeJedisCommand(new HscanHash(id, db, key, ScanCursor.INITIAL , pageBean.getRows()));
+                }else {
+                	hscanResult = super.executeJedisCommand(new HscanHash(id, db, key, cursor , pageBean.getRows()));
                 }
-                redisKeyInfo.setValueHash(map);
+                redisKeyInfo.setValueHash(hscanResult.getMap());
+                redisKeyInfo.setCursor(new ScanCursor(hscanResult.getCursor(),hscanResult.isFinished()));
                 break;
             case ZSET:
                 size = super.executeJedisCommand(new ZcardSet(id, db, key)).intValue();
                 pageBean.setTotal(size);
 //                Set<Tuple> zset = super.executeJedisCommand(new ZrangeWithScoresSet(id, db, key, pageBean.getStartIndex(), pageBean.getEndIndex() - 1));
-                ScanResult<Tuple> zscanResult = super.executeJedisCommand(new ZscanSet(id, db, key, pageBean.getStartIndex() + "", pageBean.getRows()));
-                List<Tuple> result2 = zscanResult.getResult();
-                Set<Tuple> zset = new LinkedHashSet<>();
-                if(CollectionUtils.isNotEmpty(result2)){
-                	zset.addAll(result2);
+//                ScanResult<Tuple> zscanResult = super.executeJedisCommand(new ZscanSet(id, db, key, pageBean.getStartIndex() + "", pageBean.getRows()));
+//                List<Tuple> result2 = zscanResult.getResult();
+//                Set<Tuple> zset = new LinkedHashSet<>();
+//                if(CollectionUtils.isNotEmpty(result2)){
+//                	zset.addAll(result2);
+//                }
+                ScoredValueScanCursor<String> zscanResult;
+                if(pageBean.isFirstPage()) {
+                	zscanResult =  super.executeJedisCommand(new ZscanSet(id, db, key, ScanCursor.INITIAL, pageBean.getRows()));
+                }else {
+                	zscanResult = super.executeJedisCommand(new ZscanSet(id, db, key, cursor, pageBean.getRows()));
                 }
-                redisKeyInfo.setValueZSet(zset);
+
+                redisKeyInfo.setCursor(new ScanCursor(zscanResult.getCursor(),zscanResult.isFinished()));
+                redisKeyInfo.setValueZSet(zscanResult.getValues());
                 break;
             default:
                 break;
@@ -355,8 +397,8 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                 super.executeJedisCommand(new SAddSet(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getValue()));
                 break;
             case HASH:
-                Long res = super.executeJedisCommand(new HsetnxHash(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getField(), keyInfo.getValue()));
-                if (res == 0) {
+                Boolean res = super.executeJedisCommand(new HsetnxHash(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getField(), keyInfo.getValue()));
+                if (!res) {
                     throw new ServiceException("Value with the same key already exist");
                 }
                 break;
@@ -407,7 +449,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     }
 
     @Override
-    public Long remamenx(String id, int db, String oldkey, String newkey) {
+    public Boolean remamenx(String id, int db, String oldkey, String newkey) {
         return  super.executeJedisCommand(new RenameNxCommand(id,db,oldkey,newkey));
     }
 

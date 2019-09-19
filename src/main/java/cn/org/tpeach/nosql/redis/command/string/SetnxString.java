@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * @date 2019-07-02 23:48
  * @since 1.0.0
  */
-public class SetnxString extends JedisDbCommand<Long> {
+public class SetnxString extends JedisDbCommand<Boolean> {
 	final static Logger logger = LoggerFactory.getLogger(SetnxString.class);
 	private String key;
 	private String value;
@@ -38,12 +38,12 @@ public class SetnxString extends JedisDbCommand<Long> {
 	 * SETNX是”SET if Not eXists”(如果不存在，则SET)的简写。
 	 * 时间复杂度：O(1)
 	 * @param redisLarkContext
-     * @return 设置成功，返回1。设置失败，返回0。
+     * @return 设置成功，返回1 true。设置失败，返回0 false。
 	 */
 	@Override
-	public Long concreteCommand(RedisLarkContext redisLarkContext) {
+	public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
-		final Long response = redisLarkContext.setnx(key, value);
+		final Boolean response = redisLarkContext.setnx(key, value);
 		return response;
 
 	}

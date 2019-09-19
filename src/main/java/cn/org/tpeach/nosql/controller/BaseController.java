@@ -6,9 +6,6 @@ import java.util.function.Supplier;
 import cn.org.tpeach.nosql.exception.ServiceException;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import redis.clients.jedis.exceptions.JedisException;
 
 /**
  * @author tyz
@@ -47,9 +44,9 @@ public abstract class BaseController {
                 return new ResultRes<T>(false, null,  e.getMessage());
             }else {
                 log.error("服务接口异常",e);
-                if(e instanceof  JedisException){
-                    return new ResultRes<T>(false, null,  e.getMessage());
-                }
+//                if(e instanceof  JedisException){
+//                    return new ResultRes<T>(false, null,  e.getMessage());
+//                }
                 return new ResultRes<T>(false, null,  ServiceProxy.getStackTrace(e));
             }
 

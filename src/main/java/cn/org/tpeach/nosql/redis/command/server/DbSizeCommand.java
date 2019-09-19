@@ -2,6 +2,7 @@ package cn.org.tpeach.nosql.redis.command.server;
 
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisCommand;
+import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.redis.command.string.GetString;
 import org.slf4j.Logger;
@@ -17,18 +18,14 @@ import java.util.List;
  * @date 2019-07-03 08:48
  * @since 1.0.0
  */
-public class DbSizeCommand extends JedisCommand<Long> {
+public class DbSizeCommand extends JedisDbCommand<Long> {
 	final static Logger logger = LoggerFactory.getLogger(DbSizeCommand.class);
-	private int db;
 	/**
 	 * 命令: CONFIG GET parameter
 	 * @param id
-	 * @param db
 	 */
 	public DbSizeCommand(String id, int db) {
-		super(id);
-		this.db = db;
-
+		super(id,db);
 	}
 	/**
 	 * 返回当前数据库的 key 的数量。
@@ -37,7 +34,7 @@ public class DbSizeCommand extends JedisCommand<Long> {
 	 */
 	@Override
 	public Long concreteCommand(RedisLarkContext redisLarkContext) {
-		redisLarkContext.select(db);
+		super.concreteCommand(redisLarkContext);
 		final Long response = redisLarkContext.dbSize();
 		return response;
 	}

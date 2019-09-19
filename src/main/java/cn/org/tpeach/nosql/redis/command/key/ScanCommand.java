@@ -3,17 +3,18 @@ package cn.org.tpeach.nosql.redis.command.key;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.AbstractScanCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import redis.clients.jedis.ScanResult;
+import io.lettuce.core.KeyScanCursor;
+import io.lettuce.core.ScanCursor;
 
-public class ScanCommand extends AbstractScanCommand<ScanResult<String>> {
+public class ScanCommand extends AbstractScanCommand<KeyScanCursor<String>> {
 
-    public ScanCommand(String id, int db, String cursor, Integer count) {
-        super(id, db, cursor, count);
+    public ScanCommand(String id, int db, ScanCursor scanCursor, Integer count) {
+        super(id, db, scanCursor, count);
     }
     @Override
-    public ScanResult<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public KeyScanCursor<String> concreteCommand(RedisLarkContext redisLarkContext) {
          super.concreteCommand(redisLarkContext);
-        ScanResult<String> response = redisLarkContext.scan(cursor, scanParams);
+         KeyScanCursor<String> response = redisLarkContext.scan(scanCursor, scanArgs);
         return response;
     }
 

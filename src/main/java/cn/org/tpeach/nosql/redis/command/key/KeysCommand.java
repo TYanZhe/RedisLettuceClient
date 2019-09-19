@@ -1,10 +1,10 @@
 package cn.org.tpeach.nosql.redis.command.key;
 
+import java.util.List;
+
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-
-import java.util.Set;
 
 /**
  * @author tyz
@@ -14,7 +14,7 @@ import java.util.Set;
  * @date 2019-07-03 0:26
  * @since 1.0.0
  */
-public class KeysCommand extends JedisDbCommand<Set<String>> {
+public class KeysCommand extends JedisDbCommand<List<String>> {
     private String pattern;
     /**
      * 命令：KEYS pattern
@@ -33,9 +33,9 @@ public class KeysCommand extends JedisDbCommand<Set<String>> {
      * @return 符合给定模式的key列表。
      */
     @Override
-    public Set<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public List<String> concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final Set<String> response = redisLarkContext.keys(pattern);
+        final List<String> response = redisLarkContext.keys(pattern);
         return response;
     }
 

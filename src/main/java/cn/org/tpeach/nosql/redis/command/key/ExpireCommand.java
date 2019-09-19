@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 1.0.0
  */
 @Slf4j
-public class ExpireCommand extends JedisDbCommand<Long> {
+public class ExpireCommand extends JedisDbCommand<Boolean> {
     private String key;
     private int seconds;
     /**
@@ -37,10 +37,10 @@ public class ExpireCommand extends JedisDbCommand<Long> {
      * @return 设置成功返回1。当key不存在或者不能为key设置生存时间时(比如在低于2.1.3中你尝试更新key的生存时间)，返回0。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         log.info("[runCommand] EXPIRE  {} {}", key, seconds);
-        final Long response = redisLarkContext.expire(key, seconds);
+        final Boolean response = redisLarkContext.expire(key, seconds);
         return response;
     }
 

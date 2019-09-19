@@ -12,7 +12,7 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @date 2019-07-03 0:26
  * @since 1.0.0
  */
-public class PersistCommand extends JedisDbCommand<Long> {
+public class PersistCommand extends JedisDbCommand<Boolean> {
     private String key;
     /**
      * 命令：PERSIST key
@@ -30,9 +30,9 @@ public class PersistCommand extends JedisDbCommand<Long> {
      * @return 当生存时间移除成功时，返回1.如果key不存在或key没有设置生存时间，返回0。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final Long response = redisLarkContext.persist(key);
+        final Boolean response = redisLarkContext.persist(key);
         return response;
     }
 

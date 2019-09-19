@@ -1,13 +1,14 @@
 package cn.org.tpeach.nosql.redis.bean;
 
-import cn.org.tpeach.nosql.bean.PageBean;
-import cn.org.tpeach.nosql.enums.RedisType;
-import lombok.Data;
-import redis.clients.jedis.Tuple;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import cn.org.tpeach.nosql.bean.PageBean;
+import cn.org.tpeach.nosql.enums.RedisType;
+import io.lettuce.core.ScanCursor;
+import io.lettuce.core.ScoredValue;
+import lombok.Data;
 
 /**
  * @author tyz
@@ -32,9 +33,10 @@ public class RedisKeyInfo {
     private Long idleTime;
     private Map<String,String> valueHash;
     private List<String> valueList;
-    private Set<String> valueSet;
-    private Set<Tuple> valueZSet;
+    private List<String> valueSet;
+    private List<ScoredValue<String>> valueZSet;
     private PageBean pageBean;
+    private ScanCursor cursor;
     
     
 }

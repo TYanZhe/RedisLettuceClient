@@ -3,9 +3,7 @@
  */
 package cn.org.tpeach.nosql.view.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagLayout;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -87,7 +85,7 @@ public class AddRedisKeyDialog extends KeyDialog<RedisTreeItem, RedisKeyInfo> {
         ttlField.setPlaceholder("ttl,单位：秒");
         RedisType[] redisType = {RedisType.STRING, RedisType.LIST, RedisType.SET,
             RedisType.ZSET, RedisType.HASH};
-        typeField = new RComboBox<RedisType>(redisType);
+        typeField = new RComboBox<>(redisType);
         scoreField = new PlaceholderTextField(20);
         scoreField.setPlaceholder("score");
         valueArea = new RTextArea(5, 20);
@@ -99,10 +97,12 @@ public class AddRedisKeyDialog extends KeyDialog<RedisTreeItem, RedisKeyInfo> {
 
         panel.add(SwingTools.createTextRow(keyLable, keyField, this.getWidth(), rowHeight));
         panel.add(SwingTools.createTextRow(ttlLable, ttlField, this.getWidth(), rowHeight));
-        panel.add(SwingTools.createTextRow(typeLable, typeField, this.getWidth(), rowHeight));
+        panel.add(SwingTools.createTextRow(typeLable,typeField,0.28,0.72,this.getWidth(),rowHeight,null,new Insets(10, 10, 0, 0),new Insets(10, 10, 0, 30)));
+
         scorePanel = SwingTools.createTextRow(scoreLable, scoreField, this.getWidth(), rowHeight);
         panel.add(scorePanel);
-        textAreaPanel = (JPanel) SwingTools.createTextRow(valueLabel, valueArea.getJScrollPane(), this.getWidth(), rowHeight * 3);
+        textAreaPanel = SwingTools.createTextRow(valueLabel,valueArea.getJScrollPane(),0.28,0.72,this.getWidth(), (int) (rowHeight * 3.5),null,new Insets(10, 10, 0, 0),new Insets(10, 10, 0, 30));
+
         panel.add(textAreaPanel);
         hashTextAreaPanel = (JPanel) createHashTextAreaRow(valueHashLabel, hashKeyField, valueHashArea.getJScrollPane());
         panel.add(hashTextAreaPanel);

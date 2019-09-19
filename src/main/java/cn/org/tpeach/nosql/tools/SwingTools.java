@@ -274,7 +274,7 @@ public class SwingTools {
 	
 	public static void addTextField(JComponent component, JComponent field, double fieldWeightX, int row,Insets fieldInsets) {
 		component.add(field, EasyGBC.build(1, row, 4, 1).setFill(EasyGBC.HORIZONTAL).setWeight(fieldWeightX, 1.0)
-				.resetInsets(fieldInsets).setAnchor(EasyGBC.EAST));
+				.resetInsets(fieldInsets).setAnchor(EasyGBC.WEST));
 	}
 
 	public static void addLabel(JComponent component, JLabel label, double lableWeightX, int row,Insets labelInsets) {
