@@ -1,9 +1,9 @@
 package cn.org.tpeach.nosql.tools;
 
-import dnl.utils.text.table.TextTable;
-import lombok.val;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

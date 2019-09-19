@@ -5,33 +5,6 @@
  */
 package cn.org.tpeach.nosql.view;
 
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.UnsupportedEncodingException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
-
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.PlainDocument;
-
 import cn.org.tpeach.nosql.bean.DicBean;
 import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.bean.TableColumnBean;
@@ -45,7 +18,10 @@ import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.*;
+import cn.org.tpeach.nosql.tools.ReflectUtil;
+import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.tools.TextForm;
 import cn.org.tpeach.nosql.view.component.*;
 import cn.org.tpeach.nosql.view.dialog.AddRowDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
@@ -57,9 +33,32 @@ import io.lettuce.core.ScoredValue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.commons.lang.ArrayUtils;
 
-import static java.util.regex.Pattern.*;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
+
+import static java.util.regex.Pattern.compile;
 
 
 @Getter
