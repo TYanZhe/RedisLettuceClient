@@ -24,6 +24,11 @@ public class PersistCommand extends JedisDbCommand<Boolean> {
 
     }
 
+    @Override
+    public String sendCommand() {
+        return "PERSIST "+key;
+    }
+
     /**
      * 移除给定key的生存时间。
      * @param redisLarkContext

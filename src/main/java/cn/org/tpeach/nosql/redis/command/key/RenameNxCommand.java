@@ -24,7 +24,10 @@ public class RenameNxCommand extends JedisDbCommand<Boolean> {
         this.oldkey = oldkey;
         this.newkey = newkey;
     }
-
+    @Override
+    public String sendCommand() {
+        return "RENAME "+oldkey +" "+newkey;
+    }
     /**
      * 当且仅当newkey不存在时，将key改为newkey。
      * 出错的情况和RENAME一样(key不存在时报错)。

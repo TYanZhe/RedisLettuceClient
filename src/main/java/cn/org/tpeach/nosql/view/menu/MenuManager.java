@@ -41,6 +41,7 @@ import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.RedisTabbedPanel;
+import cn.org.tpeach.nosql.view.StatePanel;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.AddRedisKeyDialog;
@@ -93,7 +94,7 @@ public enum MenuManager {
 		d.open();
 	}
 	
-	public JPopupMenu getServerTreePopMenu(JComponent componet,RTabbedPane topTabbedPane) {
+	public JPopupMenu getServerTreePopMenu(JComponent componet, RTabbedPane topTabbedPane, StatePanel statePanel) {
 		JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
 		if(componet instanceof JTree) {
 			JTree tree =  (JTree) componet;
@@ -117,7 +118,7 @@ public enum MenuManager {
 			openItem.addActionListener(e->{
 				RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
 				RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
-				LarkFrame.executorService.execute(()->ServiceManager.getInstance().openConnectRedisTree(node, redisTreeItem, tree));
+				LarkFrame.executorService.execute(()->ServiceManager.getInstance().openConnectRedisTree(statePanel,node, redisTreeItem, tree));
 			});
 			editItem.addActionListener(new ActionListener() {
 				@Override
@@ -194,7 +195,7 @@ public enum MenuManager {
 				RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
 				RedisLarkPool.destory(redisTreeItem.getId());
 				node.removeAllChildren();
-				ServiceManager.getInstance().openConnectRedisTree(node, redisTreeItem, tree);
+				ServiceManager.getInstance().openConnectRedisTree(statePanel,node, redisTreeItem, tree);
 				tree.updateUI();
 			});
 			totalItem.setEnabled(false);

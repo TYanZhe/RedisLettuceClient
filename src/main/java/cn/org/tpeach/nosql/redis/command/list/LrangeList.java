@@ -37,6 +37,10 @@ public class LrangeList extends JedisDbCommand<List<String>> {
         this.stop = stop;
     }
 
+    @Override
+    public String sendCommand() {
+        return "LRANGE "+ key +" "+ start + " "+stop;
+    }
     /**
      * 返回列表key中指定区间内的元素，区间以偏移量start和stop指定。
      * 下标(index)参数start和stop都以0为底，也就是说，以0表示列表的第一个元素，以1表示列表的第二个元素，以此类推。
@@ -52,7 +56,6 @@ public class LrangeList extends JedisDbCommand<List<String>> {
     @Override
     public List<String> concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] LRANGE {} {} {}", key ,start, stop);
         final List<String> response = redisLarkContext.lrange(key ,start, stop);
         return response;
     }

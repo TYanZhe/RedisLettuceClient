@@ -21,12 +21,18 @@ import java.util.List;
 public class DbSizeCommand extends JedisDbCommand<Long> {
 	final static Logger logger = LoggerFactory.getLogger(DbSizeCommand.class);
 	/**
-	 * 命令: CONFIG GET parameter
+	 * 命令: DBSIZE
 	 * @param id
 	 */
 	public DbSizeCommand(String id, int db) {
 		super(id,db);
 	}
+
+	@Override
+	public String sendCommand() {
+		return "DBSIZE";
+	}
+
 	/**
 	 * 返回当前数据库的 key 的数量。
 	 * 时间复杂度：O(1)

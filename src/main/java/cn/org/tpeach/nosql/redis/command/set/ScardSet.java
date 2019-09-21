@@ -31,7 +31,10 @@ public class ScardSet extends JedisDbCommand<Long> {
         super(id, db);
         this.key = key;
     }
-
+    @Override
+    public String sendCommand() {
+        return "SCARD "+key;
+    }
     /**
      * 返回集合key的基数(集合中元素的数量)。
      * @param redisLarkContext
@@ -40,7 +43,6 @@ public class ScardSet extends JedisDbCommand<Long> {
     @Override
     public Long concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] SCARD  {}", key);
         final Long response = redisLarkContext.scard(key);
         return response;
     }

@@ -10,6 +10,9 @@ import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * @author tyz
  * @Title: SaddSet
@@ -34,6 +37,10 @@ public class ZremSet extends JedisDbCommand<Long>{
         this.key = key;
         this.members = members;
     }
+    @Override
+    public String sendCommand() {
+        return "ZREM "+key+" "+ Arrays.stream(members).collect(Collectors.joining(" "));
+    }
     /**
      * 移除有序集key中的一个或多个成员，不存在的成员将被忽略。
      * 当key存在但不是有序集类型时，返回一个错误。
@@ -44,7 +51,6 @@ public class ZremSet extends JedisDbCommand<Long>{
     @Override
     public Long concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        log.info("[runCommand] ZREM {} {}", key, members);
         final Long response = redisLarkContext.zrem(key, members);
         return response;
     }

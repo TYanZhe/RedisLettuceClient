@@ -24,6 +24,11 @@ public class SscanSet extends AbstractScanCommand<ValueScanCursor<String>> {
 
 
     @Override
+    public String sendCommand() {
+        return null;
+    }
+
+    @Override
     public ValueScanCursor<String> concreteCommand(RedisLarkContext redisLarkContext) {
          super.concreteCommand(redisLarkContext);
          ValueScanCursor<String> response = redisLarkContext.sscan(key, scanCursor, scanArgs);

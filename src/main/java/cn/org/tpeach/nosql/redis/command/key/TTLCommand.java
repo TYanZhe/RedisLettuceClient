@@ -29,6 +29,11 @@ public class TTLCommand extends JedisDbCommand<Long> {
         this.key = key;
     }
 
+    @Override
+    public String sendCommand() {
+        return "TTL "+key;
+    }
+
     /**
      * 返回给定key的剩余生存时间(time to live)(以秒为单位)。
      * 时间复杂度：O(1)。

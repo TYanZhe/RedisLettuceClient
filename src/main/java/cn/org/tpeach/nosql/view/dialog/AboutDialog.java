@@ -4,6 +4,7 @@
 package cn.org.tpeach.nosql.view.dialog;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.tools.IOUtil;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.LinkLabel;
@@ -88,13 +89,13 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 		box.add(label);
 		leftPanel.add(box);
 
-		label = new JLabel("Version:1.0.1");
+		label = new JLabel("Version:"+ LarkFrame.APPLICATION_VALUE.get("version"));
 		label.setFont(font);
 		box = Box.createHorizontalBox();
 		box.add(label);
 		leftPanel.add(box);
 
-		label = new JLabel("Release data:2019-09-15");
+		label = new JLabel("Release data:"+LarkFrame.APPLICATION_VALUE.get("release_data"));
 		label.setFont(font);
 		box = Box.createHorizontalBox();
 		box.add(label);

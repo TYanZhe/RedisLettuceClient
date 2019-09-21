@@ -7,6 +7,9 @@ import cn.org.tpeach.nosql.redis.command.key.DelKeysCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * @author tyz
  * @Title: LpushList
@@ -18,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class RpushList extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(RpushList.class);
     private String key;
-    private String[] strings;
+    private String[] values;
 
     /**
      * 命令：RPUSH key value [value ...]
@@ -26,14 +29,18 @@ public class RpushList extends JedisDbCommand<Long> {
      * @param id
      * @param db
      * @param key
-     * @param strings
+     * @param values
      */
-    public RpushList(String id, int db, String key, String... strings) {
+    public RpushList(String id, int db, String key, String... values) {
         super(id, db);
         this.key = key;
-        this.strings = strings;
+        this.values = values;
     }
 
+    @Override
+    public String sendCommand() {
+        return "RPUSH "+ key +" "+ Arrays.stream(values).collect(Collectors.joining(" "));
+    }
     /**
      * 将一个或多个值value插入到列表key的表尾。
      * 如果有多个value值，那么各个value值按从左到右的顺序依次插入到表尾：
@@ -48,8 +55,7 @@ public class RpushList extends JedisDbCommand<Long> {
     @Override
     public Long concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] RPUSH {} {}", key, strings);
-        final Long response = redisLarkContext.rpush(key, strings);
+        final Long response = redisLarkContext.rpush(key, values);
         return response;
     }
 

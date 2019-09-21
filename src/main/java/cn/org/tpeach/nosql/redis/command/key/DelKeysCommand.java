@@ -8,7 +8,9 @@ import cn.org.tpeach.nosql.view.RedisMainWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author tyz
@@ -30,6 +32,11 @@ public class DelKeysCommand extends JedisDbCommand<Long> {
         this.keys = keys;
     }
 
+    @Override
+    public String sendCommand() {
+        return "DEL "+ Arrays.stream(keys).collect(Collectors.joining(" "));
+    }
+
     /**
      *移除给定的一个或多个key。
      * 如果key不存在，则忽略该命令。
@@ -41,7 +48,6 @@ public class DelKeysCommand extends JedisDbCommand<Long> {
     @Override
     public Long concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] DEL {}",keys);
         final Long response = redisLarkContext.del(keys);
         return response;
     }

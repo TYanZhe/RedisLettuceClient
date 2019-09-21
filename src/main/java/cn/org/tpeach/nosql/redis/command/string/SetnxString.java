@@ -31,7 +31,10 @@ public class SetnxString extends JedisDbCommand<Boolean> {
 		this.key = key;
 		this.value = value;
 	}
-
+	@Override
+	public String sendCommand() {
+		return "SETNX "+key +" "+value ;
+	}
     /**
 	 * 将key的值设为value，当且仅当key不存在。
 	 * 若给定的key已经存在，则SETNX不做任何动作。

@@ -34,7 +34,10 @@ public class SetRangeString extends JedisDbCommand<Long> {
         this.offset = offset;
         this.value = value;
     }
-
+    @Override
+    public String sendCommand() {
+        return "SETRANGE "+key +" "+offset+" "+value;
+    }
     /**
      * 用value参数覆写(Overwrite)给定key所储存的字符串值，从偏移量offset开始。
      * 不存在的key当作空白字符串处理。

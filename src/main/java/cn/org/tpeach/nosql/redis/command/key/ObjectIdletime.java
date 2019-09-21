@@ -23,6 +23,11 @@ public class ObjectIdletime extends JedisDbCommand<Long> {
         this.key = key;
     }
 
+    @Override
+    public String sendCommand() {
+        return "OBJECT IDLETIME "+key;
+    }
+
     /**
      * OBJECT命令允许从内部察看给定key的Redis对象。
      * 它通常用在除错(debugging)或者了解为了节省空间而对key使用特殊编码的情况。

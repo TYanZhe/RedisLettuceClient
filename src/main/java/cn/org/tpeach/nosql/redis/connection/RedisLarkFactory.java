@@ -1,8 +1,10 @@
 package cn.org.tpeach.nosql.redis.connection;
 
+import java.awt.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import cn.org.tpeach.nosql.framework.LarkFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +30,10 @@ public class RedisLarkFactory {
 	private IRedisConfigService redisConfigService = BeanContext.getBean("redisConfigService",IRedisConfigService.class);
 	public RedisLarkContext connectRedis(String id) {
 		RedisStructure redisStructure = null;
+		RedisConnectInfo conn = null;
 		try{
 			// 获取连接信息
-			RedisConnectInfo conn = RedisLarkPool.getConnectInfo(id);
+			conn = RedisLarkPool.getConnectInfo(id);
 			boolean refresh = false;
 			if (conn == null) {
 				conn= redisConfigService.getRedisConfigById(id);
@@ -50,19 +53,24 @@ public class RedisLarkFactory {
 				// 根据RedisStructure 配置和RedisConnectInfo 构造方法动态生成RedisLark
 				Class<?> clz = Class.forName(redisStructure.getService());
 				Constructor<?> constructor = clz.getConstructor(redisStructure.getParameterTypes());
+				LarkFrame.larkLog.sendInfo(conn.getName(),"AUTH");
 				redisLark = (RedisLark) constructor.newInstance(redisStructure.getInitargs(conn));
 				if(redisLarkContext == null) {
-					redisLarkContext = new RedisLarkContext(redisLark);
+					redisLarkContext = new RedisLarkContext(redisLark,conn);
 				}else {
 					redisLarkContext.setRedisLark(redisLark);
 				}
 				RedisLarkPool.addRedisLarkContext(conn.getId(), redisLarkContext);
+				LarkFrame.larkLog.receivedInfo(conn.getName(), "connected");
 			}
 			return redisLarkContext;
 
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
 				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			Throwable ex = e.getCause();
+			if(conn !=null){
+				LarkFrame.larkLog.receivedError(conn.getName(),"connect fail",ex);
+			}
 
 //			logger.error("反射加载"+redisStructure.getService()+"失败",ex);
 //			while (ex != null) {

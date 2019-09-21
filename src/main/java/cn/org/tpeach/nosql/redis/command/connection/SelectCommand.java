@@ -16,9 +16,7 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class SelectCommand extends JedisCommand<String> {
-    final static Logger logger = LoggerFactory.getLogger(SelectCommand.class);
     private int db;
-
     public int getDb() {
         return db;
     }
@@ -38,6 +36,11 @@ public class SelectCommand extends JedisCommand<String> {
         this.db = db;
     }
 
+    @Override
+    public String sendCommand() {
+        return "SELECT "+db;
+    }
+
     /**
      *切换到指定的数据库，数据库索引号用数字值指定，以 0 作为起始索引值。
      *
@@ -48,7 +51,6 @@ public class SelectCommand extends JedisCommand<String> {
      */
     @Override
     public String concreteCommand(RedisLarkContext redisLarkContext) {
-        logger.info("[runCommand] SELECT {}",db);
         return redisLarkContext.select(db);
     }
 

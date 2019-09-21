@@ -34,6 +34,11 @@ public class GetRangeString extends JedisDbCommand<String> {
         this.endOffset = endOffset;
     }
 
+    @Override
+    public String sendCommand() {
+        return "GETRANGE "+key +" "+startOffset+" "+endOffset;
+    }
+
     /**
      * 返回key中字符串值的子字符串，字符串的截取范围由start和end两个偏移量决定(包括start和end在内)。
      * 负数偏移量表示从字符串最后开始计数，-1表示最后一个字符，-2表示倒数第二个，以此类推。
@@ -47,7 +52,6 @@ public class GetRangeString extends JedisDbCommand<String> {
     @Override
     public String concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] GETRANGE {}",key);
         final String response = redisLarkContext.getrange(key,startOffset,endOffset);
         return response;
     }

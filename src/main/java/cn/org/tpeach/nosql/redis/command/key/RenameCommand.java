@@ -25,6 +25,11 @@ public class RenameCommand extends JedisDbCommand<String> {
         this.newkey = newkey;
     }
 
+    @Override
+    public String sendCommand() {
+        return "RENAME "+oldkey +" "+newkey;
+    }
+
     /**
      * 将key改名为newkey。
      * 当key和newkey相同或者key不存在时，返回一个错误。

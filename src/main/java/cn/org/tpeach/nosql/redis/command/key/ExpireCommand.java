@@ -27,6 +27,11 @@ public class ExpireCommand extends JedisDbCommand<Boolean> {
         this.seconds = seconds;
     }
 
+    @Override
+    public String sendCommand() {
+        return "EXPIRE "+key+" "+seconds;
+    }
+
     /**
      * 为给定key设置生存时间。
      * 当key过期时，它会被自动删除。
@@ -39,7 +44,6 @@ public class ExpireCommand extends JedisDbCommand<Boolean> {
     @Override
     public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        log.info("[runCommand] EXPIRE  {} {}", key, seconds);
         final Boolean response = redisLarkContext.expire(key, seconds);
         return response;
     }

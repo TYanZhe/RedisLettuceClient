@@ -35,7 +35,10 @@ public class SetexString extends JedisDbCommand<String> {
 		this.seconds = seconds;
 		this.value = value;
 	}
-
+	@Override
+	public String sendCommand() {
+		return "SETEX "+key +" "+seconds + " "+ value;
+	}
     /**
 	 * 将值value关联到key，并将key的生存时间设为seconds(以秒为单位)。
 	 * 如果key 已经存在，SETEX命令将覆写旧值。

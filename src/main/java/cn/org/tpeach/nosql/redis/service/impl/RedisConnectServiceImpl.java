@@ -8,6 +8,7 @@ import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.redis.command.key.*;
+import cn.org.tpeach.nosql.redis.command.server.InfoCommand;
 import cn.org.tpeach.nosql.redis.command.server.RedisStructureCommand;
 import cn.org.tpeach.nosql.tools.MapUtils;
 import io.lettuce.core.*;
@@ -517,6 +518,15 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     @Override
     public Boolean remamenx(String id, int db, String oldkey, String newkey) {
         return  super.executeJedisCommand(new RenameNxCommand(id,db,oldkey,newkey));
+    }
+
+    @Override
+    public Map<String, String> getConnectInfo(String id) {
+        RedisLarkContext redisLarkContext = RedisLarkPool.getRedisLarkContext(id);
+        if(redisLarkContext == null){
+            return new HashMap<>(0);
+        }
+        return super.executeJedisCommand(new InfoCommand(id));
     }
 
 

@@ -6,6 +6,9 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * @author tyz
  * @Title: LpushList
@@ -17,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public class LpushList extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(LpushList.class);
     private String key;
-    private String[] strings;
+    private String[] values;
 
     /**
      * 命令：LPUSH key value [value ...]
@@ -25,12 +28,17 @@ public class LpushList extends JedisDbCommand<Long> {
      * @param id
      * @param db
      * @param key
-     * @param strings
+     * @param values
      */
-    public LpushList(String id, int db, String key, String... strings) {
+    public LpushList(String id, int db, String key, String... values) {
         super(id, db);
         this.key = key;
-        this.strings = strings;
+        this.values = values;
+    }
+
+    @Override
+    public String sendCommand() {
+        return "LPUSH "+ key +" "+ Arrays.stream(values).collect(Collectors.joining(" "));
     }
 
     /**
@@ -47,8 +55,7 @@ public class LpushList extends JedisDbCommand<Long> {
     @Override
     public Long concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] RPUSH {} {}", key, strings);
-        final Long response = redisLarkContext.lpush(key, strings);
+        final Long response = redisLarkContext.lpush(key, values);
         return response;
     }
 

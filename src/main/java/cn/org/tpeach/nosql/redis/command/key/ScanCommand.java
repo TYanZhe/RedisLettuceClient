@@ -11,6 +11,12 @@ public class ScanCommand extends AbstractScanCommand<KeyScanCursor<String>> {
     public ScanCommand(String id, int db, ScanCursor scanCursor, Integer count) {
         super(id, db, scanCursor, count);
     }
+
+    @Override
+    public String sendCommand() {
+        return "SCAN ...";
+    }
+
     @Override
     public KeyScanCursor<String> concreteCommand(RedisLarkContext redisLarkContext) {
          super.concreteCommand(redisLarkContext);

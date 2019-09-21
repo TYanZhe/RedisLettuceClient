@@ -28,7 +28,13 @@ public class LsetList  extends JedisDbCommand<String>{
 		this.value = value;
 	}
 
-	
+
+
+	@Override
+	public String sendCommand() {
+		return "LSET "+ key +" "+ index + " "+value;
+	}
+
 	@Override
 	public String concreteCommand(RedisLarkContext redisLarkContext) {
 		super.concreteCommand(redisLarkContext);

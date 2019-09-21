@@ -1,14 +1,24 @@
 package cn.org.tpeach.nosql.redis.command;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.*;
 
+import cn.org.tpeach.nosql.constant.RedisInfoKeyConstant;
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.enums.RedisVersion;
+import cn.org.tpeach.nosql.framework.LarkFrame;
+import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.connection.RedisLark;
+import cn.org.tpeach.nosql.tools.ArraysUtil;
+import cn.org.tpeach.nosql.tools.MapUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import io.lettuce.core.*;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -22,32 +32,71 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class RedisLarkContext {
-
+    @Getter
+    private Integer db;
+    @Getter
+    private Map<String, String> redisInfo;
+    private RedisVersion version;
     // 抽象策略算法
-    RedisLark<String,String> redisLark;
+    @Getter
+    @Setter
+    private RedisLark<String,String> redisLark;
+    private RedisConnectInfo redisConnectInfo;
 
-    public RedisLarkContext(RedisLark<String,String> redisLark) {
+    public RedisLarkContext(RedisLark<String,String> redisLark,RedisConnectInfo redisConnectInfo) {
+        if(redisLark == null || redisConnectInfo == null){
+            throw new IllegalArgumentException("redisLark or redisConnectInfo can not be null");
+        }
         this.redisLark = redisLark;
+        this.redisConnectInfo = redisConnectInfo;
     }
 
-    public RedisLark<String,String> getRedisLark() {
-        return redisLark;
-    }
 
-    public void setRedisLark(RedisLark redisLark) {
-        this.redisLark = redisLark;
-    }
 
     public String info() {
         return redisLark.info();
     }
 
     public Map<String, String> getInfo() {
-        return getInfo();
+        if(MapUtils.isNotEmpty(redisInfo)){
+            return redisInfo;
+        }
+        LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"%s","INFO");
+        String info = this.info();
+        LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",info);
+        if(StringUtils.isBlank(info)){
+            redisInfo = new HashMap<>(0);
+        }else{
+            redisInfo = new HashMap<>();
+            try(BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(info.getBytes(Charset.forName("utf8"))), Charset.forName("utf8")))){
+                String line;
+                while ( (line = br.readLine()) != null ) {
+                    if(StringUtils.isNotBlank(line)){
+                        line = line.trim();
+                        if(line.startsWith("#")){
+                            continue;
+                        }
+                        String[] split = line.split(":");
+                        if(!ArraysUtil.isEmpty(split) && split.length == 2){
+                            redisInfo.put(split[0].trim(),split[1]);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                log.error("获取redis信息失败",e);
+            }
+        }
+        return redisInfo;
     }
 
     public RedisVersion getRedisVersion() {
-        return redisLark.getVersion();
+        if(this.version == null) {
+            Map<String, String> infoMap = getInfo();
+            if(MapUtils.isNotEmpty(infoMap)){
+                this.version = RedisVersion.getRedisVersion(infoMap.get(RedisInfoKeyConstant.redisVersion));
+            }
+        }
+        return version;
     }
 
     public RedisStructure getRedisStructure() {
@@ -55,7 +104,12 @@ public class RedisLarkContext {
     }
 
     public String select(int db) {
-        return redisLark.select(db);
+        String res = redisLark.select(db);
+        if("OK".equals(res)){
+            this.db = db;
+        }
+        return res;
+
     }
 
     /**
@@ -247,23 +301,43 @@ public class RedisLarkContext {
     }
     public void ldelRow(final String key, final int index) {
         String uuid = StringUtils.getUUID();
-
+        LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"LSET %s %s %s",key, index, uuid);
         try {
-			redisLark.execMulti(c->{
-              c.lset(key, index, uuid);
+            TransactionResult execMulti = redisLark.execMulti(c -> {
+
+                c.lset(key, index, uuid);
+
 //            count > 0: 从表头开始向表尾搜索，移除与value相等的元素，数量为count。
 //            count < 0: 从表尾开始向表头搜索，移除与value相等的元素，数量为count的绝对值。
 //            count = 0: 移除表中所有与value相等的值。
-              c.lrem(key, 0, uuid);
-			}, r ->{
-				
-			});
-		} catch (UnsupportedOperationException e1) {
-	        redisLark.lset(key, index, uuid);
-            redisLark.lrem(key, 0, uuid);
-		}
+
+                c.lrem(key, 0, uuid);
+
+            });
+            if(!execMulti.isEmpty()){
+                String lset = execMulti.get(0);
+                LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",lset);
+                LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"LREM %s %s %s",key, 0, uuid);
+                Long lrem = execMulti.get(1);
+                LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",lrem);
+            }
+        
+        } catch (UnsupportedOperationException e1) {
+            String lset = redisLark.lset(key, index, uuid);
+            LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",lset);
+            LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"LREM %s %s %s",key, 0, uuid);
+            Long lrem = redisLark.lrem(key, 0, uuid);
+            LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",lrem);
+            
+        }
+
+
 
     }
+    public Long lrem(String key, long count, String value){
+        return redisLark.lrem(key,count,value);
+    }
+
     //--------------list end------------
     //--------------set start------------
 
@@ -288,6 +362,13 @@ public class RedisLarkContext {
         }
         return redisLark.sscan(key,scanCursor,scanArgs);
     }
+    public String spop(final String key) {
+        return redisLark.spop(key);
+    }
+    public Set<String> spop(final String key,long count) {
+        return redisLark.spop(key,count);
+    }
+
     //--------------set end------------
     //--------------zset start------------
     public Long zadd(String key, double score, String member) {

@@ -1,6 +1,7 @@
 package cn.org.tpeach.nosql.redis.service;
 
 import java.util.Collection;
+import java.util.Map;
 
 import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.enums.RedisType;
@@ -69,4 +70,7 @@ public interface IRedisConnectService {
     Long deleteRowKeyInfo(String id,int db,String key,String valueOrField,int index,RedisType type);
 
     Boolean remamenx(String id, int db,final String oldkey, final String newkey);
+
+
+    Map<String,String> getConnectInfo(String id);
 }

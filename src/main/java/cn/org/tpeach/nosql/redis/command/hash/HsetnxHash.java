@@ -32,6 +32,11 @@ public class HsetnxHash extends JedisDbCommand<Boolean> {
         this.value = value;
     }
 
+    @Override
+    public String sendCommand() {
+        return "HSETNX "+key+" "+field +" "+ value;
+    }
+
     /**
      * 将哈希表key中的域field的值设置为value，当且仅当域field不存在。<br/>
      * 如果项不存在则赋值，存在时什么都不做。<br/>
