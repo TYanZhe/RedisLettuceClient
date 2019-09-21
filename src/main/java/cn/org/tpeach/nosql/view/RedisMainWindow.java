@@ -19,7 +19,6 @@ import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.ConfigParser;
-import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.*;
@@ -68,7 +67,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
     private double treeDataDividerLocation = 0.2;
 
     private AboutDialog aboutDialog;
-    public OnlyReadArea logArea = new OnlyReadArea();
+
     //--------------------------服务相关开始--------------------
     IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
@@ -192,7 +191,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         JPanel jPanel = new JPanel();
         jPanel.setLayout(new BorderLayout());
         jPanel.setBackground(Color.WHITE);
-        jPanel.add( new EasyJSP(logArea).hiddenHorizontalScrollBar(),BorderLayout.CENTER);
+        jPanel.add( new EasyJSP(LarkFrame.logArea).hiddenHorizontalScrollBar(),BorderLayout.CENTER);
         ((RTabbedPane) logTabbedPane).addTab(LarkFrame.getI18nText(I18nKey.RedisResource.LOG), PublicConstant.Image.logo_16, jPanel, false);
         initTree();
         intToolBar();
@@ -317,7 +316,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //	    TreePath path = redisTree.getPathForRow(row);
 
         JPopupMenu connectPopMenu = menuManager.getConnectPopMenu(redisTree);
-        JPopupMenu serverTreePopMenu = menuManager.getServerTreePopMenu(redisTree,(RTabbedPane) redisDataTabbedPane);
+        JPopupMenu serverTreePopMenu = menuManager.getServerTreePopMenu(redisTree,(RTabbedPane) redisDataTabbedPane, (StatePanel) statePanel);
         JPopupMenu dbTreePopMenu = menuManager.getDBTreePopMenu(redisTree,keyFilterField);
         JPopupMenu keyTreePopMenu = menuManager.getKeyTreePopMenu(redisTree, (RTabbedPane) redisDataTabbedPane);
         JPopupMenu keyNameSpaceTreePopMenu = menuManager.getKeyNameSpaceTreePopMenu(redisTree);
@@ -425,7 +424,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                 switch (redisTreeItem.getType()) {
                     case SERVER:
                         // 连接 查询redis数据库
-                        LarkFrame.executorService.execute(() -> serviceManager.openConnectRedisTree(treeNode, redisTreeItem, redisTree));
+                        LarkFrame.executorService.execute(() -> serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree));
                         break;
                     case DATABASE:
 
@@ -449,14 +448,15 @@ public class RedisMainWindow extends javax.swing.JFrame {
         if (childCount > 0) {
             return;
         }
-        final TreeNode[] path = treeNode.getPath();
         if (null != treeNode) {
             Object userObject = treeNode.getUserObject();
             if (null != userObject && userObject instanceof RedisTreeItem) {
                 final RedisTreeItem redisTreeItem = (RedisTreeItem) userObject;
                 switch (redisTreeItem.getType()) {
                     case SERVER:
-                        LarkFrame.executorService.execute(() -> serviceManager.openConnectRedisTree(treeNode, redisTreeItem, redisTree));
+                        LarkFrame.executorService.execute(() -> {
+                            serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree);
+                        });
                         break;
                     case DATABASE:
                         serviceManager.openDbRedisTree(treeNode, redisTreeItem, redisTree,keyFilterField);
@@ -470,12 +470,22 @@ public class RedisMainWindow extends javax.swing.JFrame {
                         break;
                     default:
                 }
+                if(!RedisType.SERVER.equals(redisTreeItem.getType())){
+                    serviceManager.doUpdateStatus((StatePanel) statePanel,redisTreeItem);
+                }
+
             }
         }
 
     }
 
+
+
     //------------------------------------------------------tree end-------------------------------------------
+
+    //------------------------------------------------------statusPanel start-------------------------------------------
+
+    //------------------------------------------------------statusPanel end-------------------------------------------
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -498,8 +508,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         redisDataTabbedPane = new RTabbedPane();
         logPanel = new javax.swing.JPanel();
         logTabbedPane = new RTabbedPane();
-        statePanel = new javax.swing.JPanel();
-        connectStateLabel = new javax.swing.JLabel();
+        statePanel = new StatePanel();
         jToolBar = getToolBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -605,23 +614,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 
         statePanel.setBackground(PublicConstant.RColor.statePanelColor);
         statePanel.setPreferredSize(new java.awt.Dimension(width,statePanelheight));
-
-        connectStateLabel.setForeground(new java.awt.Color(255, 0, 51));
-        connectStateLabel.setText("   未连接到服务");
-
-        javax.swing.GroupLayout statePanelLayout = new javax.swing.GroupLayout(statePanel);
-        statePanel.setLayout(statePanelLayout);
-        statePanelLayout.setHorizontalGroup(
-            statePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(statePanelLayout.createSequentialGroup()
-                .addComponent(connectStateLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 1055, Short.MAX_VALUE))
-        );
-        statePanelLayout.setVerticalGroup(
-            statePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(connectStateLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-
+        statePanel.setLayout(new javax.swing.BoxLayout(statePanel, javax.swing.BoxLayout.X_AXIS));
         getContentPane().add(statePanel, java.awt.BorderLayout.SOUTH);
 
         jToolBar.setBackground(new java.awt.Color(255, 255, 255));
@@ -651,7 +644,6 @@ public class RedisMainWindow extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel KeysFilterPannel;
-    private javax.swing.JLabel connectStateLabel;
     public static javax.swing.JPanel contentPane;
     private javax.swing.JPanel dataBgPanel;
     private javax.swing.JSplitPane dataBgSplitPane;

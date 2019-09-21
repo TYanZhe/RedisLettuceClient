@@ -6,6 +6,9 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * @author tyz
  * @Title: LpushList
@@ -17,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public class RpushxList  extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(RpushxList.class);
     private String key;
-    private String[] strings;
+    private String[] values;
 
     /**
      * 命令：RPUSHX key value
@@ -25,14 +28,17 @@ public class RpushxList  extends JedisDbCommand<Long> {
      * @param id
      * @param db
      * @param key
-     * @param strings
+     * @param values
      */
-    public RpushxList(String id, int db, String key, String[] strings) {
+    public RpushxList(String id, int db, String key, String[] values) {
         super(id, db);
         this.key = key;
-        this.strings = strings;
+        this.values = values;
     }
-
+    @Override
+    public String sendCommand() {
+        return "RPUSHX "+ key +" "+ Arrays.stream(values).collect(Collectors.joining(" "));
+    }
     /**
      * 将值value插入到列表key的表尾，当且仅当key存在并且是一个列表。
      * 和RPUSH命令相反，当key不存在时，RPUSHX命令什么也不做。
@@ -44,8 +50,7 @@ public class RpushxList  extends JedisDbCommand<Long> {
     @Override
     public Long concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] RPUSHX {} {}", key, strings);
-        final Long response = redisLarkContext.rpushx(key, strings);
+        final Long response = redisLarkContext.rpushx(key, values);
         return response;
     }
 

@@ -31,6 +31,12 @@ public class ConfigGet extends JedisCommand<Map<String, String>> {
 		this.pattern = pattern;
 
 	}
+
+	@Override
+	public String sendCommand() {
+		return "CONFIG GET "+pattern;
+	}
+
 	/**
 	 * CONFIG GET 命令用于取得运行中的 Redis 服务器的配置参数(configuration parameters)，
 	 * 不过并非所有配置参数都被 CONFIG GET 命令所支持

@@ -31,7 +31,10 @@ public class SmembersSet extends JedisDbCommand<Set<String>> {
         super(id, db);
         this.key = key;
     }
-
+    @Override
+    public String sendCommand() {
+        return "SMEMBERS "+key;
+    }
     /**
      * 返回集合key中的所有成员。
      * 时间复杂度 O(N)，N为集合的基数。

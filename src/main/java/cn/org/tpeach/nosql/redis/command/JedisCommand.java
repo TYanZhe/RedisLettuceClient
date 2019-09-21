@@ -4,11 +4,15 @@ import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.framework.BeanContext;
 import cn.org.tpeach.nosql.framework.LarkFrame;
+import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.command.string.GetString;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkFactory;
+import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.view.RedisMainWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.*;
 
 /**
  * @author tyz
@@ -44,12 +48,46 @@ public abstract class JedisCommand<T> implements ICommand<T> {
         if(redisVersion.getCode() < supportVersion.getCode() || !extraSupportVersion(redisLarkContext)){
             throw new RuntimeException("不支持的版本");
         }
-        final T t = concreteCommand(redisLarkContext);
-        logger.info("Response received : {} ",t);
-//        ((RedisMainWindow)LarkFrame.frame).logArea.println("Response received :   "+t);
+        RedisConnectInfo redisConnectInfo = RedisLarkPool.getConnectInfo(id);
+        String command = sendCommand();
+        excuteBefore(redisLarkContext);
+        if(command != null){
+            LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"%s",sendCommand());
+        }
+
+        T t;
+        try{
+             t = concreteCommand(redisLarkContext);
+        }catch (Exception e){
+            LarkFrame.larkLog.error("",e);
+            throw e;
+        }
+//        LarkFrame.larkLog.info("[Server %s] Response Received : %s ", Color.BLUE.darker(),redisConnectInfo.getName(),t);
+        if(command != null){
+            String response = t.toString();
+            if(!isFullResponseLog() && response.length() > responseLogLength()){
+                response = "Bulk";
+            }
+            LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",response);
+        }
         return t;
     }
 
+    protected int responseLogLength(){
+        return 30;
+    }
+    protected boolean isFullResponseLog(){
+        return false;
+    }
+    /**
+     * 执行之前的操作
+     * @param redisLarkContext
+     */
+    protected  void excuteBefore(RedisLarkContext redisLarkContext){
+
+    }
+
+    public abstract String sendCommand();
     /**
      * 其他的版本要求 默认判断集群3.0
      * @param redisLarkContext

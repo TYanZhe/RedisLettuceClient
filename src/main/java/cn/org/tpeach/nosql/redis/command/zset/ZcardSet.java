@@ -29,7 +29,10 @@ public class ZcardSet extends JedisDbCommand<Long> {
         super(id, db);
         this.key = key;
     }
-
+    @Override
+    public String sendCommand() {
+        return "ZCARD "+key ;
+    }
     /**
      * 返回有序集key的基数。
      * @param redisLarkContext
@@ -38,7 +41,6 @@ public class ZcardSet extends JedisDbCommand<Long> {
     @Override
     public Long concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] ZCARD   {}", key);
         final Long response = redisLarkContext.zcard(key);
         return response;
     }

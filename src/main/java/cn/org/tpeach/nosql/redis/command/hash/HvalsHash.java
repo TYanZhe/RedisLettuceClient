@@ -27,6 +27,11 @@ public class HvalsHash extends JedisDbCommand<List<String>> {
         this.key = key;
     }
 
+    @Override
+    public String sendCommand() {
+        return "HKEYS "+key;
+    }
+
     /**
      * 返回哈希表key中的所有域。
      * 时间复杂度：O(N)，N为哈希表的大小。

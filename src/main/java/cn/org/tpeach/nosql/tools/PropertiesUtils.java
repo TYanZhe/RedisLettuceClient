@@ -31,6 +31,8 @@ public class PropertiesUtils {
             }
             if (in != null) {
                 prop.load(in);
+            }else{
+                throw new IOException(filePath+" not exists");
             }
         } finally {
             IOUtil.close(in);

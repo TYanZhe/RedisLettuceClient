@@ -22,6 +22,11 @@ public class HscanHash extends AbstractScanCommand<MapScanCursor<String, String>
     }
 
     @Override
+    public String sendCommand() {
+        return "hscan "+ key;
+    }
+
+    @Override
     public MapScanCursor<String, String> concreteCommand(RedisLarkContext redisLarkContext) {
 
         super.concreteCommand(redisLarkContext);

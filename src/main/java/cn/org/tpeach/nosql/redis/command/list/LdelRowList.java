@@ -22,6 +22,12 @@ public class LdelRowList extends JedisDbCommand{
         this.index = index;
         this.key = key;
     }
+
+    @Override
+    public String sendCommand() {
+        return null;
+    }
+
     @Override
     public Object concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);

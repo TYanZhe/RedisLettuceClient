@@ -25,7 +25,10 @@ public class IncrCommand extends JedisDbCommand<Long> {
         super(id,db);
         this.key = key;
     }
-
+    @Override
+    public String sendCommand() {
+        return "INCR "+key  ;
+    }
     /**
      * 将key中储存的数字值增一。
      * 如果key不存在，以0为key的初始值，然后执行INCR操作。

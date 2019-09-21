@@ -32,6 +32,18 @@ public class HmSetHash extends JedisDbCommand<String> {
         this.hash = hash;
     }
 
+    @Override
+    public String sendCommand() {
+        StringBuffer sb = new StringBuffer();
+        for (Map.Entry<String, String> entry : hash.entrySet()) {
+            sb.append(" ");
+            sb.append(entry.getKey());
+            sb.append(" ");
+            sb.append(entry.getValue());
+        }
+        return "HMSET "+key+sb.toString();
+    }
+
     /**
      * 同时将多个field - value(域-值)对设置到哈希表key中。
      * 此命令会覆盖哈希表中已存在的域。

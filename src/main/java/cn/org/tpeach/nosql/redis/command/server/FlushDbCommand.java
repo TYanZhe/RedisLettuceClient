@@ -26,6 +26,11 @@ public class FlushDbCommand extends JedisDbCommand<String> {
 		super(id, db);
 	}
 
+	@Override
+	public String sendCommand() {
+		return "FLUSHDB";
+	}
+
 	/**
 	 * Redis Flushdb 命令用于清空当前数据库中的所有 key。
 	 * @param redisLarkContext

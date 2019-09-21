@@ -31,6 +31,11 @@ public class HsetHash extends JedisDbCommand<Boolean> {
         this.value = value;
     }
 
+    @Override
+    public String sendCommand() {
+        return "HSET "+ key +" "+ field+" "+value;
+    }
+
     /**
      * 将哈希表key中的域field的值设为value。时间复杂度：O(1)
      * @param redisLarkContext

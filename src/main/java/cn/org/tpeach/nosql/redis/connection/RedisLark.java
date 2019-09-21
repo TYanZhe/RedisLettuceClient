@@ -41,19 +41,9 @@ public interface RedisLark<K, V> extends BaseRedisCommands<K, V>, RedisStringCom
     /**
      * @return
      */
-    Map<String, String> getInfo();
-
-    /**
-     * @return
-     */
-    RedisVersion getVersion();
-
-    /**
-     * @return
-     */
     RedisStructure getRedisStructure();
 
-    void execMulti(Consumer<RedisCommands<String, String>> statement, Consumer<TransactionResult> result) throws UnsupportedOperationException;
+    TransactionResult execMulti(Consumer<RedisCommands<String, String>> statement ) throws UnsupportedOperationException;
 
     void close();
 

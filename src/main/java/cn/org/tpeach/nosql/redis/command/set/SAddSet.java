@@ -5,6 +5,9 @@ import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * @author tyz
  * @Title: SaddSet
@@ -30,6 +33,12 @@ public class SAddSet extends JedisDbCommand<Long> {
         this.key = key;
         this.members = members;
     }
+
+    @Override
+    public String sendCommand() {
+        return "SADD "+key+" "+ Arrays.stream(members).collect(Collectors.joining(" "));
+    }
+
     /**
      * 将一个或多个member元素加入到集合key当中，已经存在于集合的member元素将被忽略。
      * 假如key不存在，则创建一个只包含member元素作成员的集合。
@@ -42,7 +51,6 @@ public class SAddSet extends JedisDbCommand<Long> {
     @Override
     public Long concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        log.info("[runCommand] SADD {} {}", key, members);
         final Long response = redisLarkContext.sadd(key, members);
         return response;
     }

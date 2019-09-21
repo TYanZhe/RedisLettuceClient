@@ -5,11 +5,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cn.org.tpeach.nosql</groupId>
 	<artifactId>RedisLark</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<packaging>jar</packaging>
 
 
 	<properties>
+		<release.data>2019-09-21</release.data>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -79,7 +80,13 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>redisLark-1.0.1</finalName>
+		<finalName>redisLark-${project.version}</finalName>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

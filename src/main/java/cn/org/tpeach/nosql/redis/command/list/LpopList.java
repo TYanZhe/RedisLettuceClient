@@ -30,6 +30,11 @@ public class LpopList extends JedisDbCommand<String> {
         this.key = key;
     }
 
+    @Override
+    public String sendCommand() {
+        return "LPOP "+key;
+    }
+
     /**
      * 移除并返回列表key的头元素。
      * 时间复杂度：O(1)
@@ -40,7 +45,6 @@ public class LpopList extends JedisDbCommand<String> {
     @Override
     public String concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] LPOP {} {}", key);
         final String response = redisLarkContext.lpop(key);
         return response;
     }

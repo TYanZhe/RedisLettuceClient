@@ -4,6 +4,7 @@ import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.redis.command.string.GetString;
+import cn.org.tpeach.nosql.tools.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,14 +21,26 @@ import java.util.Map;
  */
 public class InfoCommand extends JedisCommand<Map<String,String>> {
 	final static Logger logger = LoggerFactory.getLogger(InfoCommand.class);
-
+	private boolean newInfo = false;
 	/**
-	 * 命令: CONFIG GET parameter
+	 * 命令: Info
 	 * @param id
 	 */
 	public InfoCommand(String id) {
 		super(id);
 	}
+	public InfoCommand(String id,boolean newInfo) {
+		super(id);
+		this.newInfo = newInfo;
+	}
+	@Override
+	public String sendCommand() {
+//		return "INFO";
+		//在redisLark中打印日志
+		return null;
+	}
+
+
 	/**
 	 * 返回关于 Redis 服务器的各种信息和统计值。
 	 * 时间复杂度：O(1)
@@ -81,6 +94,9 @@ public class InfoCommand extends JedisCommand<Map<String,String>> {
 	 */
 	@Override
 	public Map<String,String> concreteCommand(RedisLarkContext redisLarkContext) {
+		if(newInfo && MapUtils.isNotEmpty(redisLarkContext.getRedisInfo())){
+			redisLarkContext.getRedisInfo().clear();
+		}
 		final Map<String,String> response = redisLarkContext.getInfo();
 		return response;
 	}

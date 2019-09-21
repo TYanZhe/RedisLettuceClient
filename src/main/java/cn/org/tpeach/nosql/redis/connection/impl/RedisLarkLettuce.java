@@ -57,8 +57,7 @@ public class RedisLarkLettuce implements RedisLark<String,String> {
 	private RedisClusterClient cluster;
 	private StatefulRedisConnection<String, String> clentConnection;
 	private StatefulRedisClusterConnection<String, String> clusterConnection;
-	private Map<String, String> redisInfo;
-	private RedisVersion version;
+
 
 	public RedisLarkLettuce(final String id, final String host, final int port, String auth) {
 		this.id = id;
@@ -135,48 +134,7 @@ public class RedisLarkLettuce implements RedisLark<String,String> {
 		}
 
 	}
-	
-	@Override
-    public Map<String, String> getInfo() {
-        if(redisInfo != null){
-            return redisInfo;
-        }
-        String info = this.info();
-        if(StringUtils.isBlank(info)){
-            redisInfo = new HashMap<>(0);
-        }else{
-            redisInfo = new HashMap<>();
-            try(BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(info.getBytes(Charset.forName("utf8"))), Charset.forName("utf8")))){
-                String line;
-                while ( (line = br.readLine()) != null ) {
-                    if(StringUtils.isNotBlank(line)){
-                        line = line.trim();
-                        if(line.startsWith("#")){
-                            continue;
-                        }
-                        String[] split = line.split(":");
-                        if(!ArraysUtil.isEmpty(split) && split.length == 2){
-                            redisInfo.put(split[0].trim(),split[1]);
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                log.error("获取redis信息失败",e);
-            }
-        }
-        return redisInfo;
-    }
-	
-    @Override
-    public RedisVersion getVersion() {
-    	if(this.version == null) {
-			Map<String, String> infoMap = getInfo();
-			if(MapUtils.isNotEmpty(infoMap)){
-				this.version = RedisVersion.getRedisVersion(infoMap.get("redis_version"));
-			}
-    	}
-        return version;
-    }
+
     @Override
     public RedisStructure getRedisStructure() {
         if(client != null){
@@ -1825,12 +1783,13 @@ public class RedisLarkLettuce implements RedisLark<String,String> {
 	}
 	
 	
-	public void execMulti(Consumer<RedisCommands<String, String>> statement,Consumer<TransactionResult> result) throws UnsupportedOperationException{
-		executeCommandConsumer(c -> {
+	@Override
+	public TransactionResult execMulti(Consumer<RedisCommands<String, String>> statement ) throws UnsupportedOperationException{
+		return executeCommand(c -> {
 			String multi = c.multi();
 			statement.accept(c);
 			TransactionResult exec = c.exec();
-			result.accept(exec);
+			return exec;
 		}, u ->  {
 			throw new UnsupportedOperationException("Not supported yet.");
 		});

@@ -30,6 +30,10 @@ public class RpopList extends JedisDbCommand<String> {
         this.key = key;
     }
 
+    @Override
+    public String sendCommand() {
+        return "RPOP "+ key  ;
+    }
     /**
      * 移除并返回列表key的尾元素。
      * 时间复杂度：O(1)
@@ -40,7 +44,6 @@ public class RpopList extends JedisDbCommand<String> {
     @Override
     public String concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] RPOP {} {}", key);
         final String response = redisLarkContext.rpop(key);
         return response;
     }

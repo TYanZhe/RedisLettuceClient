@@ -27,6 +27,11 @@ public class HlenHash extends JedisDbCommand<Long > {
         this.key = key;
     }
 
+    @Override
+    public String sendCommand() {
+        return "HLEN "+ key;
+    }
+
     /**
      * 返回哈希表key中域的数量。
      * 时间复杂度：O(1)

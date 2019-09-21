@@ -4,6 +4,9 @@ import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * @author tyz
  * @Title: HdelHash
@@ -27,6 +30,11 @@ public class HdelHash extends JedisDbCommand<Long> {
         super(id,db);
         this.key = key;
         this.fields = fields;
+    }
+
+    @Override
+    public String sendCommand() {
+        return "HDEL "+key +" "+ Arrays.stream(fields).collect(Collectors.joining(" "));
     }
 
     /**

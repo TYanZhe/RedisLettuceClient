@@ -21,6 +21,11 @@ public class PingCommand extends JedisCommand<String> {
         super(id);
     }
 
+    @Override
+    public String sendCommand() {
+        return "PING";
+    }
+
     /**
      * 客户端向服务器发送一个 PING ，然后服务器返回客户端一个 PONG 。
      *

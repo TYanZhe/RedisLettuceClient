@@ -15,7 +15,7 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 public class HincrbyHash extends JedisDbCommand<Long> {
     private String key;
     private String field;
-    private long value;
+    private long increment;
     /**
      * 命令：HINCRBY key field increment
      * @param id
@@ -23,11 +23,16 @@ public class HincrbyHash extends JedisDbCommand<Long> {
      * @param key
      * @param field
      */
-    public HincrbyHash(String id, int db, String key, String field,long value) {
+    public HincrbyHash(String id, int db, String key, String field,long increment) {
         super(id,db);
         this.key = key;
         this.field = field;
-        this.value = value;
+        this.increment = increment;
+    }
+
+    @Override
+    public String sendCommand() {
+        return "HINCRBY "+key +" "+field+" "+increment;
     }
 
     /**
@@ -44,8 +49,7 @@ public class HincrbyHash extends JedisDbCommand<Long> {
     @Override
     public Long  concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        //TODO 校验 域存在时判断 对字符串值的域执行HINCRBY命令 错误
-        final Long response = redisLarkContext.hincrBy(key,field,value);
+        final Long response = redisLarkContext.hincrBy(key,field,increment);
         return response;
     }
 

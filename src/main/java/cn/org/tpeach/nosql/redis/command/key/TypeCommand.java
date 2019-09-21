@@ -24,6 +24,11 @@ public class TypeCommand extends JedisDbCommand<String> {
         this.key = key;
     }
 
+    @Override
+    public String sendCommand() {
+        return "TYPE "+key;
+    }
+
     /**
      * 返回key所储存的值的类型。
      * 时间复杂度：O(1)

@@ -30,6 +30,11 @@ public class LlenList extends JedisDbCommand<Long> {
         this.key = key;
     }
 
+    @Override
+    public String sendCommand() {
+        return "LLEN "+key;
+    }
+
     /**
      * 返回列表key的长度。
      * 如果key不存在，则key被解释为一个空列表，返回0.
@@ -42,7 +47,6 @@ public class LlenList extends JedisDbCommand<Long> {
     @Override
     public Long concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] LLEN {}", key);
         final Long response = redisLarkContext.llen(key);
         return response;
     }

@@ -22,6 +22,11 @@ public class ZscanSet extends AbstractScanCommand<ScoredValueScanCursor<String>>
 	}
 
 	@Override
+	public String sendCommand() {
+		return null;
+	}
+
+	@Override
 	public ScoredValueScanCursor<String> concreteCommand(RedisLarkContext redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
 		ScoredValueScanCursor<String> response = redisLarkContext.zscan(key, scanCursor, scanArgs);

@@ -36,6 +36,11 @@ public class ZAddSet extends JedisDbCommand<Long> {
         this.members = members;
     }
 
+    @Override
+    public String sendCommand() {
+        return "ZADD "+key+" "+score+" "+members;
+    }
+
     /**
      * 将一个member元素及其score值加入到有序集key当中。
      * 如果member已经是有序集的成员，那么更新这个member的score值，并通过重新插入这个member元素，来保证该member在正确的位置上。
@@ -49,7 +54,6 @@ public class ZAddSet extends JedisDbCommand<Long> {
     @Override
     public Long concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] ZADD {} {} {}", key,score, members);
         final Long response = redisLarkContext.zadd(key,score, members);
         return response;
     }

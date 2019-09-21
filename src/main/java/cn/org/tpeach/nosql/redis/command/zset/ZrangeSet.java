@@ -35,7 +35,10 @@ public class ZrangeSet extends JedisDbCommand<List<String>> {
         this.start = start;
         this.stop = stop;
     }
-
+    @Override
+    public String sendCommand() {
+        return "ZRANGE "+key+" "+start+" "+stop;
+    }
     /**
      * 返回有序集key中，指定区间内的成员。
      * 其中成员的位置按score值递减(从大到小)来排列。
@@ -48,7 +51,6 @@ public class ZrangeSet extends JedisDbCommand<List<String>> {
     @Override
     public List<String> concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] ZRANGE  {} {} {}", key,start,stop);
         final List<String> response = redisLarkContext.zrange(key,start,stop);
         return response;
     }

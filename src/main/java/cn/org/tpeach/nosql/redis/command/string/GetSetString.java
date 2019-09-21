@@ -30,6 +30,12 @@ public class GetSetString extends JedisDbCommand<String> {
 		this.key = key;
 		this.value = value;
 	}
+
+	@Override
+	public String sendCommand() {
+		return "GETSET "+key +" "+value;
+	}
+
 	/**
 	 * 将给定key的值设为value，并返回key的旧值。
 	 * 当key存在但不是字符串类型时，返回一个错误。
@@ -40,7 +46,6 @@ public class GetSetString extends JedisDbCommand<String> {
 	@Override
 	public String concreteCommand(RedisLarkContext redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
-		logger.info("[runCommand] GET {}",key);
 		final String response = redisLarkContext.getSet(key,value);
 		return response;
 	}

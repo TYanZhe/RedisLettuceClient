@@ -3,6 +3,7 @@ package cn.org.tpeach.nosql.redis.command.zset;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
+import cn.org.tpeach.nosql.tools.ArraysUtil;
 import io.lettuce.core.ScoredValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,20 @@ public class ZmAddSet extends JedisDbCommand<Long> {
         this.scoredValues = scoredValues;
     }
 
+    @Override
+    public String sendCommand() {
+        StringBuffer sb = new StringBuffer();
+        if(!ArraysUtil.isEmpty(scoredValues)){
+            for (ScoredValue<String> scoredValue : scoredValues) {
+                sb.append(" ");
+                sb.append(scoredValue.getScore());
+                sb.append(" ");
+                sb.append(scoredValue.getValue());
+            }
+        }
+        return "ZADD "+ key  + sb.toString();
+    }
+
     /**
      * 将一个或多个member元素及其score值加入到有序集key当中。
      * 如果某个member已经是有序集的成员，那么更新这个member的score值，并通过重新插入这个member元素，来保证该member在正确的位置上。
@@ -47,7 +62,6 @@ public class ZmAddSet extends JedisDbCommand<Long> {
     @Override
     public Long concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        logger.info("[runCommand] ZADD {} {}  ", key,scoredValues);
         final Long response = redisLarkContext.zadd(key,scoredValues);
         return response;
     }

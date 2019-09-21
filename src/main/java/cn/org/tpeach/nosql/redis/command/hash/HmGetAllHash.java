@@ -30,6 +30,11 @@ public class HmGetAllHash extends JedisDbCommand<Map<String, String>> {
     }
 
 
+    @Override
+    public String sendCommand() {
+        return "HGETALL "+key;
+    }
+
     /**
      * 返回哈希表key中，所有的域和值。
      * 在返回值里，紧跟每个域名(field name)之后是域的值(value)，所以返回值的长度是哈希表大小的两倍。

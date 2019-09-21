@@ -31,6 +31,11 @@ public class HgetHash extends JedisDbCommand<String> {
         this.field = field;
     }
 
+    @Override
+    public String sendCommand() {
+        return "HGET "+key+" "+field;
+    }
+
     /**
      * 返回哈希表key中给定域field的值。。<br/>
      * 时间复杂度：O(1)

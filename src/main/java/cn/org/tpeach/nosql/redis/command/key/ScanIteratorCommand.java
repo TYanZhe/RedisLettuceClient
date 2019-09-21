@@ -26,6 +26,11 @@ public class ScanIteratorCommand extends JedisCommand<ScanIterator<String>> {
     }
 
     @Override
+    public String sendCommand() {
+        return "SCAN ...";
+    }
+
+    @Override
     public ScanIterator<String> concreteCommand(RedisLarkContext redisLarkContext) {
         final ScanIterator<String> response = redisLarkContext.scanIterator(count, pattern);
         return response;

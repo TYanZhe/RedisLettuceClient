@@ -29,6 +29,10 @@ public class GetString extends JedisDbCommand<String> {
 		this.key = key;
 
 	}
+	@Override
+	public String sendCommand() {
+		return "GET "+key  ;
+	}
 	/**
 	 * 返回key所关联的字符串值。
 	 * 如果key不存在则返回特殊值nil。
@@ -40,7 +44,6 @@ public class GetString extends JedisDbCommand<String> {
 	@Override
 	public String concreteCommand(RedisLarkContext redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
-		logger.info("[runCommand] GET {}",key);
 		final String response = redisLarkContext.get(key);
 		return response;
 	}

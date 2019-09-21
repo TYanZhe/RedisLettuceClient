@@ -1,6 +1,8 @@
 package cn.org.tpeach.nosql.redis.command.hash;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
@@ -31,6 +33,11 @@ public class HmGetHash extends JedisDbCommand<List<KeyValue<String, String>>> {
         this.fields = fields;
     }
 
+
+    @Override
+    public String sendCommand() {
+        return "HMGET "+ key + " "+ Arrays.stream(fields).collect(Collectors.joining(" "));
+    }
 
     /**
      * 返回哈希表key中，一个或多个给定域的值。

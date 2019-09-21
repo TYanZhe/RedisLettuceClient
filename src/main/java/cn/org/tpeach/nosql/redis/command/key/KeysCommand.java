@@ -25,6 +25,11 @@ public class KeysCommand extends JedisDbCommand<List<String>> {
         this.pattern = pattern;
     }
 
+    @Override
+    public String sendCommand() {
+        return "KEYS "+pattern;
+    }
+
     /**
      * 查找符合给定模式的key。
      * KEYS *命中数据库中所有key。

@@ -19,6 +19,11 @@ public class RedisStructureCommand extends JedisCommand<RedisStructure> {
     }
 
     @Override
+    public String sendCommand() {
+        return null;
+    }
+
+    @Override
     public RedisStructure concreteCommand(RedisLarkContext redisLarkContext) {
         return redisLarkContext.getRedisStructure();
     }

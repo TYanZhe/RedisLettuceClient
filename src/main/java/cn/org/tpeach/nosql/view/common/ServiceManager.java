@@ -3,13 +3,17 @@
  */
 package cn.org.tpeach.nosql.view.common;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.constant.RedisInfoKeyConstant;
 import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
@@ -17,10 +21,8 @@ import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.ArraysUtil;
-import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.StringUtils;
-import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.tools.*;
+import cn.org.tpeach.nosql.view.StatePanel;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 
 /**
@@ -134,16 +136,18 @@ public class ServiceManager {
 		}
 	}
 	
-	public void openConnectRedisTree(RTreeNode treeNode,RedisTreeItem redisTreeItem,JTree redisTree) {
+	public void openConnectRedisTree(StatePanel statePanel,RTreeNode treeNode, RedisTreeItem redisTreeItem, JTree redisTree ) {
 		SwingTools.addLoadingTreeNode(redisTree,treeNode,redisTreeItem,
 				()->BaseController.dispatcher(() -> redisConnectService.getDbAmountAndSize(redisTreeItem.getId())),
 				res ->{
+					doUpdateStatus(statePanel,redisTreeItem);
 					if (res.isRet()) {
 						ArraysUtil.each(res.getData(), (index, item) -> SwingTools.addDatabaseTreeNode(treeNode,redisTreeItem, item, index, redisTreeItem.getPath() + "/" + item));
 						redisTree.expandPath(new TreePath(treeNode.getPath()));
 					} else {
 						SwingTools.showMessageErrorDialog(null, res.getMsg(), "连接数据库异常");
 					}
+
 
 				});
 	}
@@ -169,5 +173,28 @@ public class ServiceManager {
 					}
 				});
 
+	}
+
+
+	public void doUpdateStatus(StatePanel statePanel, RedisTreeItem redisTreeItem){
+		Map<String, String> connectInfo = redisConnectService.getConnectInfo(redisTreeItem.getId());
+		if(MapUtils.isNotEmpty(connectInfo)){
+			//设置连接
+			statePanel.getConnectStateLabel().setForeground(Color.GREEN.darker().darker());
+			statePanel.getConnectStateLabel().setText("已连接到服务");
+			//版本信息
+			String version = connectInfo.get(RedisInfoKeyConstant.redisVersion);
+			if(StringUtils.isNotBlank(version)){
+				statePanel.getRedisServerVersionLabel().setText("RedisVersion:"+version);
+			}
+			String connectedClients = connectInfo.get(RedisInfoKeyConstant.connectedClients);
+			if(StringUtils.isNotBlank(version)){
+				statePanel.getClientCountLabel().setText("Clients:"+connectedClients);
+			}
+		}else{
+			statePanel.getConnectStateLabel().setForeground(new java.awt.Color(255, 0, 51));
+			statePanel.getConnectStateLabel().setText("未连接到服务");
+			statePanel.getClientCountLabel().setText("");
+		}
 	}
 }

@@ -1,18 +1,32 @@
 package cn.org.tpeach.nosql.framework;
 
-import java.awt.Font;
-import java.awt.FontMetrics;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.net.URL;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import javax.swing.JFrame;
+import javax.swing.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
 
-import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.tools.*;
+import cn.org.tpeach.nosql.view.component.OnlyReadArea;
+import cn.org.tpeach.nosql.view.component.OnlyReadTextPane;
+import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
+import cn.org.tpeach.nosql.view.menu.MenuManager;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +36,11 @@ import cn.org.tpeach.nosql.annotation.JFrameMain;
 import cn.org.tpeach.nosql.constant.ConfigConstant;
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
-import cn.org.tpeach.nosql.tools.AnnotationUtil;
-import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.ConfigParser;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * @author tyz
@@ -34,9 +50,11 @@ import cn.org.tpeach.nosql.tools.ConfigParser;
  * @date 2019-06-23 21:06
  * @since 1.0.0
  */
+@Slf4j
 public class LarkFrame {
-	final static Logger logger = LoggerFactory.getLogger(LarkFrame.class);
-	
+	public static LarkLog larkLog = new LarkLog();
+	public static OnlyReadTextPane logArea = new OnlyReadTextPane();
+
 	public  static  ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4);
 	private  static String LANGUAGE = "en";
 	private  static String COUNTRY = "US";
@@ -44,8 +62,54 @@ public class LarkFrame {
 	private static ResourceBundle platformResource;
 	public static JFrame frame;
 	public static FontMetrics fm = sun.font.FontDesignMetrics.getMetrics(new Font("Dialog", Font.PLAIN,16));
+	public static Properties APPLICATION_VALUE;
+
+	static {
+		try {
+			APPLICATION_VALUE = PropertiesUtils.getProperties("application.properties");
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+	}
+
 	public static  void run(Class<?> primarySource) {
-		
+		logArea.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (e.getButton() != MouseEvent.BUTTON3) {
+					return;
+				}
+				JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
+				JMenuItem clearItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.MENU_FLUSH, PublicConstant.Image.refresh);
+				clearItem.addActionListener(evt->logArea.clear());
+                JMenuItem copyKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.COPY, PublicConstant.Image.copy);
+                copyKeyItem.setMnemonic('C');
+                copyKeyItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
+                copyKeyItem.addActionListener(evt-> {
+                    Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    String selectedText = logArea.getSelectedText();
+                    Transferable tText;
+                    if(StringUtils.isNotBlank(selectedText)){
+                        tText = new StringSelection(selectedText);
+                    }else{
+                        tText = new StringSelection(logArea.getText());
+                    }
+                    clip.setContents(tText, null);
+                });
+
+				JMenuItem selectAllItem = MenuManager.getInstance().getJMenuItem("全选" );
+				selectAllItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+				selectAllItem.addActionListener(evt->{logArea.requestFocus();logArea.selectAll();});
+				popMenu.add(clearItem);
+                popMenu.add(copyKeyItem);
+				popMenu.add(selectAllItem);
+				popMenu.show(logArea, e.getX(), e.getY());
+			}
+		});
+		//日志文件解析
+		loadindLarkLog();
+
 		//注解扫描
 		componentAnnotation(primarySource);
 		
@@ -59,11 +123,51 @@ public class LarkFrame {
 			try {
 				frame = (JFrame) Thread.currentThread().getContextClassLoader().loadClass(swingMain.value()).newInstance();
 			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-				logger.error("主窗口类不存在"+swingMain.value());
+				log.error("主窗口类不存在"+swingMain.value());
 				System.exit(0);
 			}
 		}
 
+	}
+
+	/**
+	 *
+	 */
+	private static void loadindLarkLog() {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true); // never forget this!
+		DocumentBuilder builder = null;
+		try {
+			builder = factory.newDocumentBuilder();
+			URL resource = LarkFrame.class.getClassLoader().getResource("larkLog.xml");
+			if(resource != null){
+				Document doc = builder.parse(resource.getPath());
+				XPathFactory pathFactory = XPathFactory.newInstance();
+				XPath xpath = pathFactory.newXPath();
+				XPathExpression pathExpression = xpath.compile("//appender");
+				Object result = pathExpression.evaluate(doc, XPathConstants.NODESET);
+				NodeList nodes = (NodeList) result;
+				for (int i = 0; i < nodes.getLength(); i++) {
+					Node item = nodes.item(i);
+					NamedNodeMap attributes = item.getAttributes();
+					Node node = attributes.getNamedItem("name");
+					Class<?> clazz = null;
+					try {
+						clazz = Class.forName(node.getNodeValue());
+						larkLog.addObserver((Observer) clazz.newInstance());
+					} catch (ClassNotFoundException | IllegalAccessException|InstantiationException|ClassCastException e) {
+						log.error("LarkLog addObserver "+node.getNodeValue()+" Fail",e);
+						System.exit(0);
+					}
+
+				}
+			}else {
+				throw new FileNotFoundException("larkLog.xml文件不存在");
+			}
+
+		} catch (ParserConfigurationException|SAXException|IOException|XPathExpressionException e) {
+			log.error("larkLog.xml parse fail");
+		}
 	}
 
 	private static void componentAnnotation(Class<?> primarySource) {
@@ -76,7 +180,7 @@ public class LarkFrame {
 				try {
 					classNameList = AnnotationUtil.getClassName(packageName, true);
 				} catch (IOException e1) {
-					logger.error(packageName+"注解获取失败",e1);
+					log.error(packageName+"注解获取失败",e1);
 					System.exit(0);
 				}
 
@@ -97,7 +201,7 @@ public class LarkFrame {
 								BeanContext.setBean(beanInfo);
 							}
 						} catch (ClassNotFoundException e) {
-							logger.error(className+" Not Found",e);
+							log.error(className+" Not Found",e);
 							System.exit(0);
 						}
 					}

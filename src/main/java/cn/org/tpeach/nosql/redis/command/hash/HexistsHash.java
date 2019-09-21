@@ -29,6 +29,11 @@ public class HexistsHash extends JedisDbCommand<Boolean> {
         this.field = field;
     }
 
+    @Override
+    public String sendCommand() {
+        return "HEXISTS "+ key + " "+ field;
+    }
+
     /**
      * 查看哈希表key中，给定域field是否存在
      * 时间复杂度：O(1)
