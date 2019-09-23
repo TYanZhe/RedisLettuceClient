@@ -15,7 +15,7 @@ public class GsonUtil {
     static {
         if (gson == null) {
             //属性为空的时候输出来的json字符串是有键值key,显示形式是"key":null
-            gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+            gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").setPrettyPrinting().create();
         }
     }
 
@@ -120,6 +120,20 @@ public class GsonUtil {
             }.getType());
         }
         return map;
+    }
+
+    /**
+     * 格式化输出JSON字符串
+     * @return 格式化后的JSON字符串
+     */
+    public static String toPrettyFormat(String json) {
+        try{
+            JsonParser jsonParser = new JsonParser();
+            JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
+            return gson.toJson(jsonObject);
+        }catch (Exception e){
+            return json;
+        }
     }
 
 }

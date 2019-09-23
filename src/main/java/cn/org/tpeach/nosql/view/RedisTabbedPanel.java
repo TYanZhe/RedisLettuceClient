@@ -18,12 +18,10 @@ import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.ReflectUtil;
-import cn.org.tpeach.nosql.tools.StringUtils;
-import cn.org.tpeach.nosql.tools.SwingTools;
-import cn.org.tpeach.nosql.tools.TextForm;
+import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.component.*;
 import cn.org.tpeach.nosql.view.dialog.AddRowDialog;
+import cn.org.tpeach.nosql.view.dialog.MagnifyTextDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
@@ -48,10 +46,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
@@ -69,6 +64,8 @@ class ValueInfoPanel extends javax.swing.JPanel {
     private static final long serialVersionUID = 1L;
     private int selectColume;
     private int selectRow;
+    private TableColumnBean valueColumnBean;
+    private TableColumnBean keyColumnBean;
     private int index;
 
 }
@@ -120,11 +117,17 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     private RButton searchButton;
     private PlaceholderTextField searchTextField;
     private RComboBox<Integer> selectPageComboBox;
+
+    private DicBean plaintextDic= new DicBean("1", LarkFrame.getI18nText(I18nKey.RedisResource.PLAINTEXT));
+    private DicBean jsonDic=new DicBean("2", "Json");
+    private DicBean hexPlainDic=new DicBean("3", "Hex Plain");
+    private DicBean hexDic=new DicBean("4", "Hex");
     private int valueInfoPanelWidth = 185;
     private int aroundPanelWidth = 24;
     private int initRow = 100;
     private Integer[] pageList = new Integer[]{initRow, 200, 500, 1000,10000};
     private List<Icon> headersIcon = new ArrayList<>(4);
+
 
     /**
      * Creates new form RedisTabbedPanel2
@@ -555,26 +558,34 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                         return;
                     }
                     valueArea.setEditable(true);
+                    ((ValueInfoPanel) valueInfoPanel).setValueColumnBean(null);
+                    ((ValueInfoPanel) valueInfoPanel).setKeyColumnBean(null);
                     switch (redisKeyInfo.getType()) {
                         case STRING:
                         case LIST:
                         case SET:
                             if (column == 1) {
-                                changeValueAreaText(row, column, StringUtils.defaultEmptyToString(redisDataTable.getValueAt(row, column)));
+                                changeValueAreaText(row, column, (TableColumnBean)redisDataTable.getValueAt(row, column));
                             }
                             break;
                         case HASH:
                             if (column == 1 || column == 2) {
-                                changeValueAreaText(row, column, StringUtils.defaultEmptyToString(redisDataTable.getValueAt(row, 2)));
-                                String keyText = StringUtils.defaultEmptyToString(redisDataTable.getValueAt(row, 1));
-                                fieldArea.setText(keyText);
-                                setFieldInfoLabelText(keyText.getBytes().length);
+                                changeValueAreaText(row, column, (TableColumnBean)redisDataTable.getValueAt(row, 2));
+                                TableColumnBean keyTextColumne = (TableColumnBean) redisDataTable.getValueAt(row, 1);
+                                ((ValueInfoPanel) valueInfoPanel).setKeyColumnBean(keyTextColumne);
+                                if(StringUtils.isText(keyTextColumne.getValue())){
+                                    selectKeyViewComn.setSelectedItem(plaintextDic);
+                                }else{
+                                    selectKeyViewComn.setSelectedItem(hexPlainDic);
+                                }
+                                fieldArea.setText(keyTextColumne.toString());
+                                setFieldInfoLabelText(keyTextColumne.toString().getBytes().length);
                                 fieldArea.setEditable(true);
                             }
                             break;
                         case ZSET:
                             if (column == 1 || column == 2) {
-                                changeValueAreaText(row, column, StringUtils.defaultEmptyToString(redisDataTable.getValueAt(row, 2)));
+                                changeValueAreaText(row, column, (TableColumnBean)redisDataTable.getValueAt(row, 2));
                                 String scoreText = StringUtils.defaultEmptyToString(redisDataTable.getValueAt(row, 1));
                                 scoreField.setText(scoreText);
                                 scoreField.setEditable(true);
@@ -731,85 +742,118 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         scoreField = new PlaceholderTextField(20);
         scoreField.setEditable(false);
         selectKeyViewComn = new RComboBox<>(20);
-        selectKeyViewComn.setModel(new javax.swing.DefaultComboBoxModel<>(new DicBean[]{new DicBean("1", LarkFrame.getI18nText(I18nKey.RedisResource.PLAINTEXT)), new DicBean("2", "Json"),new DicBean("3", "Hex Plain"),new DicBean("4", "Hex"),}));
+        selectKeyViewComn.setModel(new javax.swing.DefaultComboBoxModel<>(new DicBean[]{plaintextDic,jsonDic,hexPlainDic,hexDic,}));
         selectKeyViewComn.setMaximumSize(new java.awt.Dimension(32767, 25));
         selectKeyViewComn.setMinimumSize(new java.awt.Dimension(50, 25));
         selectKeyViewComn.setPreferredSize(new java.awt.Dimension(60, 25));
         Font font =  new Font(selectKeyViewComn.getFont().getName(), Font.PLAIN,12);
         selectKeyViewComn.setFont(font);
         selectKeyViewComn.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-//                   selectViewComnActionPerformed(evt);
+                if(evt.getActionCommand().equals("comboBoxChanged")){
+                    DicBean dicBean = (DicBean) selectKeyViewComn.getSelectedItem();
+                    TableColumnBean tableColumnBean = ((ValueInfoPanel) valueInfoPanel).getKeyColumnBean();
+                    String keyAreaText =  getSelectDicText(dicBean, tableColumnBean,fieldArea);
+                    fieldArea.setText(keyAreaText);
+                    setValueInfoLabelText(keyAreaText.getBytes().length);
+                }
             }
         });
 
         selectValueViewComn = new RComboBox<>(20);
-        selectValueViewComn.setModel(new javax.swing.DefaultComboBoxModel<>(new DicBean[]{new DicBean("1", LarkFrame.getI18nText(I18nKey.RedisResource.PLAINTEXT)), new DicBean("2", "Json"),new DicBean("3", "Hex Plain"),new DicBean("4", "Hex"),}));
+        selectValueViewComn.setModel(new javax.swing.DefaultComboBoxModel<>(new DicBean[]{plaintextDic,jsonDic,hexPlainDic,hexDic,}));
         selectValueViewComn.setMaximumSize(new java.awt.Dimension(32767, 25));
         selectValueViewComn.setMinimumSize(new java.awt.Dimension(50, 25));
         selectValueViewComn.setPreferredSize(new java.awt.Dimension(60, 25));
         selectValueViewComn.setFont(font);
-        selectValueViewComn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-//                   selectViewComnActionPerformed(evt);
+        selectValueViewComn.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if(e.getStateChange() == ItemEvent.SELECTED){
+                    DicBean dicBean = (DicBean) selectValueViewComn.getSelectedItem();
+                    TableColumnBean tableColumnBean = ((ValueInfoPanel) valueInfoPanel).getValueColumnBean();
+                    String valueAreaText = getSelectDicText(dicBean, tableColumnBean, valueArea);
+                    valueArea.setText(valueAreaText);
+                    setValueInfoLabelText(valueAreaText.getBytes().length);
+                }else if(e.getStateChange() == ItemEvent.DESELECTED){
+
+                }
+
             }
         });
         ValueInfoPanel valueInfo = (ValueInfoPanel) valueInfoPanel;
         valueArea.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void removeUpdate(DocumentEvent e) {
-                saveLabelEnabled(valueArea, 2);
+                saveLabelEnabled();
             }
 
             @Override
             public void insertUpdate(DocumentEvent e) {
-                saveLabelEnabled(valueArea, 2);
+                saveLabelEnabled();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                saveLabelEnabled(valueArea, 2);
+                saveLabelEnabled();
             }
         });
         valueArea.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent evt) {
-                copyMenuByValue(evt,valueArea);
+                SwingTools.copyMenuByValue(evt,valueArea);
             }
 
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    MagnifyTextDialog magnifyTextDialog = MagnifyTextDialog.getInstance();
+                    magnifyTextDialog.setText(valueArea.getText());
+                    magnifyTextDialog.open();
+                }
+            }
         });
         fieldArea.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void removeUpdate(DocumentEvent e) {
-                saveLabelEnabled(fieldArea, 1);
+                saveLabelEnabled();
             }
 
             @Override
             public void insertUpdate(DocumentEvent e) {
-                saveLabelEnabled(fieldArea, 1);
+                saveLabelEnabled();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                saveLabelEnabled(fieldArea, 1);
+                saveLabelEnabled();
             }
         });
         fieldArea.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent evt) {
-                copyMenuByValue(evt,fieldArea);
+                SwingTools.copyMenuByValue(evt,fieldArea);
             }
 
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    MagnifyTextDialog magnifyTextDialog = MagnifyTextDialog.getInstance();
+                    magnifyTextDialog.setText(fieldArea.getText());
+                    magnifyTextDialog.open();
+                }
+            }
         });
         scoreField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void removeUpdate(DocumentEvent e) {
-                saveLabelEnabled(scoreField, 1);
+                saveLabelEnabled();
             }
 
             @Override
             public void insertUpdate(DocumentEvent e) {
-                saveLabelEnabled(scoreField, 1);
+                saveLabelEnabled();
             }
 
             @Override
@@ -817,13 +861,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 //saveLabelEnabled(scoreField,1);
             }
         });
-        scoreField.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                copyMenuByValue(evt,scoreField);
-            }
-
-        });
+        SwingTools.addTextCopyMenu(scoreField);
         hBox1.add(fieldInfoLabel);
         hBox1.add(Box.createHorizontalGlue());
         hBox1.add(selectKeyViewComn);
@@ -877,29 +915,41 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
     }
 
-    private void copyMenuByValue(MouseEvent evt,JTextComponent textComponent) {
-        if (StringUtils.isBlank(textComponent.getText()) || evt.getButton() != MouseEvent.BUTTON3) {
-            return;
+    /**
+     * 选择不同显示值
+     * @param dicBean
+     * @param tableColumnBean
+     * @param textArea
+     * @return
+     */
+    private String getSelectDicText(DicBean dicBean, TableColumnBean tableColumnBean, RTextArea textArea) {
+        String text = "";
+        textArea.setEditable(false);
+        if ("1".equals(dicBean.getCode())) {
+            text = tableColumnBean.getValue();
+            textArea.setEditable(true);
+        } else if ("2".equals(dicBean.getCode())) {
+            text = GsonUtil.toPrettyFormat(tableColumnBean.getValue());
+        } else if ("3".equals(dicBean.getCode())) {
+            text = TableColumnBean.getHexStringValue(tableColumnBean.getValue());
+        } else if ("4".equals(dicBean.getCode())) {
+            text = StringUtils.bytesToHexString(tableColumnBean.getValue().getBytes(), true);
         }
-        JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
-        JMenuItem copyKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.COPY, PublicConstant.Image.copy);
-        copyKeyItem.setMnemonic('C');
-        copyKeyItem.setAccelerator(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
-        copyKeyItem.addActionListener(e -> {
-            Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
-            String tempText = StringUtils.isBlank(textComponent.getSelectedText())?textComponent.getText() : textComponent.getSelectedText();
-            Transferable tText = new StringSelection(tempText);
-            clip.setContents(tText, null);
-        });
-        popMenu.add(copyKeyItem);
-        popMenu.show(textComponent, evt.getX(), evt.getY());
+        saveLabelEnabled();
+        return text;
     }
 
-    private void changeValueAreaText(int row, int column, String valueAreaText) {
+    private void changeValueAreaText(int row, int column, TableColumnBean tableColumnBean) {
+        String valueAreaText = tableColumnBean.toString();
         ((ValueInfoPanel) valueInfoPanel).setSelectColume(column);
         ((ValueInfoPanel) valueInfoPanel).setSelectRow(row);
-        //Todo 过滤需要考虑下标
         ((ValueInfoPanel) valueInfoPanel).setIndex(Integer.valueOf(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(row, 0))));
+        ((ValueInfoPanel) valueInfoPanel).setValueColumnBean(tableColumnBean);
+        if(StringUtils.isText(tableColumnBean.getValue())){
+            selectValueViewComn.setSelectedItem(plaintextDic);
+        }else{
+            selectValueViewComn.setSelectedItem(hexPlainDic);
+        }
         valueArea.setText(valueAreaText);
         setValueInfoLabelText(valueAreaText.getBytes().length);
         if (!RedisType.STRING.equals(this.redisKeyInfo.getType())) {
@@ -919,15 +969,6 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     private void setFieldInfoLabelText(int length) {
         fieldInfoLabel.setText("<html><p style='font-size:8px;color:black' >&nbsp;Field: <span style='color:#A0A0B1'>Size: " + length + " bytes</span></p></html>");
 
-    }
-
-    private boolean valueInfoChange(int row, int colume, JTextComponent area) {
-        String text = area.getText();
-        if (row >= redisDataTable.getRowCount()) {
-            return false;
-        }
-        String value = StringUtils.defaultEmptyToString(redisDataTable.getValueAt(row, colume));
-        return !value.equals(text);
     }
 
     private void togglevalueInfo() {
@@ -1308,37 +1349,39 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         addToPagePanel(component, true, 10, false, null);
     }
 
-    /**
-     *
-     * @param keyOrValue key 1 value 2 对应所在表格列下标
-     */
-    private void saveLabelEnabled(JTextComponent area, int keyOrValue) {
-        switch (redisKeyInfo.getType()) {
-            case STRING:
-            case LIST:
-            case SET:
-                if (valueInfoChange(((ValueInfoPanel) valueInfoPanel).getSelectRow(), 1, area)) {
-                    saveLabel.setEnabled(true);
-                    cancelLabel.setEnabled(true);
-                } else {
-                    saveLabel.setEnabled(false);
-                    cancelLabel.setEnabled(false);
-                }
-                break;
-            case HASH:
-            case ZSET:
-                if (valueInfoChange(((ValueInfoPanel) valueInfoPanel).getSelectRow(), keyOrValue, area)) {
-                    saveLabel.setEnabled(true);
-                    cancelLabel.setEnabled(true);
-                } else {
-                    saveLabel.setEnabled(false);
-                    cancelLabel.setEnabled(false);
-                }
+    private void saveLabelEnabled() {
+        boolean isEnabled = false;
+        if (((ValueInfoPanel) valueInfoPanel).getSelectRow() < redisDataTable.getRowCount() && valueArea.isEditable()) {
+            if(!((ValueInfoPanel) valueInfoPanel).getValueColumnBean().getValue().equals(valueArea.getText())){
+                isEnabled = true;
+            }
 
-                break;
-            default:
-                break;
+            switch (redisKeyInfo.getType()) {
+                case STRING:
+                case LIST:
+                case SET:
+                    break;
+                case HASH:
+                    if(!fieldArea.isEditable()){
+                        isEnabled = false;
+                    }else{
+                        if(!isEnabled && !((ValueInfoPanel) valueInfoPanel).getKeyColumnBean().getValue().equals(fieldArea.getText())){
+                            isEnabled = true;
+                        }
+                    }
+                    break;
+                case ZSET:
+                    String s = StringUtils.defaultEmptyToString(redisDataTable.getValueAt(((ValueInfoPanel) valueInfoPanel).getSelectRow(), 1));
+                    if(!isEnabled && !s.equals(scoreField.getText())){
+                        isEnabled = true;
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
+        saveLabel.setEnabled(isEnabled);
+        cancelLabel.setEnabled(isEnabled);
     }
 
     private void reloadValueInfoPanel() {

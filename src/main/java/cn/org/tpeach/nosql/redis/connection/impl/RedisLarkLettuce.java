@@ -26,6 +26,7 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.cluster.api.sync.NodeSelection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import io.lettuce.core.output.CommandOutput;
 import io.lettuce.core.output.KeyStreamingChannel;
@@ -1350,7 +1351,16 @@ public class RedisLarkLettuce implements RedisLark<String,String> {
 
 	@Override
 	public List<String> keys(String pattern) {
-		return executeCommand(c -> c.keys(pattern), u -> u.keys(pattern));
+		return executeCommand(c -> c.keys(pattern), u ->{
+//			NodeSelection<String, String> masters = u.masters();
+//			int size = masters.size();
+//			NodeSelection<String, String> slaves = u.slaves();
+//			int size1 = slaves.size();
+//			NodeSelection<String, String> all = u.all();
+//			int size2 = all.size();
+			return u.keys(pattern);
+			
+		} );
 	}
 
 	@Override

@@ -22,7 +22,6 @@ import cn.org.tpeach.nosql.tools.ConfigParser;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.*;
-import cn.org.tpeach.nosql.view.dialog.AboutDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeModel;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeRenderer;
@@ -66,7 +65,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //    final double dataBgDividerLocation = 0.8;
     private double treeDataDividerLocation = 0.2;
 
-    private AboutDialog aboutDialog;
+
 
     //--------------------------服务相关开始--------------------
     IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
@@ -194,92 +193,17 @@ public class RedisMainWindow extends javax.swing.JFrame {
         jPanel.add( new EasyJSP(LarkFrame.logArea).hiddenHorizontalScrollBar(),BorderLayout.CENTER);
         ((RTabbedPane) logTabbedPane).addTab(LarkFrame.getI18nText(I18nKey.RedisResource.LOG), PublicConstant.Image.logo_16, jPanel, false);
         initTree();
-        intToolBar();
+//        intToolBar();
         jSplitPane.setDividerLocation(treePanelWidth);
         this.setVisible(true);
 
     }
 
     //------------------------------------------------------toolbar start-------------------------------------------
-    private RButton getToolBarButton(String text, Icon icon) {
-        RButton button = new RButton() {
-            @Override
-            public void init() {
-                setBackground(Color.WHITE);
-            }
 
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                setBackground(new Color(229, 243, 255));
-
-            }
-        };
-        button.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        button.setPreferredSize(new Dimension(58, 50));
-        button.setMinimumSize(new Dimension(58, 50));
-        button.setMaximumSize(new Dimension(58, 50));
-        button.setText(text);
-        button.setIcon(icon);
-//        button.setFont(new Font("comic sans MS",Font.PLAIN,14));
-        button.setFont(new Font("黑体", Font.PLAIN, 14));
-        button.setVerticalTextPosition(SwingConstants.BOTTOM);
-        button.setHorizontalTextPosition(SwingConstants.CENTER);
-        return button;
-    }
-
-    private void intToolBar() {
-        //是否需要绘制边框
-        jToolBar.setBorderPainted(true);
-        //// 设置工具栏边缘和其内部工具组件之间的边距（内边距）
-        jToolBar.setMargin(new Insets(0, 0, 0, 0));
-//        jToolBar.add(new JLabel(" Font: "));
-        RButton newButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.NEW), PublicConstant.Image.atom);
-        RButton serverButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.SERVER), PublicConstant.Image.server);
-        RButton configButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.CONFIG), PublicConstant.Image.config);
-        RButton monitorButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.MONITOR), PublicConstant.Image.monitor);
-        RButton settingsButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.SETTING), PublicConstant.Image.settings);
-        RButton helpButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.HELP), PublicConstant.Image.help);
-        RButton aboutButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.ABOUT), PublicConstant.Image.about);
-        newButton.addActionListener(e -> menuManager.newConnectConfig(redisTree));
-        aboutButton.addActionListener(e->{
-            if(aboutDialog == null){
-                aboutDialog = new AboutDialog(this, null);
-            }
-            aboutDialog.open();
-        });
-        jToolBar.add(newButton);
-        jToolBar.add(serverButton);
-        jToolBar.add(configButton);
-        jToolBar.add(monitorButton);
-        jToolBar.add(settingsButton);
-//        jToolBar.add(helpButton);
-        jToolBar.add(aboutButton);
-        jToolBar.putClientProperty("JToolBar.isRollover", Boolean.TRUE);
-    }
 
     private JToolBar getToolBar() {
-        JToolBar bar = new JToolBar() {
-
-            @Override
-            public void paintComponent(final Graphics g) {
-                super.paintComponent(g);
-                final Graphics2D graphics = (Graphics2D) g;
-                //graphics.setBackground(new Color(255,255,255));
-//                graphics.setColor(PublicConstant.RColor.toolBarGridBackground);
-                graphics.setColor(Color.white);
-                graphics.fillRect(0, 0, this.getWidth(), jToolBarHeight);
-
-            }
-
-            @Override
-            protected JButton createActionComponent(Action a) {
-                JButton jb = super.createActionComponent(a);
-                jb.setOpaque(false);
-                return jb;
-            }
-        };
-
-        return bar;
+        return new RToolBar(jToolBarHeight,redisTree);
     }
     //------------------------------------------------------toolbar end-------------------------------------------
 
@@ -471,7 +395,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                     default:
                 }
                 if(!RedisType.SERVER.equals(redisTreeItem.getType())){
-                    serviceManager.doUpdateStatus((StatePanel) statePanel,redisTreeItem);
+                    ((StatePanel) statePanel).doUpdateStatus(redisTreeItem);
                 }
 
             }

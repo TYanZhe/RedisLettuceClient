@@ -140,7 +140,7 @@ public class ServiceManager {
 		SwingTools.addLoadingTreeNode(redisTree,treeNode,redisTreeItem,
 				()->BaseController.dispatcher(() -> redisConnectService.getDbAmountAndSize(redisTreeItem.getId())),
 				res ->{
-					doUpdateStatus(statePanel,redisTreeItem);
+					statePanel.doUpdateStatus(redisTreeItem);
 					if (res.isRet()) {
 						ArraysUtil.each(res.getData(), (index, item) -> SwingTools.addDatabaseTreeNode(treeNode,redisTreeItem, item, index, redisTreeItem.getPath() + "/" + item));
 						redisTree.expandPath(new TreePath(treeNode.getPath()));
@@ -176,25 +176,5 @@ public class ServiceManager {
 	}
 
 
-	public void doUpdateStatus(StatePanel statePanel, RedisTreeItem redisTreeItem){
-		Map<String, String> connectInfo = redisConnectService.getConnectInfo(redisTreeItem.getId());
-		if(MapUtils.isNotEmpty(connectInfo)){
-			//设置连接
-			statePanel.getConnectStateLabel().setForeground(Color.GREEN.darker().darker());
-			statePanel.getConnectStateLabel().setText("已连接到服务");
-			//版本信息
-			String version = connectInfo.get(RedisInfoKeyConstant.redisVersion);
-			if(StringUtils.isNotBlank(version)){
-				statePanel.getRedisServerVersionLabel().setText("RedisVersion:"+version);
-			}
-			String connectedClients = connectInfo.get(RedisInfoKeyConstant.connectedClients);
-			if(StringUtils.isNotBlank(version)){
-				statePanel.getClientCountLabel().setText("Clients:"+connectedClients);
-			}
-		}else{
-			statePanel.getConnectStateLabel().setForeground(new java.awt.Color(255, 0, 51));
-			statePanel.getConnectStateLabel().setText("未连接到服务");
-			statePanel.getClientCountLabel().setText("");
-		}
-	}
+
 }
