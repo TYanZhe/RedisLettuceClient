@@ -9,6 +9,8 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
@@ -30,7 +32,7 @@ import cn.org.tpeach.nosql.view.component.RButton;
 import lombok.Getter;
 import lombok.Setter;
 
-public abstract class BaseDialog<T,R> extends JDialog {
+public abstract class BaseDialog<T,R> extends JDialog implements WindowListener {
 	protected T t;
 	@Getter
 	@Setter
@@ -58,8 +60,11 @@ public abstract class BaseDialog<T,R> extends JDialog {
 	@Getter
 	@Setter
 	private int btnPanelHeight = 56;
+	@Getter
 	private JPanel contextPanel;
 	private JPanel middlePanel;
+	@Getter
+	private JPanel btnPanel;
 	protected Image icon = PublicConstant.Image.logo.getImage();
 	protected Box btnbox = Box.createHorizontalBox();
 	JButton okBtn = new RButton(LarkFrame.getI18nUpText(I18nKey.RedisResource.OK));
@@ -100,8 +105,9 @@ public abstract class BaseDialog<T,R> extends JDialog {
 		}
 		this.t = t;
 		initDialog(t);
-		
-	
+		this.cancelBtn.addActionListener(e -> cancel(e));
+		this.okBtn.addActionListener(e -> submit(e));
+		this.addWindowListener(this);
 		
 	}
 
@@ -142,35 +148,45 @@ public abstract class BaseDialog<T,R> extends JDialog {
 		// this.getRootPane().setBorder(BorderFactory.createLineBorder(new
 		// Color(66,153,221),1));
 		container.setLayout(new BorderLayout());
-		middlePanel = new JPanel();
-		middlePanel.setLayout(new BorderLayout());
-		contextPanel = new JPanel();
-		middlePanel.add(contextPanel, BorderLayout.CENTER);
-		JPanel btnPanel = new JPanel();
+		containerStyle(container);
 
-		// middlePanel.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(10,
-		// 10, 10, 10), new EtchedBorder()));
-		setMiddlePanel(middlePanel);
-		container.add(btnPanel, BorderLayout.PAGE_END);
-		if(isNeedBtn()) {
-			btnPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(173, 173, 173)));
-			btnPanel.setPreferredSize(new Dimension(this.getWidth(), btnPanelHeight));
-			btnPanel.add(btnbox);
-			addBtnToBtnPanel(btnPanel);
+
+		if(middlePanel == null){
+			middlePanel = new JPanel();
+			middlePanel.setOpaque(false);
+			middlePanel.setLayout(new BorderLayout());
+			setMiddlePanel(middlePanel);
+			container.add(middlePanel);
 		}
 
-		contextUiImpl(contextPanel, btnPanel);
-
-		container.add(middlePanel);
+		if(btnPanel == null) {
+			btnPanel = new JPanel();
+			container.add(btnPanel, BorderLayout.PAGE_END);
+			if (isNeedBtn()) {
+				btnPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(173, 173, 173)));
+				btnPanel.setPreferredSize(new Dimension(this.getWidth(), btnPanelHeight));
+				btnPanel.add(btnbox);
+				addBtnToBtnPanel(btnPanel);
+			}
+		}
+		if(contextPanel == null){
+			contextPanel = new JPanel();
+			middlePanel.add(contextPanel, BorderLayout.CENTER);
+			contextUiImpl(contextPanel, btnPanel);
+		}
+		// middlePanel.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(10,
+		// 10, 10, 10), new EtchedBorder()));
 		after();
-		this.cancelBtn.addActionListener(e -> cancel(e));
-		this.okBtn.addActionListener(e -> submit(e));
 		this.setVisible(true);
 		if (isError) {
 			close();
 			return;
 		}
 	}
+
+	public void containerStyle(Container container) {
+	}
+
 
 	public void close() {
 		this.setVisible(false);
@@ -252,7 +268,6 @@ public abstract class BaseDialog<T,R> extends JDialog {
 	 * @param e
 	 */
 	protected void submit(ActionEvent e) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -262,4 +277,41 @@ public abstract class BaseDialog<T,R> extends JDialog {
 	protected void cancel(ActionEvent e) {
 		this.dispose();
 	}
+
+	@Override
+	public void windowActivated(WindowEvent e) {
+
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+
+
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		close();
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+
+	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {
+
+	}
+
 }

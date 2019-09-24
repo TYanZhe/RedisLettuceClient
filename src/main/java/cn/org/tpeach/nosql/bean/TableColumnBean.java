@@ -30,7 +30,7 @@ public class TableColumnBean {
         this.index = index;
     }
 
-    public String getHexStringValue(String value) {
+    public static String getHexStringValue(String value) {
         char[] chars = value.toCharArray();
         StringBuffer sb = new StringBuffer();
         for (char c : chars) {

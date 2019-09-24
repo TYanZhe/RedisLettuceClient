@@ -7,6 +7,9 @@ import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -21,22 +24,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.KeyStroke;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
@@ -45,6 +42,8 @@ import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
+import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
+import cn.org.tpeach.nosql.view.menu.MenuManager;
 
 public class SwingTools {
 	// --------------------------------------监听事件相关开始------------------------------------------------
@@ -83,7 +82,56 @@ public class SwingTools {
 			});
 		}
 	}
+	/**
+	 * 文本添加右键复制菜单
+	 *
+	 * @param component
+	 * @param menuConsumer
+	 */
+	public static void addTextCopyMenu(JTextComponent component ,Consumer<JPopupMenu> menuConsumer) {
+		if (component != null) {
+			component.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent evt) {
+					copyMenuByValue(evt, component, menuConsumer);
+				}
+			});
+		}
+	}
 
+	public static void copyMenuByValue(MouseEvent evt, JTextComponent component, Consumer<JPopupMenu> menuConsumer) {
+		if(component.isEnabled()) {
+			if (StringUtils.isBlank(component.getText()) || evt.getButton() != MouseEvent.BUTTON3) {
+				return;
+			}
+			JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
+			JMenuItem copyKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.COPY, PublicConstant.Image.copy);
+			copyKeyItem.setMnemonic('C');
+			copyKeyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
+			copyKeyItem.addActionListener(e -> {
+				Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
+				String tempText = StringUtils.isBlank(component.getSelectedText())?component.getText() : component.getSelectedText();
+				Transferable tText = new StringSelection(tempText);
+				clip.setContents(tText, null);
+			});
+			popMenu.add(copyKeyItem);
+			if(menuConsumer != null){
+				menuConsumer.accept(popMenu);
+			}
+			popMenu.show(component, evt.getX(), evt.getY());
+		}
+	}
+	public static void copyMenuByValue(MouseEvent evt, JTextComponent component) {
+		copyMenuByValue(evt,component,null);
+	}
+	/**
+	 * 文本添加右键复制菜单
+	 *
+	 * @param component
+	 */
+	public static void addTextCopyMenu(JTextComponent component ) {
+		addTextCopyMenu(component,null);
+	}
     public static void enterPressesWhenFocused(JTextField textField,ActionListener actionListener) {
         textField.registerKeyboardAction(actionListener,
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false),
