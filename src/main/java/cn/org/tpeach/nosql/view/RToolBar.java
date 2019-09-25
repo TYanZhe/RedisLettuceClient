@@ -3,11 +3,13 @@ package cn.org.tpeach.nosql.view;
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.framework.LarkFrame;
+import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
+import cn.org.tpeach.nosql.service.ServiceProxy;
+import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.RButton;
+import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.AboutDialog;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
-import lombok.Getter;
-import lombok.Setter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,10 +19,16 @@ public class RToolBar extends JToolBar {
 
     private int jToolBarHeight;
     private AboutDialog aboutDialog;
+    private StatePanel statePanel;
+    private RTabbedPane tabbedPane;
     private JTree redisTree;
-    public RToolBar(int jToolBarHeight,JTree redisTree) {
+    IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
+
+    public RToolBar(int jToolBarHeight,JTree redisTree,StatePanel statePanel,RTabbedPane tabbedPane) {
         this.jToolBarHeight = jToolBarHeight;
         this.redisTree = redisTree;
+        this.statePanel = statePanel;
+        this.tabbedPane = tabbedPane;
         intToolBar();
     }
 
@@ -93,6 +101,15 @@ public class RToolBar extends JToolBar {
             }
             aboutDialog.open();
         });
+        serverButton.addActionListener(e->{
+            if(statePanel.getCurrentRedisItem() == null){
+                SwingTools.showMessageInfoDialog(null,"请选择一个服务","提示");
+                return;
+            }
+            tabbedPane.addTab("SERVER "+statePanel.getCurrentRedisItem().getName(),null,new ServiceInfoPanel(statePanel.getCurrentRedisItem()),"SERVER "+statePanel.getCurrentRedisItem().getName());
+
+        });
+
         this.add(newButton);
         this.add(serverButton);
 //        this.add(configButton);

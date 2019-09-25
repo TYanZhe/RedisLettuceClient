@@ -156,7 +156,7 @@ public class RedisLarkLettuce implements RedisLark<String,String> {
     }
     @Override
     public void close() {
-    	
+		executeCommandConsumer(c->close(),u->close());
     }
 
     @Override
@@ -1734,8 +1734,8 @@ public class RedisLarkLettuce implements RedisLark<String,String> {
 	}
 
 	@Override
-	public List<Object> slowlogGet(int i) {
-		return executeCommand(c -> c.slowlogGet(), u -> u.slowlogGet());
+	public List<Object> slowlogGet(int count) {
+		return executeCommand(c -> c.slowlogGet(count), u -> u.slowlogGet(count));
 	}
 
 	@Override

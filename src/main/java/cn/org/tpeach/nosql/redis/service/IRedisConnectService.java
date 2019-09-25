@@ -1,12 +1,15 @@
 package cn.org.tpeach.nosql.redis.service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.enums.RedisType;
+import cn.org.tpeach.nosql.redis.bean.RedisClientBo;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
+import cn.org.tpeach.nosql.redis.bean.SlowLogBo;
 import io.lettuce.core.ScanCursor;
 
 /**
@@ -72,5 +75,9 @@ public interface IRedisConnectService {
     Boolean remamenx(String id, int db,final String oldkey, final String newkey);
 
 
-    Map<String,String> getConnectInfo(String id);
+    Map<String,String> getConnectInfo(String id,boolean isFresh);
+
+    List<RedisClientBo> clientList(String id);
+
+    List<SlowLogBo>  slowlogGet(String id);
 }

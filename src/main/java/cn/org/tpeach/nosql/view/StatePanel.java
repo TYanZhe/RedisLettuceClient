@@ -19,9 +19,10 @@ public class StatePanel extends JPanel {
     private  JLabel connectStateLabel;
     private JLabel redisServerVersionLabel;
     private JLabel clientCountLabel;
+    private RedisTreeItem currentRedisItem;
 
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
-    public StatePanel( ) {
+    public StatePanel() {
         this.connectStateLabel = getLable();
         this.redisServerVersionLabel = getLable();
         this.clientCountLabel = getLable();
@@ -52,9 +53,11 @@ public class StatePanel extends JPanel {
         return label;
     }
 
-    public void doUpdateStatus(RedisTreeItem redisTreeItem){
-        Map<String, String> connectInfo = redisConnectService.getConnectInfo(redisTreeItem.getId());
+    public synchronized void doUpdateStatus(RedisTreeItem redisTreeItem){
+
+        Map<String, String> connectInfo = redisConnectService.getConnectInfo(redisTreeItem.getId(),false);
         if(MapUtils.isNotEmpty(connectInfo)){
+            currentRedisItem = redisTreeItem ;
             //设置连接
             this.connectStateLabel.setForeground(Color.GREEN.darker().darker());
             String connectName = redisTreeItem.getName();
@@ -76,6 +79,7 @@ public class StatePanel extends JPanel {
                 this.clientCountLabel.setText("客户端数量:"+connectedClients);
             }
         }else{
+            currentRedisItem = null ;
             this.connectStateLabel.setForeground(new java.awt.Color(255, 0, 51));
             this.connectStateLabel.setText("未连接到服务");
             this.clientCountLabel.setText("");

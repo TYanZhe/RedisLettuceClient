@@ -64,10 +64,15 @@ public abstract class JedisCommand<T> implements ICommand<T> {
         }
 //        LarkFrame.larkLog.info("[Server %s] Response Received : %s ", Color.BLUE.darker(),redisConnectInfo.getName(),t);
         if(command != null){
-            String response = t.toString();
-            if(!isFullResponseLog() && response.length() > responseLogLength()){
-                response = "Bulk";
+            String response = null;
+            if(t != null){
+                response = t.toString();
+                if(!isFullResponseLog() && response.length() > responseLogLength()){
+                    response = "Bulk";
+                }
             }
+
+
             LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",response);
         }
         return t;
