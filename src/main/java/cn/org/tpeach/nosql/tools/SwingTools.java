@@ -21,6 +21,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -44,7 +45,9 @@ import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SwingTools {
 	// --------------------------------------监听事件相关开始------------------------------------------------
 
@@ -206,17 +209,15 @@ public class SwingTools {
 				RedisType.KEY_NAMESPACE, path, tipText);
 	}
 	public static <T> void addLoadingTreeNode(JTree redisTree,RTreeNode parentNode, RedisTreeItem parentItem,Supplier<ResultRes<T>> request,Consumer<ResultRes<T>> after) {
-		List<String> list = new ArrayList<>(1);
-		list.add("");
+		AtomicBoolean atomicBoolean = new AtomicBoolean(true);
+		CountDownLatch countDownLatch = new CountDownLatch(1);
 		RTreeNode loadingTreeNode = addTreeNode(parentNode, parentItem, parentItem.getId(), null, "loading...", parentItem.getDb(), RedisType.LOADING, null , "loading...");
 		loadingTreeNode.setIcon(PublicConstant.Image.loading01);
-//		loadingTreeNode.setEnabled(false);
 		redisTree.expandPath(new TreePath(parentNode.getPath()));
-		CountDownLatch countDownLatch = new CountDownLatch(1);
 		DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
 //		defaultModel.reload(parentNode);
 		LarkFrame.executorService.execute(()->{
-			while (!list.isEmpty()) {
+			while (atomicBoolean.get()) {
 				for(int i=0;i<7;i++) {
 					switch (i) {
 					case 0:
@@ -243,8 +244,7 @@ public class SwingTools {
 					default:
 						break;
 					}
-					if(!list.isEmpty() && parentNode.getChildCount() == 1) {
-
+					if(atomicBoolean.get() && parentNode.getChildCount() == 1) {
 						defaultModel.reload(loadingTreeNode);
 					}
 					try {
@@ -259,8 +259,10 @@ public class SwingTools {
 
 		LarkFrame.executorService.execute(()->{
 			try {
+
 				ResultRes<T> resultRes = request.get();
-				list.clear();
+//			ResultRes resultRes = new ResultRes(true,new String[]{"db0","db1"},"");
+				atomicBoolean.set(false);
 				try {
 					countDownLatch.await();
 				} catch (InterruptedException e) {
@@ -269,15 +271,16 @@ public class SwingTools {
 				parentNode.removeAllChildren();
 				after.accept(resultRes);
 				redisTree.updateUI();
+			}catch (Exception e){
+				log.error("addLoadingTreeNode异常",e);
 			}finally {
-				list.clear();
+				atomicBoolean.set(false);
 			}
 		});
 
 
-			
 
-	
+
 	}
 	/**
 	 * 展开某个节点的所有子节点
