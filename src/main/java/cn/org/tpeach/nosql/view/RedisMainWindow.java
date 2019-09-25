@@ -67,6 +67,8 @@ public class RedisMainWindow extends javax.swing.JFrame {
 
 
 
+
+
     //--------------------------服务相关开始--------------------
     IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
@@ -203,7 +205,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 
 
     private JToolBar getToolBar() {
-        return new RToolBar(jToolBarHeight,redisTree);
+        return new RToolBar(jToolBarHeight,redisTree, (StatePanel) statePanel,(RTabbedPane) redisDataTabbedPane);
     }
     //------------------------------------------------------toolbar end-------------------------------------------
 
@@ -380,6 +382,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                     case SERVER:
                         LarkFrame.executorService.execute(() -> {
                             serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree);
+
                         });
                         break;
                     case DATABASE:

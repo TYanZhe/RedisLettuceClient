@@ -5,12 +5,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import cn.org.tpeach.nosql.enums.RedisStructure;
-import cn.org.tpeach.nosql.enums.RedisVersion;
+import cn.org.tpeach.nosql.redis.bean.RedisClientBo;
+import cn.org.tpeach.nosql.redis.bean.SlowLogBo;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.redis.command.key.*;
-import cn.org.tpeach.nosql.redis.command.server.InfoCommand;
-import cn.org.tpeach.nosql.redis.command.server.RedisStructureCommand;
-import cn.org.tpeach.nosql.tools.MapUtils;
+import cn.org.tpeach.nosql.redis.command.server.*;
+import cn.org.tpeach.nosql.tools.*;
 import io.lettuce.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,6 @@ import cn.org.tpeach.nosql.exception.ServiceException;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.command.connection.PingCommand;
-import cn.org.tpeach.nosql.redis.command.connection.SelectCommand;
 import cn.org.tpeach.nosql.redis.command.hash.HdelHash;
 import cn.org.tpeach.nosql.redis.command.hash.HlenHash;
 import cn.org.tpeach.nosql.redis.command.hash.HscanHash;
@@ -34,8 +33,6 @@ import cn.org.tpeach.nosql.redis.command.list.LpushList;
 import cn.org.tpeach.nosql.redis.command.list.LrangeList;
 import cn.org.tpeach.nosql.redis.command.list.LsetList;
 import cn.org.tpeach.nosql.redis.command.list.RpushList;
-import cn.org.tpeach.nosql.redis.command.server.DbSizeCommand;
-import cn.org.tpeach.nosql.redis.command.server.FlushDbCommand;
 import cn.org.tpeach.nosql.redis.command.set.SAddSet;
 import cn.org.tpeach.nosql.redis.command.set.ScardSet;
 import cn.org.tpeach.nosql.redis.command.set.SremSet;
@@ -50,8 +47,6 @@ import cn.org.tpeach.nosql.redis.command.zset.ZscanSet;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.redis.service.BaseRedisService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
-import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.StringUtils;
 
 
 /**
@@ -521,13 +516,50 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     }
 
     @Override
-    public Map<String, String> getConnectInfo(String id) {
+    public Map<String, String> getConnectInfo(String id,boolean isFresh) {
         RedisLarkContext redisLarkContext = RedisLarkPool.getRedisLarkContext(id);
         if(redisLarkContext == null){
             return new HashMap<>(0);
         }
-        return super.executeJedisCommand(new InfoCommand(id));
+        return super.executeJedisCommand(new InfoCommand(id,isFresh));
     }
+    @Override
+    public List<RedisClientBo>  clientList(String id){
+        String clientStr = super.executeJedisCommand(new ClientListCommand(id));
+        List<RedisClientBo> resultList = new ArrayList<>();
+        if(StringUtils.isNotBlank(clientStr)){
+            String[] split = clientStr.split("\n");
+            if(!ArraysUtil.isEmpty(split)){
+                Map<String,String>  map = null;
+                for (String s : split) {
+                    String[] mapper = s.split(" ");
+                    if(!ArraysUtil.isEmpty(mapper)){
+                        map = new HashMap<>(mapper.length);
+                        for (String str : mapper) {
+                            String[] keyValue = str.split("=");
+                            if(keyValue.length == 2){
+                                map.put(keyValue[0].replace("-","_"),keyValue[1]);
+                            }else if(keyValue.length == 1){
+                                map.put(keyValue[0].replace("-","_"),"");
+                            }
+                        }
+                        if(MapUtils.isNotEmpty(map)){
+                            try {
+                                RedisClientBo redisClientBo = ReflectUtil.mapToObject(map, RedisClientBo.class);
+                                resultList.add(redisClientBo);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-
+        return resultList;
+    }
+    @Override
+    public List<SlowLogBo> slowlogGet(String id){
+	    return super.executeJedisCommand(new SlowlogGetCommand(id));
+    }
 }

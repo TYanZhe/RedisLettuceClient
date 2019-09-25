@@ -1,6 +1,6 @@
 package cn.org.tpeach.nosql.constant;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.File;
 
 import javax.swing.ImageIcon;
@@ -130,6 +130,9 @@ public class PublicConstant {
         public static ImageIcon donate = IOUtil.getImageIcon("image/base/donate.png");
         public static ImageIcon wechatpay = IOUtil.getImageIcon("image/base/wechatpay.jpg",150,150);
         public static ImageIcon alipay = IOUtil.getImageIcon("image/base/alipay.jpg",150,150);
+        public static ImageIcon arrow_circle_down = IOUtil.getImageIcon("image/base/arrow_circle_down.png" );
+        public static ImageIcon arrow_circle_right = IOUtil.getImageIcon("image/base/arrow_circle_right.png" );
+//        public static ImageIcon tempIcon = IOUtil.getImageIcon("image/base/箭头.png" );
     }
 
 
@@ -147,6 +150,7 @@ public class PublicConstant {
 
         public static Color themeColor = new Color(206, 221, 237);
 //                public static Color themeColor = new Color(57,61,73);
+        public static Color tableSelectBackground2 = new Color(229,243,255);
         //文本框灰色
         public static Color grapInputColor = new Color(225, 225, 225);
 
@@ -165,5 +169,10 @@ public class PublicConstant {
         public static final  String BINARY = "Binary";
         public static final  String TEXT = "Text";
         public static final  String INDEX = "Index";
+    }
+
+
+    public final static class FontConstant{
+        public static final Font baseFont = new Font("宋体", Font.PLAIN,14);
     }
 }

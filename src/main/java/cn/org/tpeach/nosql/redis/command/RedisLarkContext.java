@@ -6,14 +6,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import cn.org.tpeach.nosql.constant.RedisInfoKeyConstant;
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
+import cn.org.tpeach.nosql.redis.bean.SlowLogBo;
 import cn.org.tpeach.nosql.redis.connection.RedisLark;
 import cn.org.tpeach.nosql.tools.ArraysUtil;
+import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.MapUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import io.lettuce.core.*;
@@ -504,5 +507,33 @@ public class RedisLarkContext {
         return redisLark.zscanIterator(key,count,pattren);
     }
 
-
+    public String clientList(){
+        return redisLark.clientList();
+    }
+    public List<SlowLogBo> slowlogGet(Integer count){
+        List<Object> list;
+        if(count != null){
+            list = redisLark.slowlogGet(count);
+        }else{
+            list = redisLark.slowlogGet();
+        }
+        List<SlowLogBo> resultList = new ArrayList<>();
+        if(CollectionUtils.isNotEmpty(list)){
+            for (Object o : list) {
+                if(o instanceof List){
+                    List context = (List) o;
+                    SlowLogBo slowLogBo = new SlowLogBo();
+                    slowLogBo.setId((Long) context.get(0));
+                    slowLogBo.setOperTime((Long) context.get(1));
+                    slowLogBo.setExcuteTime((Long) context.get(2));
+                    List<String> cmd = (List) context.get(3);
+                    String collect = cmd.stream().collect(Collectors.joining(" "));
+                    slowLogBo.setCmd(collect);
+                    resultList.add(slowLogBo);
+                }
+            }
+        }
+        Collections.sort(resultList, (o1,o2)-> o1.getId() - o2.getId() > 0 ? 1 : -1);
+        return resultList;
+    }
 }

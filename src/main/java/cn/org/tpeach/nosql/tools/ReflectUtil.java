@@ -203,7 +203,7 @@ public class ReflectUtil {
         return value;
     }
 
-    public static <T> T mapToObject(Map<String, Object> map, Class<T> clazz) throws Exception {
+    public static <T> T mapToObject(Map<String, ?> map, Class<T> clazz) throws Exception {
         if (MapUtils.isEmpty(map)){
             return null;
         }
