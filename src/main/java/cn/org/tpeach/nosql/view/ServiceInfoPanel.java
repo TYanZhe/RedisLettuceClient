@@ -83,7 +83,12 @@ public class ServiceInfoPanel extends JPanel {
         initComponents();
         initComponents2();
 
-
+        DefaultTableModel model = (DefaultTableModel) baseInfoTable.getModel();
+        model.getDataVector().clear();
+        model = (DefaultTableModel) clientTable.getModel();
+        model.getDataVector().clear();
+        model = (DefaultTableModel) logListTable.getModel();
+        model.getDataVector().clear();
         updateData();
     }
 

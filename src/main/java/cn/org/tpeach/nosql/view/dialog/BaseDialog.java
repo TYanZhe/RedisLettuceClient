@@ -59,12 +59,12 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	protected int marginy = 10;
 	@Getter
 	@Setter
-	private int btnPanelHeight = 56;
+	protected int btnPanelHeight = 56;
 	@Getter
-	private JPanel contextPanel;
-	private JPanel middlePanel;
+	protected JPanel contextPanel;
+	protected JPanel middlePanel;
 	@Getter
-	private JPanel btnPanel;
+	protected JPanel btnPanel;
 	protected Image icon = PublicConstant.Image.logo.getImage();
 	protected Box btnbox = Box.createHorizontalBox();
 	JButton okBtn = new RButton(LarkFrame.getI18nUpText(I18nKey.RedisResource.OK));
@@ -74,6 +74,7 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	// 改变后通知
 	protected Consumer<R> consumer;
 
+	private boolean init = false;
 	public BaseDialog(JFrame parent, T t) {
 		this(parent, true, null, t);
 	}
@@ -108,7 +109,16 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 		this.cancelBtn.addActionListener(e -> cancel(e));
 		this.okBtn.addActionListener(e -> submit(e));
 		this.addWindowListener(this);
-		
+		middlePanel = new JPanel();
+		btnPanel = new JPanel();
+		contextPanel = new JPanel();
+
+		Container container = this.getContentPane();
+		// this.getRootPane().setBorder(BorderFactory.createLineBorder(new
+		// Color(66,153,221),1));
+		container.setLayout(new BorderLayout());
+		container.add(middlePanel);
+		container.add(btnPanel, BorderLayout.PAGE_END);
 	}
 
 	/**
@@ -142,42 +152,31 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 			close();
 			return;
 		}
-		
-		// 设置网格包布局
-		Container container = this.getContentPane();
-		// this.getRootPane().setBorder(BorderFactory.createLineBorder(new
-		// Color(66,153,221),1));
-		container.setLayout(new BorderLayout());
-		containerStyle(container);
-
-
-		if(middlePanel == null){
-			middlePanel = new JPanel();
+		if(!init){
+			// 设置网格包布局
+			Container container = this.getContentPane();
+			// this.getRootPane().setBorder(BorderFactory.createLineBorder(new
+			// Color(66,153,221),1));
+			containerStyle(container);
 			middlePanel.setOpaque(false);
 			middlePanel.setLayout(new BorderLayout());
 			setMiddlePanel(middlePanel);
-			container.add(middlePanel);
-		}
 
-		if(btnPanel == null) {
-			btnPanel = new JPanel();
-			container.add(btnPanel, BorderLayout.PAGE_END);
-			if (isNeedBtn()) {
-				btnPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(173, 173, 173)));
-				btnPanel.setPreferredSize(new Dimension(this.getWidth(), btnPanelHeight));
-				btnPanel.add(btnbox);
-				addBtnToBtnPanel(btnPanel);
-			}
-		}
-		if(contextPanel == null){
-			contextPanel = new JPanel();
-			middlePanel.add(contextPanel, BorderLayout.CENTER);
+			btnPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(173, 173, 173)));
+			btnPanel.setPreferredSize(new Dimension(this.getWidth(), btnPanelHeight));
+			btnPanel.add(btnbox);
+			addBtnToBtnPanel(btnPanel);
 			contextUiImpl(contextPanel, btnPanel);
+			middlePanel.add(contextPanel, BorderLayout.CENTER);
+
 		}
+		btnPanel.setVisible(isNeedBtn());
+
 		// middlePanel.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(10,
 		// 10, 10, 10), new EtchedBorder()));
 		after();
 		this.setVisible(true);
+		this.init = true;
 		if (isError) {
 			close();
 			return;
