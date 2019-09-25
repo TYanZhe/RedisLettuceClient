@@ -755,7 +755,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                     TableColumnBean tableColumnBean = ((ValueInfoPanel) valueInfoPanel).getKeyColumnBean();
                     String keyAreaText =  getSelectDicText(dicBean, tableColumnBean,fieldArea);
                     fieldArea.setText(keyAreaText);
-                    setValueInfoLabelText(keyAreaText.getBytes().length);
+                    setFieldInfoLabelText(keyAreaText.getBytes().length);
                 }
             }
         });
@@ -808,8 +808,13 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     MagnifyTextDialog magnifyTextDialog = MagnifyTextDialog.getInstance();
+                    if(StringUtils.isBlank(valueArea.getText())||selectValueViewComn.getSelectedIndex() != 0){
+                        magnifyTextDialog.setEditable(false);
+                    }
+
                     magnifyTextDialog.setText(valueArea.getText());
-                    magnifyTextDialog.open();
+                    magnifyTextDialog.open(s->valueArea.setText(s));
+
                 }
             }
         });
@@ -839,6 +844,9 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     MagnifyTextDialog magnifyTextDialog = MagnifyTextDialog.getInstance();
+                    if(StringUtils.isBlank(fieldArea.getText())||selectKeyViewComn.getSelectedIndex() != 0){
+                        magnifyTextDialog.setEditable(false);
+                    }
                     magnifyTextDialog.setText(fieldArea.getText());
                     magnifyTextDialog.open();
                 }
@@ -1364,7 +1372,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                     if(!fieldArea.isEditable()){
                         isEnabled = false;
                     }else{
-                        if(!isEnabled && !((ValueInfoPanel) valueInfoPanel).getKeyColumnBean().getValue().equals(fieldArea.getText())){
+                    	TableColumnBean keyColumnBean = ((ValueInfoPanel) valueInfoPanel).getKeyColumnBean();
+                        if(!isEnabled && keyColumnBean !=null &&  !keyColumnBean.getValue().equals(fieldArea.getText())){
                             isEnabled = true;
                         }
                     }
