@@ -1,10 +1,6 @@
 package cn.org.tpeach.nosql.tools;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -52,7 +48,7 @@ public enum ConfigParser {
 		try {
 
 			entries.clear();
-			BufferedReader br = new BufferedReader(new FileReader(getFile()));
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(getFile()), "UTF-8"));
 			String currentLine, currentsection = null, currentList = null, currentComment = null;
 			String currentKey, currentValue;
 			int listIndex = -1;
