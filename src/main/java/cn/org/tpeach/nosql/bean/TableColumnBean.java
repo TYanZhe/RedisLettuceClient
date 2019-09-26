@@ -8,26 +8,27 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TableColumnBean {
+
     private String type;
     private String value;
-    private String showValue;
     private int index;
 
-    public TableColumnBean(String type, String value, String showValue) {
-        this.type = type;
-        this.value = value;
-        this.showValue = showValue;
-    }
+
     public TableColumnBean(String type, String value,int index) {
         this.type = type;
         this.value = value;
-        if(StringUtils.isText(value)){
-            this.showValue = value;
-        }else{
-            this.type = PublicConstant.StingType.BINARY;
-            this.showValue =  getHexStringValue(value);
+        if(!StringUtils.isText(value)){
+          this.type = PublicConstant.StingType.BINARY;
         }
         this.index = index;
+    }
+
+    public String getShowValue() {
+        if(StringUtils.isText(value)){
+            return value;
+        }else{
+            return  getHexStringValue(value);
+        }
     }
 
     public static String getHexStringValue(String value) {
@@ -54,6 +55,6 @@ public class TableColumnBean {
 
     @Override
     public String toString() {
-        return  showValue;
+        return  getShowValue();
     }
 }

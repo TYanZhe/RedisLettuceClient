@@ -51,6 +51,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import static java.util.regex.Pattern.compile;
@@ -446,8 +447,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 columnNames.add("VALUE");
                 headersIcon.add(PublicConstant.Image.database);
                 rowData = new Vector<>();
-                rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX, (startIndex+index)+"",startIndex+index));
-                rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,redisKeyInfo.getValue(),startIndex+index));
+                rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX, (startIndex+index)+"", index));
+                rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,redisKeyInfo.getValue(), index));
                 data.add(rowData);
 
                 break;
@@ -458,8 +459,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 for (String s : list) {
                     if(pattern.matcher(s).matches()){
                         rowData = new Vector<>();
-                        rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX,(startIndex+index)+"",startIndex+index));
-                        rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,s,startIndex+index));
+                        rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX,(startIndex+index)+"", index));
+                        rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,s, index));
                         data.add(rowData);
                     }
                     index++;
@@ -471,8 +472,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 List<String> set = redisKeyInfo.getValueSet();
                 for (String s : set) {
                     rowData = new Vector<>();
-                    rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX,(startIndex+index)+"",startIndex+index));
-                    rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,s,startIndex+index));
+                    rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX,(startIndex+index)+"", index));
+                    rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,s, index));
                     data.add(rowData);
                     index++;
                 }
@@ -485,9 +486,9 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 Map<String, String> valueHash = redisKeyInfo.getValueHash();
                 for (Map.Entry<String, String> entry : valueHash.entrySet()) {
                     rowData = new Vector<>();
-                    rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX,(startIndex+index)+"",startIndex+index));
-                    rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,entry.getKey(),startIndex+index));
-                    rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,entry.getValue(),startIndex+index));
+                    rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX,(startIndex+index)+"", index));
+                    rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,entry.getKey(), index));
+                    rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,entry.getValue(), index));
                     data.add(rowData);
                     index++;
                 }
@@ -502,11 +503,11 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 while (iterator.hasNext()) {
                     final ScoredValue<String> next = iterator.next();
                     rowData = new Vector<>();
-                    rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX,(startIndex+index)+"",startIndex+index));
+                    rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX,(startIndex+index)+"", index));
 
                     DecimalFormat decimalFormat = new DecimalFormat("###################.###########");
-                    rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,decimalFormat.format(next.getScore()),startIndex+index));
-                    rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,next.getValue(),startIndex+index));
+                    rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,decimalFormat.format(next.getScore()), index));
+                    rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,next.getValue(), index));
 
                     data.add(rowData);
                     index++;
@@ -1168,8 +1169,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 String key = redisKeyInfo.getKey();
                 String id = redisKeyInfo.getId();
                 int db = redisKeyInfo.getDb();
-//                int index = redisKeyInfo.getPageBean().getStartIndex() + selectRow;
-                int  index= value.getIndex();
+                int index = redisKeyInfo.getPageBean().getStartIndex() + value.getIndex();
                 ResultRes<?> resultRes = BaseController.dispatcher(() -> redisConnectService.deleteRowKeyInfo(id, db, key, finalValue,index, redisKeyInfo.getType()));
                 if (resultRes.isRet()) {
 //                         RTableModel tableModel = (RTableModel)redisDataTable.getModel();
@@ -1198,6 +1198,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
     private void saveKeyInfo(MouseEvent evt) {
         int selectRow = ((ValueInfoPanel) valueInfoPanel).getSelectRow();
+        final TableColumnBean keyColumnBean = ((ValueInfoPanel) valueInfoPanel).getKeyColumnBean();
+        final TableColumnBean valueColumnBean = ((ValueInfoPanel) valueInfoPanel).getValueColumnBean();
         RedisKeyInfo newKeyInfo = new RedisKeyInfo();
         RedisKeyInfo oldKeyInfo = new RedisKeyInfo();
         ReflectUtil.copyProperties(this.redisKeyInfo, newKeyInfo);
@@ -1215,7 +1217,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         switch (redisKeyInfo.getType()) {
             case STRING:
             case LIST:
-                newKeyInfo.setIndex(redisKeyInfo.getPageBean().getStartIndex() + selectRow);
+                newKeyInfo.setIndex(redisKeyInfo.getPageBean().getStartIndex() + valueColumnBean.getIndex());
             case SET:
                 oldValue = StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1));
                 oldKeyInfo.setValue(oldValue);
@@ -1251,23 +1253,78 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
         }
         ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.updateKeyInfo(newKeyInfo, oldKeyInfo));
+
+        final RTableModel model = (RTableModel) redisDataTable.getModel();
         if (resultRes.isRet()) {
+
+            valueColumnBean.setValue(valueArea.getText());
             //更新表格值 byte值
             switch (redisKeyInfo.getType()) {
                 case STRING:
+                    redisKeyInfo.setValue(valueArea.getText());
+                    break;
                 case LIST:
+                    List<String> list = redisKeyInfo.getValueList();
+                    list.set(valueColumnBean.getIndex(),valueArea.getText());
+                    break;
                 case SET:
-                    redisDataTable.setValueAt(valueArea.getText(), selectRow, 1);
+//                    redisDataTable.setValueAt(valueColumnBean, selectRow, 1);
+                    List<String> set = redisKeyInfo.getValueSet();
+                    set.set(valueColumnBean.getIndex(),valueArea.getText());
+                    for (int i = set.size()-1; i >=0; i--) {
+                        if(i != valueColumnBean.getIndex()){
+                            if(valueArea.getText().equals(set.get(i))){
+                                set.remove(i);
+                                try{
+                                    int size = Integer.valueOf(keySizeField.getText());
+                                    keySizeField.setText((size-1)+"");
+                                }catch (Exception e){}
+                                break;
+                            }
+
+                        }
+                    }
+//                        removeSimpleRow(selectRow, model,1,t->valueArea.getText().equals(t.getValue()));
+
                     break;
                 case HASH:
-                    redisDataTable.setValueAt(valueArea.getText(), selectRow, 2);
-                    redisDataTable.setValueAt(fieldArea.getText(), selectRow, 1);
+                    Map<String, String> valueHash = redisKeyInfo.getValueHash();
 
-                    setFieldInfoLabelText(fieldArea.getText().getBytes().length);
+                    if(!oldKeyInfo.getField().equals(fieldArea.getText())){
+                        if(valueHash.containsKey(fieldArea.getText())){
+                            try{
+                                int size = Integer.valueOf(keySizeField.getText());
+                                keySizeField.setText((size-1)+"");
+                            }catch (Exception e){}
+                        }
+                        valueHash.remove(oldKeyInfo.getField());
+                    }
+                    valueHash.put(fieldArea.getText(),valueArea.getText());
+//                    keyColumnBean.setValue(fieldArea.getText());
+//                    redisDataTable.setValueAt(valueColumnBean, selectRow, 2);
+//                    redisDataTable.setValueAt(keyColumnBean, selectRow, 1);
+//
+//                    setFieldInfoLabelText(fieldArea.getText().getBytes().length);
+//                    removeSimpleRow(selectRow, model,1,t->fieldArea.getText().equals(t.getValue()));
                     break;
                 case ZSET:
-                    redisDataTable.setValueAt(valueArea.getText(), selectRow, 2);
-                    redisDataTable.setValueAt(scoreField.getText(), selectRow, 1);
+                    List<ScoredValue<String>> valueZSet = redisKeyInfo.getValueZSet();
+                    valueZSet.set(valueColumnBean.getIndex(),ScoredValue.fromNullable(Double.valueOf(scoreField.getText()),valueArea.getText()));
+                    for (int i = valueZSet.size()-1; i >=0; i--) {
+                        if(i != valueColumnBean.getIndex()){
+                            if(valueArea.getText().equals(valueZSet.get(i).getValue())){
+                                valueZSet.remove(i);
+                                try{
+                                    int size = Integer.valueOf(keySizeField.getText());
+                                    keySizeField.setText((size-1)+"");
+                                }catch (Exception e){}
+                                break;
+                            }
+                        }
+                    }
+//                    redisDataTable.setValueAt(valueColumnBean, selectRow, 2);
+//                    redisDataTable.setValueAt(scoreField.getText(), selectRow, 1);
+//                    removeSimpleRow(selectRow, model,2,t->valueArea.getText().equals(t.getValue()));
                     break;
 
                 default:
@@ -1277,11 +1334,32 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             }
             setValueInfoLabelText(valueArea.getText().getBytes().length);
             updatePageInfo();
-//            updateUI(treeNode, pageBean);
+            refreshTable();
+            //            updateUI(treeNode, pageBean);
         } else {
             SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
         }
 
+    }
+
+    private void removeSimpleRow(int selectRow, RTableModel model, int column, Predicate<TableColumnBean> predicate) {
+        for(int i = redisDataTable.getRowCount() -1 ;i >= 0;i--){
+            if(i != selectRow){
+                final Object temp = redisDataTable.getValueAt(i, column);
+                if(temp instanceof TableColumnBean){
+                    TableColumnBean tableColumnBean = (TableColumnBean) temp;
+                    if( predicate.test(tableColumnBean)){
+                        model.removeRow(i);
+                        try{
+                            int size = Integer.valueOf(keySizeField.getText());
+                            keySizeField.setText((size-1)+"");
+                        }catch (Exception e){}
+
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private void pageMousePPressed(java.awt.event.MouseEvent evt, int page, int row) {

@@ -427,6 +427,9 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
 				super.executeJedisCommand(new SAddSet(id, db, key, newKeyInfo.getValue()));
 				break;
 			case HASH:
+                if(!oldKeyInfo.getField().equals(newKeyInfo.getField())){
+                    super.executeJedisCommand(new HdelHash(id,db,key,oldKeyInfo.getField()));
+                }
 				super.executeJedisCommand(new HsetHash(id, db, key, newKeyInfo.getField(), newKeyInfo.getValue()));
 				break;
 			case ZSET:
