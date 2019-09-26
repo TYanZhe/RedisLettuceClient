@@ -43,16 +43,16 @@ public interface RedisLark<K, V> extends BaseRedisCommands<K, V>, RedisStringCom
      */
     RedisStructure getRedisStructure();
 
-    TransactionResult execMulti(Consumer<RedisCommands<String, String>> statement ) throws UnsupportedOperationException;
+    TransactionResult execMulti(Consumer<RedisCommands<K, V>> statement ) throws UnsupportedOperationException;
 
     void close();
 
-    ScanIterator<String> scanIterator(int count, String pattren);
+    ScanIterator<K> scanIterator(int count, String pattren);
 
-    ScanIterator<KeyValue<String, String>> hscanIterator(String key, int count, String pattren);
+    ScanIterator<KeyValue<K, V>> hscanIterator(K key, int count, String pattren);
 
-    ScanIterator<String> sscanIterator(String key, int count, String pattren);
+    ScanIterator<V> sscanIterator(K key, int count, String pattren);
 
-    ScanIterator<ScoredValue<String>> zscanIterator(String key, int count, String pattren);
+    ScanIterator<ScoredValue<V>> zscanIterator(K key, int count, String pattren);
 
 }

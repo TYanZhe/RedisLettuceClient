@@ -28,6 +28,8 @@ import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.NodeSelection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
+import io.lettuce.core.codec.ByteArrayCodec;
+import io.lettuce.core.codec.StringCodec;
 import io.lettuce.core.output.CommandOutput;
 import io.lettuce.core.output.KeyStreamingChannel;
 import io.lettuce.core.output.KeyValueStreamingChannel;
@@ -49,93 +51,15 @@ import lombok.extern.slf4j.Slf4j;
  * @since 1.0.0
  */
 @Slf4j
-public class RedisLarkLettuce implements RedisLark<String,String> {
-	@Getter
-	@Setter
-	private String id;
-	String redisUrlFormat = "redis://%s%s:%s";
-	private RedisClient client;
-	private RedisClusterClient cluster;
-	private StatefulRedisConnection<String, String> clentConnection;
-	private StatefulRedisClusterConnection<String, String> clusterConnection;
+public class RedisLarkLettuce extends AbstractRedisLark<String,String> {
 
-
-	public RedisLarkLettuce(final String id, final String host, final int port, String auth) {
-		this.id = id;
-		if (StringUtils.isBlank(auth)) {
-			auth = "";
-		} else {
-			auth = auth + "@";
-		}
-		// client
-		this.client = RedisClient.create(String.format(redisUrlFormat, auth, host, port));
-		this.clentConnection = client.connect();
+	public RedisLarkLettuce(String id, String host, int port, String auth) {
+		super(id, host, port, auth, StringCodec.UTF8);
 	}
 
-
-
-	public RedisLarkLettuce(final String id, final String hostAndPort, String auth) {
-		this.id = id;
-		if (StringUtils.isBlank(auth)) {
-			auth = "";
-		} else {
-			auth = auth + "@";
-		}
-		ArrayList<RedisURI> list = new ArrayList<>();
-		String[] hosts = hostAndPort.split(",");
-		for (String hostport : hosts) {
-			String[] ipport = hostport.replaceAll(";", ",").split(":");
-			String ip = ipport[0];
-			int port = Integer.parseInt(ipport[1]);
-			list.add(RedisURI.create(String.format(redisUrlFormat, auth, ip, port)));
-		}
-		this.cluster = RedisClusterClient.create(list);
-		this.clusterConnection = cluster.connect();
+	public RedisLarkLettuce(String id, String hostAndPort, String auth) {
+		super(id, hostAndPort, auth,  StringCodec.UTF8);
 	}
-	/**
-	 * 
-	 * @param clientFun
-	 * @param clusterFun
-	 * @return
-	 */
-	private <R> R executeCommand(Function<RedisCommands<String, String>, R> clientFun,
-			Function<RedisAdvancedClusterCommands<String, String>, R> clusterFun) {
-		R apply = null;
-		if (clentConnection != null) {
-			RedisCommands<String, String> commands = clentConnection.sync();
-			apply = clientFun.apply(commands);
-		} else if (clusterConnection != null) {
-			RedisAdvancedClusterCommands<String, String> commands = clusterConnection.sync();
-			apply = clusterFun.apply(commands);
-		} else {
-			throw new ServiceException("RedisLarkLettuce实例化失败");
-		}
-
-		return apply;
-	}
-	/**
-	 * 
-	 * @param clientConsumer
-	 * @param clusterConsumer
-	 * @return
-	 */
-	private void executeCommandConsumer(Consumer<RedisCommands<String, String>> clientConsumer,
-			Consumer<RedisAdvancedClusterCommands<String, String>> clusterConsumer) {
-
-		if (client != null) {
-			StatefulRedisConnection<String, String> connection = client.connect();
-			RedisCommands<String, String> commands = connection.sync();
-			clientConsumer.accept(commands);
-		} else if (cluster != null) {
-			StatefulRedisClusterConnection<String, String> connection = cluster.connect();
-			RedisAdvancedClusterCommands<String, String> commands = connection.sync();
-			clusterConsumer.accept(commands);
-		} else {
-			throw new ServiceException("RedisLarkLettuce实例化失败");
-		}
-
-	}
-
     @Override
     public RedisStructure getRedisStructure() {
         if(client != null){
@@ -145,6 +69,8 @@ public class RedisLarkLettuce implements RedisLark<String,String> {
         }
         return null;
     }
+
+
     @Override
     public String select(int db) {
         return (String) executeCommand(c->c.select(db), u-> {
