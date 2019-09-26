@@ -10,7 +10,7 @@
 
 
 	<properties>
-		<release.data>2019-09-21</release.data>
+		<release.data>2019-09-26</release.data>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>

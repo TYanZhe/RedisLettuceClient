@@ -6,14 +6,12 @@ package cn.org.tpeach.nosql.view.dialog;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.tools.IOUtil;
+import cn.org.tpeach.nosql.tools.PropertiesUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.LinkLabel;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -188,7 +186,8 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 				fos = new FileOutputStream(tempFile);
 				ps = new PrintStream(fos);
 				ps.print("");
-				IOUtil.writeConfigFile("",tempFile);
+				InputStream resourceAsStream = PropertiesUtils.class.getClassLoader().getResourceAsStream("changelog.txt");
+				IOUtil.writeConfigFile(resourceAsStream,tempFile);
 				Desktop.getDesktop().open(tempFile);
 				tempFile.deleteOnExit();
 			} catch (IOException ex) {
