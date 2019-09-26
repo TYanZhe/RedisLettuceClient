@@ -9,6 +9,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -139,9 +140,9 @@ public class LarkFrame {
 		DocumentBuilder builder = null;
 		try {
 			builder = factory.newDocumentBuilder();
-			URL resource = LarkFrame.class.getClassLoader().getResource("larkLog.xml");
-			if(resource != null){
-				Document doc = builder.parse(resource.getPath());
+			InputStream resourceAsStream = LarkFrame.class.getClassLoader().getResourceAsStream("larkLog.xml");
+			if(resourceAsStream != null){
+				Document doc = builder.parse(resourceAsStream);
 				XPathFactory pathFactory = XPathFactory.newInstance();
 				XPath xpath = pathFactory.newXPath();
 				XPathExpression pathExpression = xpath.compile("//appender");
