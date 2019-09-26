@@ -52,6 +52,7 @@ public class PlatformResource_zh_CN extends ListResourceBundle {
                     {I18nKey.RedisResource.FAIL.getKey(), "失败"},
                     {I18nKey.RedisResource.RETRY.getKey(), "重试"},
                     {I18nKey.RedisResource.CONNECTING.getKey(), "连接中"},
+                    {I18nKey.RedisResource.SERVERINFO.getKey(), "服务信息"},
             };
 
     @Override

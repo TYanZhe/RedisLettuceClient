@@ -60,13 +60,19 @@ public class RedisLarkContext {
         return redisLark.info();
     }
 
-    public Map<String, String> getInfo() {
+    public Map<String, String> getInfo(boolean printLog) {
         if(MapUtils.isNotEmpty(redisInfo)){
             return redisInfo;
         }
-        LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"%s","INFO");
+        if(printLog){
+            LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"%s","INFO");
+        }
+
         String info = this.info();
-        LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",info);
+        if(printLog){
+            LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",info);
+        }
+
         if(StringUtils.isBlank(info)){
             redisInfo = new HashMap<>(0);
         }else{
@@ -94,7 +100,7 @@ public class RedisLarkContext {
 
     public RedisVersion getRedisVersion() {
         if(this.version == null) {
-            Map<String, String> infoMap = getInfo();
+            Map<String, String> infoMap = getInfo(true);
             if(MapUtils.isNotEmpty(infoMap)){
                 this.version = RedisVersion.getRedisVersion(infoMap.get(RedisInfoKeyConstant.redisVersion));
             }
@@ -302,9 +308,12 @@ public class RedisLarkContext {
     public String lset(final String key, final long index, final String value) {
     	return redisLark.lset(key, index, value);
     }
-    public void ldelRow(final String key, final int index) {
+    public void ldelRow(final String key, final int index,boolean pringLog) {
+
         String uuid = StringUtils.getUUID();
-        LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"LSET %s %s %s",key, index, uuid);
+        if(pringLog){
+            LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"LSET %s %s %s",key, index, uuid);
+        }
         try {
             TransactionResult execMulti = redisLark.execMulti(c -> {
 
@@ -319,18 +328,22 @@ public class RedisLarkContext {
             });
             if(!execMulti.isEmpty()){
                 String lset = execMulti.get(0);
-                LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",lset);
-                LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"LREM %s %s %s",key, 0, uuid);
-                Long lrem = execMulti.get(1);
-                LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",lrem);
+                if(pringLog) {
+                    LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(), "%s", lset);
+                    LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(), "LREM %s %s %s", key, 0, uuid);
+                    Long lrem = execMulti.get(1);
+                    LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(), "%s", lrem);
+                }
             }
         
         } catch (UnsupportedOperationException e1) {
             String lset = redisLark.lset(key, index, uuid);
-            LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",lset);
-            LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"LREM %s %s %s",key, 0, uuid);
-            Long lrem = redisLark.lrem(key, 0, uuid);
-            LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",lrem);
+            if(pringLog) {
+                LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(), "%s", lset);
+                LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(), "LREM %s %s %s", key, 0, uuid);
+                Long lrem = redisLark.lrem(key, 0, uuid);
+                LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(), "%s", lrem);
+            }
             
         }
 

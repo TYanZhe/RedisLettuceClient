@@ -97,7 +97,7 @@ public class InfoCommand extends JedisCommand<Map<String,String>> {
 		if(newInfo && MapUtils.isNotEmpty(redisLarkContext.getRedisInfo())){
 			redisLarkContext.getRedisInfo().clear();
 		}
-		final Map<String,String> response = redisLarkContext.getInfo();
+		final Map<String,String> response = redisLarkContext.getInfo(this.isPrintLog());
 		return response;
 	}
 

@@ -31,7 +31,7 @@ public class LdelRowList extends JedisDbCommand{
     @Override
     public Object concreteCommand(RedisLarkContext redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        redisLarkContext.ldelRow(key, index);
+        redisLarkContext.ldelRow(key, index,this.isPrintLog());
         
         return null;
     }

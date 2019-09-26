@@ -1,5 +1,7 @@
 package cn.org.tpeach.nosql.view.component;
 
+import cn.org.tpeach.nosql.view.ui.RScrollBarUI;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;

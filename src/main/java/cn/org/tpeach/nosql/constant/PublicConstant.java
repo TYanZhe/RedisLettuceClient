@@ -116,6 +116,7 @@ public class PublicConstant {
         public static ImageIcon monitor = IOUtil.getImageIcon("image/base/monitor.png");
         public static ImageIcon settings = IOUtil.getImageIcon("image/base/setting.png");
         public static ImageIcon server = IOUtil.getImageIcon("image/base/datatable.png");
+        public static ImageIcon server16 = IOUtil.getImageIcon("image/base/datatable.png",16,16);
         //https://www.iconfont.cn/collections/detail?spm=a313x.7781069.0.da5a778a4&cid=1903
         public static ImageIcon config = IOUtil.getImageIcon("image/base/config.png");
         
@@ -132,6 +133,8 @@ public class PublicConstant {
         public static ImageIcon alipay = IOUtil.getImageIcon("image/base/alipay.jpg",150,150);
         public static ImageIcon arrow_circle_down = IOUtil.getImageIcon("image/base/arrow_circle_down.png" );
         public static ImageIcon arrow_circle_right = IOUtil.getImageIcon("image/base/arrow_circle_right.png" );
+        public static ImageIcon switch_on = IOUtil.getImageIcon("image/base/switch_on.png" );
+        public static ImageIcon switch_off = IOUtil.getImageIcon("image/base/switch_off.png" );
 //        public static ImageIcon tempIcon = IOUtil.getImageIcon("image/base/箭头.png" );
     }
 

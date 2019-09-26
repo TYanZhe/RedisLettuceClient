@@ -36,6 +36,18 @@ public class RedisTreeItem {
 	//设置工具提示字符串
 	public String tipText;
 
+	public String getParentName(){
+		String parentName = this.getName();
+		RedisTreeItem tempItem = this;
+		while (tempItem.getParentItem() != null){
+			tempItem = tempItem.getParentItem();
+			if(tempItem.getParentItem() == null){
+				parentName = tempItem.getName();
+			}
+		}
+		return parentName;
+	}
+
 
 	public void updateKeyName(String name){
 		if(RedisType.KEY.equals(this.getType())){

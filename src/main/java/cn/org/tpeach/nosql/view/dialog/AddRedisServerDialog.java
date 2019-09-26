@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.*;
 
 import cn.org.tpeach.nosql.constant.I18nKey;
-import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.exception.ServiceException;
@@ -18,8 +17,8 @@ import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
-import cn.org.tpeach.nosql.view.HomeTabbedPanel;
 import cn.org.tpeach.nosql.view.component.*;
+import cn.org.tpeach.nosql.view.ui.ServerTabbedPaneUI;
 
 /**
  * @author tyz

@@ -26,6 +26,7 @@ import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 import cn.org.tpeach.nosql.view.table.RTableModel;
+import cn.org.tpeach.nosql.view.ui.VerticalLabelUI;
 import io.lettuce.core.ScanCursor;
 import io.lettuce.core.ScoredValue;
 import lombok.Getter;

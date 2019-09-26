@@ -52,6 +52,8 @@ public class PlatformResource_en_US extends ListResourceBundle {
                     {I18nKey.RedisResource.FAIL.getKey(), "Fail"},
                     {I18nKey.RedisResource.RETRY.getKey(), "Retry"},
                     {I18nKey.RedisResource.CONNECTING.getKey(), "Connecting"},
+                    {I18nKey.RedisResource.SERVERINFO.getKey(), "Server Info"},
+
             };
 
     @Override

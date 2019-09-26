@@ -26,6 +26,8 @@ import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeModel;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeRenderer;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
+import cn.org.tpeach.nosql.view.ui.RScrollBarUI;
+import cn.org.tpeach.nosql.view.ui.RToggleButtonUI;
 
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
@@ -94,6 +96,9 @@ public class RedisMainWindow extends javax.swing.JFrame {
         UIManager.put("ScrollBarUI", RScrollBarUI.class.getName());
         UIManager.put("ScrollBar.width" ,10);
         UIManager.put("Menu.arrowIcon" ,"javax.swing.plaf.nimbus.NimbusIcon");
+        //不起作用?
+        UIManager.put("ToggleButtonUI", "cn.org.tpeach.nosql.view.ui.RToggleButtonUI");
+
 //        Insets insets = UIManager.getInsets("TabbedPane.contentBorderInsets");
 //        insets.top = -1;
 //        insets.bottom = -1;
@@ -280,19 +285,23 @@ public class RedisMainWindow extends javax.swing.JFrame {
                         serverTreePopMenu.getComponent(4).setEnabled(false);
                         serverTreePopMenu.getComponent(5).setEnabled(false);
                         serverTreePopMenu.getComponent(6).setEnabled(false);
+                        serverTreePopMenu.getComponent(7).setEnabled(false);
                 	}else {
                         //连接
                         serverTreePopMenu.getComponent(0).setEnabled(false);
                         //断开连接
                         serverTreePopMenu.getComponent(1).setEnabled(true);
+                        //服务信息
+                        serverTreePopMenu.getComponent(2).setEnabled(true);
                         //重新加载
-                        serverTreePopMenu.getComponent(3).setEnabled(true);
+                        serverTreePopMenu.getComponent(4).setEnabled(true);
                 	}
         
                 }else{
                     serverTreePopMenu.getComponent(0).setEnabled(true);
                     serverTreePopMenu.getComponent(1).setEnabled(false);
-                    serverTreePopMenu.getComponent(3).setEnabled(false);
+                    serverTreePopMenu.getComponent(2).setEnabled(false);
+                    serverTreePopMenu.getComponent(4).setEnabled(false);
                 }
 
             } else if (path.length == 3) {
