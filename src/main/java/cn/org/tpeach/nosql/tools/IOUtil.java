@@ -75,7 +75,26 @@ public class IOUtil {
 		}
 		return count;
 	}
-	
+	/**
+	 * 覆盖原内容
+	 * @param inputStream
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 * @throws Exception
+	 */
+	public static void writeConfigFile(InputStream inputStream,File file) throws IOException{
+		byte[] bytes = new byte[BUFFER_SIZE];
+		int index;
+		try(FileOutputStream fileOutputStream = new FileOutputStream(file)){
+			 while ((index = inputStream.read(bytes)) != -1){
+				 fileOutputStream.write(bytes, 0, index);
+				 fileOutputStream.flush();
+			 }
+		}
+
+
+	}
     /**
      * 覆盖原内容
      * @param content
@@ -85,14 +104,11 @@ public class IOUtil {
      * @throws Exception
      */
     public static void writeConfigFile(String content,File file) throws IOException{
-        RandomAccessFile mm=null;
-        FileOutputStream fileOutputStream=null;
-
-        fileOutputStream = new FileOutputStream(file);
-        fileOutputStream.write(content.getBytes("UTF-8"));
-        fileOutputStream.close();
- 
+		try(FileOutputStream fileOutputStream = new FileOutputStream(file);){
+			fileOutputStream.write(content.getBytes("UTF-8"));
+		}
     }
+
     /**
      * 追加写入
      * @param filePath
