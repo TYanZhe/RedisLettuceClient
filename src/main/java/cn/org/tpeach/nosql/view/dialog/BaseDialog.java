@@ -166,8 +166,9 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 			btnPanel.setPreferredSize(new Dimension(this.getWidth(), btnPanelHeight));
 			btnPanel.add(btnbox);
 			addBtnToBtnPanel(btnPanel);
-			contextUiImpl(contextPanel, btnPanel);
 			middlePanel.add(contextPanel, BorderLayout.CENTER);
+			contextUiImpl(contextPanel, btnPanel);
+
 
 		}
 		btnPanel.setVisible(isNeedBtn());
