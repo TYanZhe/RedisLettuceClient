@@ -11,7 +11,7 @@ public class RedisClientBo {
     private String fd;
     private String name;
     //以秒计算的已连接时长
-    private String age;
+    private Integer age;
     //以秒计算的空闲时长
     private String idle;
     //客户端 flag

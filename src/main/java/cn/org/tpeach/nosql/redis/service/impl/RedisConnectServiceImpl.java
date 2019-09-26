@@ -514,23 +514,34 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     public Boolean remamenx(String id, int db, String oldkey, String newkey) {
         return  super.executeJedisCommand(new RenameNxCommand(id,db,oldkey,newkey));
     }
-
     @Override
-    public Map<String, String> getConnectInfo(String id,boolean isFresh) {
+    public Map<String, String> getConnectInfo(String id,boolean isFresh){
+	    return getConnectInfo(id,isFresh,true);
+    }
+    @Override
+    public Map<String, String> getConnectInfo(String id,boolean isFresh,boolean printLog) {
         RedisLarkContext redisLarkContext = RedisLarkPool.getRedisLarkContext(id);
         if(redisLarkContext == null){
             return new HashMap<>(0);
         }
-        return super.executeJedisCommand(new InfoCommand(id,isFresh));
+        InfoCommand infoCommand = new InfoCommand(id, isFresh);
+        infoCommand.setPrintLog(printLog);
+        return super.executeJedisCommand(infoCommand);
     }
     @Override
     public List<RedisClientBo>  clientList(String id){
-        String clientStr = super.executeJedisCommand(new ClientListCommand(id));
+	    return clientList(id,true);
+    }
+    @Override
+    public List<RedisClientBo>  clientList(String id,boolean printLog){
+        ClientListCommand clientListCommand = new ClientListCommand(id);
+        clientListCommand.setPrintLog(printLog);
+        String clientStr = super.executeJedisCommand(clientListCommand);
         List<RedisClientBo> resultList = new ArrayList<>();
         if(StringUtils.isNotBlank(clientStr)){
             String[] split = clientStr.split("\n");
             if(!ArraysUtil.isEmpty(split)){
-                Map<String,String>  map = null;
+                Map<String,Object>  map = null;
                 for (String s : split) {
                     String[] mapper = s.split(" ");
                     if(!ArraysUtil.isEmpty(mapper)){
@@ -555,11 +566,17 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                 }
             }
         }
-
+        Collections.sort(resultList,(o1,o2)->-o1.getAge().compareTo(o2.getAge()));
         return resultList;
     }
     @Override
+    public List<SlowLogBo> slowlogGet(String id,boolean printLog){
+        SlowlogGetCommand slowlogGetCommand = new SlowlogGetCommand(id);
+        slowlogGetCommand.setPrintLog(printLog);
+        return super.executeJedisCommand(slowlogGetCommand);
+    }
+    @Override
     public List<SlowLogBo> slowlogGet(String id){
-	    return super.executeJedisCommand(new SlowlogGetCommand(id));
+        return slowlogGet(id,true);
     }
 }

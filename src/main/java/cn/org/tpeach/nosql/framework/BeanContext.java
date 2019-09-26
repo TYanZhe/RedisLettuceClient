@@ -1,18 +1,16 @@
 package cn.org.tpeach.nosql.framework;
 
+import cn.org.tpeach.nosql.annotation.Component;
+import cn.org.tpeach.nosql.annotation.Component.BeanScope;
+import cn.org.tpeach.nosql.constant.PublicConstant;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import cn.org.tpeach.nosql.constant.PublicConstant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cn.org.tpeach.nosql.annotation.Component;
-import cn.org.tpeach.nosql.annotation.Component.BeanScope;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author tyz
@@ -22,8 +20,9 @@ import lombok.Setter;
  * @date 2019-06-23 20:35
  * @since 1.0.0
  */
+@Slf4j
 public class BeanContext {
-	final static Logger logger = LoggerFactory.getLogger(BeanContext.class);
+
 	private static Map<String, ComponentBean> beanMap = new HashMap<>();
 
 	private static Set<String> beanNameSet = new HashSet<>();
@@ -77,24 +76,24 @@ public class BeanContext {
 
 		// 注解value重复校验
 		if (beanNameSet.contains(beanInfo.getBeanName())) {
-			logger.error(beanInfo.getBeanName() + "已经存在>>>>>>"+beanInfo.getClassName());
+			log.error(beanInfo.getBeanName() + "已经存在>>>>>>"+beanInfo.getClassName());
 			System.exit(0);
 		}
 		if (classNameSet.contains(beanInfo.getClassName())) {
-			logger.error(beanInfo.getClassName() + "已经存在");
+			log.error(beanInfo.getClassName() + "已经存在");
 			System.exit(0);
 		}
 		classNameSet.add(beanInfo.getClassName());
 		beanNameSet.add(beanInfo.getBeanName());
 		if(PublicConstant.ISDEBUG){
-			logger.info("beanId:" + beanInfo.getBeanName() + " >>> " + beanInfo.getClassName());
+			log.info("beanId:" + beanInfo.getBeanName() + " >>> " + beanInfo.getClassName());
 		}
 		beanInfo.setObj(null);
 		if (Component.BeanScope.SCOPE_SINGLETON == beanInfo.getScope() && !beanInfo.isLazy()) {
 			try {
 				beanInfo.setObj(getBeanClass(beanInfo));
 			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-				logger.info("加载失败:" + beanInfo.getBeanName() + " >>>" + beanInfo.getClassName());
+				log.info("加载失败:" + beanInfo.getBeanName() + " >>>" + beanInfo.getClassName());
 				System.exit(0);
 			}
 		}

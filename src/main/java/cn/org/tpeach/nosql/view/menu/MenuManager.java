@@ -41,6 +41,7 @@ import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.RedisTabbedPanel;
+import cn.org.tpeach.nosql.view.ServiceInfoPanel;
 import cn.org.tpeach.nosql.view.StatePanel;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
@@ -114,6 +115,8 @@ public enum MenuManager {
 			disConnectItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_MASK));
 			//重新加载
 			JMenuItem reloadItem = getJMenuItem(I18nKey.RedisResource.MENU_RELOAD,PublicConstant.Image.menu_refresh);
+			//服务信息
+			JMenuItem serverInfoItem = getJMenuItem(I18nKey.RedisResource.SERVERINFO,PublicConstant.Image.server16);
 			reloadItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
 			openItem.addActionListener(e->{
 				RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
@@ -133,7 +136,7 @@ public enum MenuManager {
 						valid = false;
 						int conform = SwingTools.showConfirmDialogYNC(null, "连接已打开，编辑将会关闭连接，是否继续？", "编辑确认");
 						if(conform == JOptionPane.YES_OPTION){
-							disConnecect(tree);
+							disConnecect(tree,topTabbedPane);
 							//删除包含的标签
 							int tabCount = topTabbedPane.getTabCount();
 							for(int i=tabCount-1;i>=0;i--) {
@@ -188,7 +191,7 @@ public enum MenuManager {
 				}
 			});
 			disConnectItem.addActionListener(e->{
-				disConnecect(tree);
+				disConnecect(tree,topTabbedPane);
 			});
 			reloadItem.addActionListener(e->{
 				RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
@@ -198,11 +201,18 @@ public enum MenuManager {
 				ServiceManager.getInstance().openConnectRedisTree(statePanel,node, redisTreeItem, tree);
 				tree.updateUI();
 			});
+			serverInfoItem.addActionListener(e->{
+				RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
+				RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
+				statePanel.doUpdateStatus(redisTreeItem);
+				addServerInfoToTab(topTabbedPane, statePanel);
+			});
 			totalItem.setEnabled(false);
 			consoleItem.setEnabled(false);
-
+			//添加菜单需要修改cn.org.tpeach.nosql.view.RedisMainWindow.redisTreeMouseClicked 下标
 			popMenu.add(openItem);
 			popMenu.add(disConnectItem);
+			popMenu.add(serverInfoItem);
 			popMenu.add(editItem);
 
 			popMenu.add(reloadItem);
@@ -216,15 +226,52 @@ public enum MenuManager {
 		return popMenu;
 	}
 
+	public void addServerInfoToTab(RTabbedPane topTabbedPane, StatePanel statePanel) {
+		boolean isExist = false;
+		ServiceInfoPanel serviceInfoPanel = null;
+		for (int i = 0; i < topTabbedPane.getTabCount() ; i++) {
+			Component componect = topTabbedPane.getComponentAt(i);
+			if(componect instanceof  ServiceInfoPanel){
+				serviceInfoPanel = (ServiceInfoPanel) componect;
+				topTabbedPane.setSelectedIndex(i);
+				isExist = true;
+			}
+		}
+		if(isExist){
+			serviceInfoPanel.setRedisTreeItem(statePanel.getCurrentRedisItem());
+
+			serviceInfoPanel.updateData(true);
+		}else{
+			topTabbedPane.addTab("SERVER "+statePanel.getCurrentRedisItem().getParentName(), PublicConstant.Image.server16,new ServiceInfoPanel(statePanel.getCurrentRedisItem(),topTabbedPane),"SERVER "+statePanel.getCurrentRedisItem().getParentName());
+
+		}
+	}
+
 	/**
 	 * @param tree
 	 */
-	private void disConnecect(JTree tree) {
+	private void disConnecect(JTree tree,RTabbedPane jTabbedPane) {
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
 		RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
 		DefaultTreeModel defaultModel = (DefaultTreeModel)tree.getModel();
-		RedisLarkPool.destory(redisTreeItem.getId());
+		String itemId = redisTreeItem.getId();
+		RedisLarkPool.destory(itemId);
 		node.removeAllChildren();
+		for (int i = jTabbedPane.getTabCount() -1; i >= 0; i--) {
+			Component componect = jTabbedPane.getComponentAt(i);
+			if (componect instanceof ServiceInfoPanel) {
+				ServiceInfoPanel serviceInfoPanel = (ServiceInfoPanel) componect;
+				if(itemId.equals(serviceInfoPanel.getRedisTreeItem().getId())){
+					jTabbedPane.remove(i);
+				}
+			}else if(componect instanceof RedisTabbedPanel){
+				RedisTabbedPanel redisTabbedPanel = (RedisTabbedPanel) componect;
+				RedisTreeItem  treeItem = (RedisTreeItem) redisTabbedPanel.getTreeNode().getUserObject();
+				if(itemId.equals(treeItem.getId())){
+					jTabbedPane.remove(i);
+				}
+			}
+		}
 //				tree.updateUI();
 		defaultModel.reload(node);
 	}

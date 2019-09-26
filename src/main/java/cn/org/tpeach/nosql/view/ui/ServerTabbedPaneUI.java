@@ -1,4 +1,4 @@
-package cn.org.tpeach.nosql.view.component;
+package cn.org.tpeach.nosql.view.ui;
 
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;

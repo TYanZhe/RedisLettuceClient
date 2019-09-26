@@ -1,4 +1,6 @@
-package cn.org.tpeach.nosql.view.menu;
+package cn.org.tpeach.nosql.view.component;
+
+import cn.org.tpeach.nosql.view.ui.EclipseTabbedPaneUI;
 
 import javax.swing.*;
 import java.awt.*;

@@ -214,10 +214,29 @@ public class ReflectUtil {
         for (PropertyDescriptor property : propertyDescriptors) {
             Method setter = property.getWriteMethod();
             if (setter != null) {
-                setter.invoke(obj, map.get(property.getName()));
+                Class<?> propertyType = property.getPropertyType();
+                Object o = map.get(property.getName());
+                if(o != null){
+
+                        if(propertyType.equals(Integer.class)){
+                            setter.invoke(obj,Integer.valueOf(o.toString()));
+                        }else if(propertyType.equals(Double.class)){
+                            setter.invoke(obj,Double.valueOf(o.toString()));
+                        }else if(propertyType.equals(Long.class)){
+                            setter.invoke(obj,Long.valueOf(o.toString()));
+                        }else if(propertyType.equals(Float.class)){
+                            setter.invoke(obj,Float.valueOf(o.toString()));
+                        }else if(propertyType.equals(Short.class)){
+                            setter.invoke(obj,Short.valueOf(o.toString()));
+                        }else if(propertyType.equals(String.class)){
+                            setter.invoke(obj,o.toString());
+                        }else{
+                            setter.invoke(obj,o);
+                        }
+
+                }
             }
         }
-
         return obj;
     }
 

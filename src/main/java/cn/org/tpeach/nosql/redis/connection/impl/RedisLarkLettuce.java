@@ -156,7 +156,14 @@ public class RedisLarkLettuce implements RedisLark<String,String> {
     }
     @Override
     public void close() {
-		executeCommandConsumer(c->close(),u->close());
+
+		executeCommandConsumer(c->{
+			c.getStatefulConnection().close();
+			client.shutdownAsync();
+		},u->{
+			u.getStatefulConnection().close();
+			cluster.shutdownAsync();
+		});
     }
 
     @Override

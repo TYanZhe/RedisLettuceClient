@@ -60,15 +60,7 @@ public class StatePanel extends JPanel {
             currentRedisItem = redisTreeItem ;
             //设置连接
             this.connectStateLabel.setForeground(Color.GREEN.darker().darker());
-            String connectName = redisTreeItem.getName();
-            RedisTreeItem tempItem = redisTreeItem;
-            while (tempItem.getParentItem() != null){
-                tempItem = tempItem.getParentItem();
-                if(tempItem.getParentItem() == null){
-                    connectName = tempItem.getName();
-                }
-            }
-            this.connectStateLabel.setText("已成功连接到:"+connectName);
+            this.connectStateLabel.setText("已成功连接到:"+redisTreeItem.getParentName());
             //版本信息
             String version = connectInfo.get(RedisInfoKeyConstant.redisVersion);
             if(StringUtils.isNotBlank(version)){

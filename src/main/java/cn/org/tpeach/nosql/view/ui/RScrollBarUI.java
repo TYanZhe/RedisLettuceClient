@@ -1,4 +1,4 @@
-package cn.org.tpeach.nosql.view.component;
+package cn.org.tpeach.nosql.view.ui;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -18,8 +18,10 @@ import javax.swing.WindowConstants;
 import javax.swing.plaf.basic.BasicArrowButton;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.view.component.EasyJSP;
+import cn.org.tpeach.nosql.view.component.OnlyReadArea;
 
- class LogFrame extends  JFrame{
+class LogFrame extends  JFrame{
 
     OnlyReadArea textArea = new OnlyReadArea(50,100,1000);
 

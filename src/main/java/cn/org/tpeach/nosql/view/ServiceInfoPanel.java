@@ -7,6 +7,7 @@ package cn.org.tpeach.nosql.view;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.constant.RedisInfoKeyConstant;
+import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisClientBo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.bean.SlowLogBo;
@@ -19,14 +20,22 @@ import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.component.EasyJSP;
 import cn.org.tpeach.nosql.view.component.PrefixTextLabel;
+import cn.org.tpeach.nosql.view.component.RTabbedPane;
+import cn.org.tpeach.nosql.view.ui.RToggleButtonUI;
+import io.lettuce.core.output.KeyStreamingChannel;
+import javafx.collections.ListChangeListener;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.time.Instant;
@@ -35,6 +44,11 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 @Getter
 @Setter
@@ -52,7 +66,9 @@ public class ServiceInfoPanel extends JPanel {
     private List<LiPanel> liPanlList = new ArrayList<>(5);
     private List<JPanel> contextPanelist = new ArrayList<>(5);
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
+    @Getter
     private RedisTreeItem redisTreeItem;
+    private RedisTreeItem oldRedisTreeItem;
     @Getter
     @Setter
     private  Map<String, String> redinInfoMap;
@@ -67,11 +83,34 @@ public class ServiceInfoPanel extends JPanel {
     private PrefixTextLabel usedMemoryLabel,usedMemoryRssLabel,usedMemoryPeakHumanLabel,memFragmentationRatioLabel,memAllocatorLabel;
     private PrefixTextLabel totalConnectionsReceivedLabel,totalCommandsProcessedLabel,instantaneousOpsOerSecLabel,totalNetInputBytesLabel,totalNetOutputBytesLabel,rejectedConnectionsLabel;
     private PrefixTextLabel usedCpuSysLabel,usedCpuUserLabel,usedCpuSysChildrenLabel,usedCpuUserChildrenLabel;
+
+    private JToggleButton  autoFreshToggleButton;
+
+    private JTabbedPane jTabbedPane;
+    private AtomicBoolean isExecute = new AtomicBoolean(false);
+    private ChangeListener changeListener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            if (autoFreshToggleButton.isSelected()) {
+                for (int i = 0; i < jTabbedPane.getTabCount(); i++) {
+                    Component componect = jTabbedPane.getComponentAt(i);
+                    if (componect == ServiceInfoPanel.this) {
+                        task();
+                    }
+                }
+            }
+            if(ServiceInfoPanel.this.getParent() == null){
+                jTabbedPane.removeChangeListener(changeListener);
+            }
+        }
+    };
     /**
      * Creates new form ServiceInfoPanel
      */
-    public ServiceInfoPanel(RedisTreeItem redisTreeItem) {
+    public ServiceInfoPanel(RedisTreeItem redisTreeItem,JTabbedPane jTabbedPane) {
+        this.oldRedisTreeItem = redisTreeItem;
         this.redisTreeItem = redisTreeItem;
+        this.jTabbedPane = jTabbedPane;
         //获取连接信息
         this.redinInfoMap = redisConnectService.getConnectInfo(redisTreeItem.getId(),false);
         if(MapUtils.isEmpty(redinInfoMap)){
@@ -89,11 +128,86 @@ public class ServiceInfoPanel extends JPanel {
         model.getDataVector().clear();
         model = (DefaultTableModel) logListTable.getModel();
         model.getDataVector().clear();
-        updateData();
+        updateData(false);
+        jTabbedPane.addChangeListener(changeListener);
+
     }
 
+    private boolean isCurentSelect(Consumer<JTabbedPane> consumer){
+        JTabbedPane parent = (JTabbedPane) this.getParent();
+        if(parent != null){
+                Component componect = parent.getSelectedComponent();
+                if(componect == this){
+                    if(consumer != null){
+                        consumer.accept(parent);
+                    }
+                    return true;
+                }
 
-    public void updateData(){
+        }
+        return false;
+    }
+
+    private synchronized void task(){
+        if(isExecute.get()){
+            return;
+        }
+        if(!(autoFreshToggleButton.isSelected() && isCurentSelect(null))){
+            return;
+        }
+        isExecute.set(true);
+        LarkFrame.executorService.schedule(()->{
+            if(autoFreshToggleButton.isSelected() && isCurentSelect(null)){
+                try{
+                    requestData();
+                    updateData(false);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                isExecute.set(false);
+                task();
+            }else{
+                isExecute.set(false);
+
+            }
+        },10, TimeUnit.SECONDS);
+    }
+
+    public void setRedisTreeItem(RedisTreeItem redisTreeItem) {
+        this.oldRedisTreeItem = this.redisTreeItem;
+        this.redisTreeItem = redisTreeItem;
+    }
+
+    public void requestData(){
+        redinInfoMap = redisConnectService.getConnectInfo(redisTreeItem.getId(),true,false);
+        redisClientList = redisConnectService.clientList(redisTreeItem.getId(),false);
+        slowLogList = redisConnectService.slowlogGet(redisTreeItem.getId(),false);
+    }
+
+    public void updateData(boolean isNewDate){
+
+        if(isNewDate){
+            requestData();
+            if(!this.oldRedisTreeItem.getId().equals(redisTreeItem.getId())){
+                autoFreshToggleButton.setSelected(false);
+            }
+        }
+        RTabbedPane parent = (RTabbedPane) this.getParent();
+        if(parent != null){
+            for (int i = 0; i < parent.getTabCount() ; i++) {
+                Component componect = parent.getComponentAt(i);
+                if(componect == this){
+                    RTabbedPane.ButtonClose buttonClose = (RTabbedPane.ButtonClose) parent.getTabComponentAt(parent.getSelectedIndex());
+                    if (buttonClose != null) {
+                        buttonClose.setText("SERVER "+redisTreeItem.getParentName());
+                        buttonClose.setToolTipText("SERVER "+redisTreeItem.getParentName());
+                    }
+                }
+            }
+        }
+
+
+
         //更新top表格
         //更新右边服务列表
         if(MapUtils.isNotEmpty(redinInfoMap)){
@@ -147,7 +261,7 @@ public class ServiceInfoPanel extends JPanel {
                 Vector<String> dataVector = new Vector<>();
                 dataVector.add(redisClientBo.getId());
                 dataVector.add(redisClientBo.getAddr());
-                dataVector.add(redisClientBo.getAge());
+                dataVector.add(redisClientBo.getAge()+"");
                 dataVector.add(redisClientBo.getDb());
                 dataVector.add(redisClientBo.getCmd());
                 model.addRow(dataVector);
@@ -278,6 +392,7 @@ public class ServiceInfoPanel extends JPanel {
         return panel;
     }
     private void initComponents2(){
+        int headerHeight = 35;
         DefaultTableModel model = (DefaultTableModel) baseInfoTable.getModel();
         baseInfoPanel.setBorder(BorderFactory.createEmptyBorder(0,10,0,0));
         baseInfoTable.setShowGrid(false);
@@ -297,7 +412,7 @@ public class ServiceInfoPanel extends JPanel {
         tableHeader.setBackground(Color.WHITE);
         tableHeader.setReorderingAllowed(false);             // 设置不允许拖动重新排序各列\
         tableHeader.setResizingAllowed(false);
-        tableHeader.setPreferredSize(new Dimension(tableHeader.getWidth(), 35));
+        tableHeader.setPreferredSize(new Dimension(tableHeader.getWidth(), headerHeight));
         for (int i = 0; i < model.getColumnCount() ; i++) {
             TableCellRenderer renderer = new DefaultTableCellRenderer();
             ((DefaultTableCellRenderer) renderer).setForeground(new Color(128,128,128));
@@ -311,9 +426,46 @@ public class ServiceInfoPanel extends JPanel {
             baseInfoTable.getColumn(baseInfoTable.getColumnName(i)).setCellRenderer(rendererTable);
             t1c.setHeaderRenderer(renderer);
         }
+        autoFreshToggleButton = new JToggleButton( );
+        //设置不绘制按钮边框
+        autoFreshToggleButton.setBorderPainted(false);
+
+        autoFreshToggleButton.setFocusPainted(false);
+
+        autoFreshToggleButton.setSelectedIcon(PublicConstant.Image.switch_on);
+        autoFreshToggleButton.setIcon(PublicConstant.Image.switch_off);
+        autoFreshToggleButton.setBackground(Color.WHITE);
+        autoFreshToggleButton.setOpaque(false);
+        autoFreshToggleButton.setUI(new RToggleButtonUI());
+//        autoFreshToggleButton.addChangeListener(new ChangeListener() {
+//            @Override
+//            public void stateChanged(ChangeEvent e) {
+//                // 获取事件源（即开关按钮本身）
+//                JToggleButton toggleBtn = (JToggleButton) e.getSource();
+//
+//            }
+//        });
+        autoFreshToggleButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(autoFreshToggleButton.isSelected() && !isExecute.get()){
+                    task();
+                }
+            }
+        });
+
+        JLabel label = new JLabel("Auto Refresh",SwingConstants.CENTER);
+        label.setForeground(new Color(128,128,128));
+        freshTopPanel.setPreferredSize(new Dimension(10,headerHeight));
+        freshTopPanel.add(label);
+//        freshCenterPanel.add(Box.createVerticalStrut(10));
+        freshCenterPanel.add(autoFreshToggleButton);
+//        freshCenterPanel.add(Box.createVerticalGlue());
+
+
 
         //---------------------------------------------------
-        infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(15,0,0,0),BorderFactory.createMatteBorder(1,0,0,0,new Color(192,192,192))));
+        infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0,0,0,0),BorderFactory.createMatteBorder(1,0,0,0,new Color(192,192,192))));
         infoPanel.add(leftPanel, EasyGBC.build(0,0,1,1).setFill(EasyGBC.BOTH).setWeight(0.56, 1.0)
                 .resetInsets(0,0,0,0).setAnchor(EasyGBC.EAST));
         infoPanel.add(rightPanel,EasyGBC.build(1,0,1,1).setFill(EasyGBC.BOTH).setWeight(0.44, 1.0)
@@ -453,6 +605,9 @@ public class ServiceInfoPanel extends JPanel {
         baseInfoPanel = new javax.swing.JPanel();
         baseInfoScrollPane = new EasyJSP();
         baseInfoTable = new javax.swing.JTable();
+        freshPanel = new javax.swing.JPanel();
+        freshTopPanel = new javax.swing.JPanel();
+        freshCenterPanel = new javax.swing.JPanel();
         infoPanel = new javax.swing.JPanel();
         leftPanel = new javax.swing.JPanel();
         clientListPanel = new javax.swing.JPanel();
@@ -469,8 +624,8 @@ public class ServiceInfoPanel extends JPanel {
         setLayout(new java.awt.BorderLayout());
 
         baseInfoPanel.setBackground(new java.awt.Color(255, 255, 255));
-        baseInfoPanel.setMaximumSize(new java.awt.Dimension(32767, 63));
-        baseInfoPanel.setPreferredSize(new java.awt.Dimension(744, 63));
+        baseInfoPanel.setMaximumSize(new java.awt.Dimension(32767, 82));
+        baseInfoPanel.setPreferredSize(new java.awt.Dimension(744, 82));
         baseInfoPanel.setLayout(new java.awt.BorderLayout());
 
         baseInfoScrollPane.setMaximumSize(new java.awt.Dimension(32767, 63));
@@ -500,6 +655,21 @@ public class ServiceInfoPanel extends JPanel {
         baseInfoScrollPane.setViewportView(baseInfoTable);
 
         baseInfoPanel.add(baseInfoScrollPane, java.awt.BorderLayout.CENTER);
+
+        freshPanel.setBackground(new java.awt.Color(255, 255, 255));
+        freshPanel.setMaximumSize(new java.awt.Dimension(102, 32767));
+        freshPanel.setPreferredSize(new java.awt.Dimension(102, 10));
+        freshPanel.setLayout(new java.awt.BorderLayout());
+
+        freshTopPanel.setBackground(new java.awt.Color(255, 255, 255));
+        freshTopPanel.setPreferredSize(new java.awt.Dimension(10, 35));
+        freshTopPanel.setLayout(new java.awt.GridLayout(1, 1));
+        freshPanel.add(freshTopPanel, java.awt.BorderLayout.PAGE_START);
+
+        freshCenterPanel.setBackground(new java.awt.Color(255, 255, 255));
+        freshPanel.add(freshCenterPanel, java.awt.BorderLayout.CENTER);
+
+        baseInfoPanel.add(freshPanel, java.awt.BorderLayout.EAST);
 
         add(baseInfoPanel, java.awt.BorderLayout.NORTH);
 
@@ -587,6 +757,9 @@ public class ServiceInfoPanel extends JPanel {
     private javax.swing.JPanel clientListPanel;
     private javax.swing.JScrollPane clientScrollPane;
     private javax.swing.JTable clientTable;
+    private javax.swing.JPanel freshCenterPanel;
+    private javax.swing.JPanel freshPanel;
+    private javax.swing.JPanel freshTopPanel;
     private javax.swing.JPanel infoPanel;
     private javax.swing.JPanel leftPanel;
     private javax.swing.JPanel logListPanel;

@@ -66,6 +66,7 @@ public class I18nKey {
 		FAIL,
 		RETRY,
 		CONNECTING,
+		SERVERINFO,
 		/**不支持的版本异常*/
 		VERSION_NOTSUPPORT;
 

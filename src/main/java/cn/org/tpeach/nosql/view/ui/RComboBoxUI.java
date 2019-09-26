@@ -1,4 +1,4 @@
-package cn.org.tpeach.nosql.view.component;
+package cn.org.tpeach.nosql.view.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;

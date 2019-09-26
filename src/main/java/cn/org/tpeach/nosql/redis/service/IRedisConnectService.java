@@ -75,9 +75,16 @@ public interface IRedisConnectService {
     Boolean remamenx(String id, int db,final String oldkey, final String newkey);
 
 
-    Map<String,String> getConnectInfo(String id,boolean isFresh);
+    Map<String,String> getConnectInfo(String id,boolean isFresh,boolean printLog);
+
+
+    Map<String,String> getConnectInfo(String id,boolean isFresh );
 
     List<RedisClientBo> clientList(String id);
 
     List<SlowLogBo>  slowlogGet(String id);
+
+    List<RedisClientBo> clientList(String id, boolean printLog);
+
+    List<SlowLogBo> slowlogGet(String id, boolean printLog);
 }

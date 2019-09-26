@@ -9,6 +9,8 @@ import cn.org.tpeach.nosql.redis.command.string.GetString;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkFactory;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.view.RedisMainWindow;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +27,9 @@ import java.awt.*;
 public abstract class JedisCommand<T> implements ICommand<T> {
     final static Logger logger = LoggerFactory.getLogger(JedisCommand.class);
     protected String id;
-
+    @Getter
+    @Setter
+    private boolean printLog = true;
     public JedisCommand(String id) {
     	super();
         this.id = id;
@@ -51,7 +55,7 @@ public abstract class JedisCommand<T> implements ICommand<T> {
         RedisConnectInfo redisConnectInfo = RedisLarkPool.getConnectInfo(id);
         String command = sendCommand();
         excuteBefore(redisLarkContext);
-        if(command != null){
+        if(command != null && printLog){
             LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"%s",sendCommand());
         }
 
@@ -63,7 +67,7 @@ public abstract class JedisCommand<T> implements ICommand<T> {
             throw e;
         }
 //        LarkFrame.larkLog.info("[Server %s] Response Received : %s ", Color.BLUE.darker(),redisConnectInfo.getName(),t);
-        if(command != null){
+        if(command != null && printLog){
             String response = null;
             if(t != null){
                 response = t.toString();

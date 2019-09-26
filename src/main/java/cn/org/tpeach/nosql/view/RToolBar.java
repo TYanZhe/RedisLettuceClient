@@ -5,6 +5,7 @@ import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
+import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.RButton;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
@@ -14,6 +15,8 @@ import cn.org.tpeach.nosql.view.menu.MenuManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RToolBar extends JToolBar {
 
@@ -22,6 +25,8 @@ public class RToolBar extends JToolBar {
     private StatePanel statePanel;
     private RTabbedPane tabbedPane;
     private JTree redisTree;
+    private List<RButton> rButtonList = new ArrayList<>();
+    private RButton selectButton;
     IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
 
     public RToolBar(int jToolBarHeight,JTree redisTree,StatePanel statePanel,RTabbedPane tabbedPane) {
@@ -56,7 +61,10 @@ public class RToolBar extends JToolBar {
         RButton button = new RButton() {
             @Override
             public void init() {
-                setBackground(Color.WHITE);
+                if(selectButton != this){
+                    setBackground(Color.WHITE);
+                }
+
             }
 
             @Override
@@ -65,6 +73,18 @@ public class RToolBar extends JToolBar {
 
             }
         };
+//        button.addActionListener(e->{
+//            selectButton = button;
+//            if(CollectionUtils.isNotEmpty(rButtonList)){
+//                for (RButton rButton : rButtonList) {
+//                    if(rButton != button){
+//                        rButton.setBackground(Color.WHITE);
+//                    }
+//                }
+//            }
+//            button.setBackground(new Color(229, 243, 255));
+//
+//        });
         button.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
         button.setPreferredSize(new Dimension(58, 50));
         button.setMinimumSize(new Dimension(58, 50));
@@ -75,6 +95,7 @@ public class RToolBar extends JToolBar {
         button.setFont(new Font("黑体", Font.PLAIN, 14));
         button.setVerticalTextPosition(SwingConstants.BOTTOM);
         button.setHorizontalTextPosition(SwingConstants.CENTER);
+        button.setFocusPainted(false);
         return button;
     }
 
@@ -91,6 +112,12 @@ public class RToolBar extends JToolBar {
         RButton settingsButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.SETTING), PublicConstant.Image.settings);
         RButton helpButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.HELP), PublicConstant.Image.help);
         RButton aboutButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.ABOUT), PublicConstant.Image.about);
+        rButtonList.add(newButton);
+        rButtonList.add(serverButton);
+        rButtonList.add(monitorButton);
+        rButtonList.add(settingsButton);
+        rButtonList.add(aboutButton);
+
         if(redisTree != null){
             newButton.addActionListener(e -> MenuManager.getInstance().newConnectConfig(redisTree));
         }
@@ -106,7 +133,7 @@ public class RToolBar extends JToolBar {
                 SwingTools.showMessageInfoDialog(null,"请选择一个服务","提示");
                 return;
             }
-            tabbedPane.addTab("SERVER "+statePanel.getCurrentRedisItem().getName(),null,new ServiceInfoPanel(statePanel.getCurrentRedisItem()),"SERVER "+statePanel.getCurrentRedisItem().getName());
+            MenuManager.getInstance().addServerInfoToTab(tabbedPane,statePanel);
 
         });
 
