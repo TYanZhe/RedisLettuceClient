@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cn.org.tpeach.nosql.view.dialog;
 
@@ -17,10 +17,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 /**
-　 * <p>Title: AboutDialog.java</p> 
-　 * @author taoyz 
-　 * @date 2019年9月8日 
-　 * @version 1.0 
+ 　 * <p>Title: AboutDialog.java</p>
+ 　 * @author taoyz
+ 　 * @date 2019年9月8日
+ 　 * @version 1.0
  */
 public class AboutDialog extends BaseDialog<Object, Object>{
 	private Font font = new Font("黑体", Font.PLAIN, 16);
@@ -42,7 +42,7 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 		super(parent, t);
 
 	}
-    @Override
+	@Override
 	public void setMinimumSize() {
 		this.setMinimumSize(new Dimension(minWidth+150,minHeight+60));
 	}
@@ -50,7 +50,7 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 	@Override
 	public void initDialog(Object t) {
 		this.setTitle("About");
-		
+
 	}
 	@Override
 	protected void setMiddlePanel(JPanel middlePanel){
@@ -64,7 +64,10 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 		leftPanel = new JPanel();
 		leftPanel.setBackground(Color.WHITE);
 		contextPanel.add(leftPanel);
-		addRightPanel(contextPanel);
+		if(!"test".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))){
+			addRightPanel(contextPanel);
+		}
+
 
 		leftPanel.setLayout(new BoxLayout(leftPanel,BoxLayout.Y_AXIS));
 		leftPanel.add(Box.createVerticalStrut(10));
@@ -131,7 +134,7 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 		alipayLabel.setVerticalTextPosition(SwingConstants.TOP);
 		alipayLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 		payImageBox.add(wechatLabel);
-        payImageBox.add(alipayLabel);
+		payImageBox.add(alipayLabel);
 		rightPanel.add(payImageBox);
 		Component verticalStrut = Box.createVerticalStrut(30);
 		Component verticalStrut2 = Box.createVerticalStrut(55);

@@ -101,10 +101,13 @@ public class SwingTools {
 			});
 		}
 	}
-
-	public static void copyMenuByValue(MouseEvent evt, JTextComponent component, Consumer<JPopupMenu> menuConsumer) {
+	public static void copyMenuByValue(MouseEvent evt, Component component, Supplier<String> supplier,Consumer<JPopupMenu> menuConsumer) {
 		if(component.isEnabled()) {
-			if (StringUtils.isBlank(component.getText()) || evt.getButton() != MouseEvent.BUTTON3) {
+
+			if ( evt.getButton() != MouseEvent.BUTTON3) {
+				return;
+			}
+			if(component instanceof JTextComponent && StringUtils.isBlank(((JTextComponent)component).getText())){
 				return;
 			}
 			JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
@@ -113,8 +116,7 @@ public class SwingTools {
 			copyKeyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
 			copyKeyItem.addActionListener(e -> {
 				Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
-				String tempText = StringUtils.isBlank(component.getSelectedText())?component.getText() : component.getSelectedText();
-				Transferable tText = new StringSelection(tempText);
+				Transferable tText = new StringSelection(supplier.get());
 				clip.setContents(tText, null);
 			});
 			popMenu.add(copyKeyItem);
@@ -123,6 +125,10 @@ public class SwingTools {
 			}
 			popMenu.show(component, evt.getX(), evt.getY());
 		}
+	}
+
+	public static void copyMenuByValue(MouseEvent evt, JTextComponent component, Consumer<JPopupMenu> menuConsumer) {
+		copyMenuByValue( evt,  component,  ()->StringUtils.isBlank(component.getSelectedText())?component.getText() : component.getSelectedText(),menuConsumer);
 	}
 	public static void copyMenuByValue(MouseEvent evt, JTextComponent component) {
 		copyMenuByValue(evt,component,null);

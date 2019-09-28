@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import cn.org.tpeach.nosql.framework.LarkFrame;
+import io.lettuce.core.RedisConnectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,23 +72,7 @@ public class RedisLarkFactory {
 			if(conn !=null){
 				LarkFrame.larkLog.receivedError(conn.getName(),"connect fail",ex);
 			}
-
-//			logger.error("反射加载"+redisStructure.getService()+"失败",ex);
-//			while (ex != null) {
-//				Throwable tex = ex.getCause();
-//				if (tex == null) {
-//					throw new ServiceException( ex.getMessage());
-//				} else {
-//					ex = tex;
-//				}
-//			}
-			throw new ServiceException( ex.getMessage());
-		}catch (Exception e){
-			if(e instanceof ServiceException){
-				throw e;
-			}
-			logger.error("获取连接失败",e);
-			throw new ServiceException("连接失败:"+e.getMessage());
+			throw  new RedisConnectionException(ex.getMessage());
 		}
 
 	}

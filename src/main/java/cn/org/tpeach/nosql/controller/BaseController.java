@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import cn.org.tpeach.nosql.exception.ServiceException;
 import cn.org.tpeach.nosql.service.ServiceProxy;
+import io.lettuce.core.RedisException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -24,7 +25,7 @@ public abstract class BaseController {
 //            log.debug("请求参数"+params);
             return new ResultRes<R>(true, function.apply(params), null);
         } catch (Exception e) {
-            if(e instanceof ServiceException){
+            if(e instanceof ServiceException || e instanceof RedisException){
                 return new ResultRes<R>(false, null,  e.getMessage());
             }else{
                 log.error("服务接口异常",e);
@@ -40,7 +41,7 @@ public abstract class BaseController {
 //            logger.debug("请求返回："+t);
             return new ResultRes<T>(true, t, null);
         } catch (Exception e) {
-            if(e instanceof ServiceException){
+            if(e instanceof ServiceException || e instanceof RedisException){
                 return new ResultRes<T>(false, null,  e.getMessage());
             }else {
                 log.error("服务接口异常",e);

@@ -10,6 +10,7 @@ import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.RButton;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.AboutDialog;
+import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 
 import javax.swing.*;
@@ -26,14 +27,16 @@ public class RToolBar extends JToolBar {
     private RTabbedPane tabbedPane;
     private JTree redisTree;
     private List<RButton> rButtonList = new ArrayList<>();
+    private MonitorDialog monitorDialog;
     private RButton selectButton;
     IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
 
-    public RToolBar(int jToolBarHeight,JTree redisTree,StatePanel statePanel,RTabbedPane tabbedPane) {
+    public RToolBar(int jToolBarHeight, JTree redisTree, StatePanel statePanel, RTabbedPane tabbedPane, MonitorDialog monitorDialog) {
         this.jToolBarHeight = jToolBarHeight;
         this.redisTree = redisTree;
         this.statePanel = statePanel;
         this.tabbedPane = tabbedPane;
+        this.monitorDialog = monitorDialog;
         intToolBar();
     }
 
@@ -136,7 +139,11 @@ public class RToolBar extends JToolBar {
             MenuManager.getInstance().addServerInfoToTab(tabbedPane,statePanel);
 
         });
-
+        monitorButton.addActionListener(e->{
+            if(!monitorDialog.isVisible() && !monitorDialog.isOutCLose()){
+                monitorDialog.setVisible(true);
+            }
+        });
         this.add(newButton);
         this.add(serverButton);
 //        this.add(configButton);

@@ -22,6 +22,7 @@ import cn.org.tpeach.nosql.tools.ConfigParser;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.*;
+import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeModel;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeRenderer;
@@ -76,7 +77,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
     MenuManager menuManager = MenuManager.getInstance();
     ServiceManager serviceManager = ServiceManager.getInstance();
-
+    private MonitorDialog monitorDialog = new MonitorDialog(this);
     //--------------------------服务相关结束--------------------
     private void initUiManager() {
         /**
@@ -189,10 +190,10 @@ public class RedisMainWindow extends javax.swing.JFrame {
             public void componentResized(ComponentEvent e) {
                 int dataBgDividerLocation = contentPane.getHeight() - logPanelheight;
                 dataBgSplitPane.setDividerLocation(dataBgDividerLocation);
+
 //				  System.out.println(dataBgDividerLocation);
 //				  jSplitPane.setDividerLocation(treeDataDividerLocation);
             }
-
         });
         JPanel jPanel = new JPanel();
         jPanel.setLayout(new BorderLayout());
@@ -203,14 +204,34 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //        intToolBar();
         jSplitPane.setDividerLocation(treePanelWidth);
         this.setVisible(true);
+        //监控dialog 位置
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                final JFrame source = (JFrame) e.getSource();
+                int width =  (int) (source.getWidth()*0.8);
+                int height =width * monitorDialog.getInitHeight() /  monitorDialog.getInitWidth();
+                height = height > source.getHeight() * 0.8 ? (int) (source.getHeight() * 0.8) : height;
+                monitorDialog.setSize(new Dimension(width,height));
+                final Point location = RedisMainWindow.this.getLocation();
+                monitorDialog.setLocation(location.x+10,location.y+RedisMainWindow.this.getHeight()-monitorDialog.getHeight()-statePanel.getHeight()-10);
 
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+//                Rectangle rec= RedisMainWindow.this.getBounds();
+                final Point location = RedisMainWindow.this.getLocation();
+                monitorDialog.setLocation(location.x+10,location.y+RedisMainWindow.this.getHeight()-monitorDialog.getHeight()-statePanel.getHeight()-10);
+            }
+        });
     }
 
     //------------------------------------------------------toolbar start-------------------------------------------
 
 
     private JToolBar getToolBar() {
-        return new RToolBar(jToolBarHeight,redisTree, (StatePanel) statePanel,(RTabbedPane) redisDataTabbedPane);
+        return new RToolBar(jToolBarHeight,redisTree, (StatePanel) statePanel,(RTabbedPane) redisDataTabbedPane,monitorDialog);
     }
     //------------------------------------------------------toolbar end-------------------------------------------
 
