@@ -39,13 +39,13 @@ public class LarkLog extends Observable {
         info("[Server "+server+"] > [Send Command] : "+msg,Color.ORANGE.darker() ,args );
     }
     public void receivedInfo(String server,String msg, Object... args){
-        info("[Server "+server+"] > [Response Received] : "+msg ,args );
+        info("[Server "+server+"] < [Response Received] : "+msg ,args );
     }
     public void receivedError(String server,String msg, Throwable e){
         if(e != null){
-            info("[Server %s] > [Response Received] : %s > %s",Color.RED,server,msg,e.getMessage());
+            info("[Server %s] < [Response Received] : %s > %s",Color.RED,server,msg,e.getMessage());
         }else{
-            info("[Server %s] > [Response Received] : %s ",Color.RED,server,msg );
+            info("[Server %s] < [Response Received] : %s ",Color.RED,server,msg );
         }
 
     }

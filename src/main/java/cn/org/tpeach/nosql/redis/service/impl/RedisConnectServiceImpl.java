@@ -62,22 +62,22 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
 
     private static final Logger logger = LoggerFactory.getLogger(RedisConnectServiceImpl.class);
 
-	@Override
-	public boolean connectTest(RedisConnectInfo connectInfo) {
-		String uuid = StringUtils.getUUID();
-		try {
-			connectInfo.setId(uuid);
-			RedisLarkPool.addOrUpdateConnectInfo(connectInfo);
-			String ping = super.executeJedisCommand(new PingCommand(uuid));
-	        if(!"PONG".equals(ping)){
-	            throw new ServiceException("Ping命令执行失败");
-	        }
-	        return true;
-		}finally {
-			RedisLarkPool.destory(uuid);
-			RedisLarkPool.deleteConnectInfo(uuid);
-		}
-	}
+    @Override
+    public boolean connectTest(RedisConnectInfo connectInfo) {
+        String uuid = StringUtils.getUUID();
+        try {
+            connectInfo.setId(uuid);
+            RedisLarkPool.addOrUpdateConnectInfo(connectInfo);
+            String ping = super.executeJedisCommand(new PingCommand(uuid));
+            if(!"PONG".equals(ping)){
+                throw new ServiceException("Ping命令执行失败");
+            }
+            return true;
+        }finally {
+            RedisLarkPool.destory(uuid);
+            RedisLarkPool.deleteConnectInfo(uuid);
+        }
+    }
 
     @Override
     public String readString(String id, int db, String key) {
@@ -123,7 +123,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     }
 
     /* (non-Javadoc)
-	 * @see cn.org.tpeach.nosql.redis.service.IRedisConnectService#getDbKeySize(java.lang.String, int)
+     * @see cn.org.tpeach.nosql.redis.service.IRedisConnectService#getDbKeySize(java.lang.String, int)
      */
     @Override
     public Long getDbKeySize(String id, int db) {
@@ -138,14 +138,14 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
 
     @Override
     public Collection<String> getKeys(String id, int db, String pattern) {
-    	if(StringUtils.isBlank(pattern)) {
-    		pattern = "*";
-    	}
+        if(StringUtils.isBlank(pattern)) {
+            pattern = "*";
+        }
         final RedisStructure redisStructure = super.executeJedisCommand(new RedisStructureCommand(id));
         if(RedisStructure.SINGLE.equals(redisStructure)){
             ScanCommand command = new ScanCommand(id, db, ScanCursor.INITIAL, 10000);
             if(StringUtils.isNotBlank(pattern)) {
-            	command.match(pattern);
+                command.match(pattern);
             }
             KeyScanCursor<String> scanResult = command.execute();
             return scanResult.getKeys();
@@ -302,7 +302,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
 //                        map.put(entry.getKey(),entry.getValue());
 //                    }
 //                }
-                
+
 
                 HscanHash hscanHashCommand;
                 if(pageBean.isFirstPage()) {
@@ -384,34 +384,32 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     }
 
     /* (non-Javadoc)
-	 * @see cn.org.tpeach.nosql.redis.service.IRedisConnectService#flushDb(java.lang.String, int)
+     * @see cn.org.tpeach.nosql.redis.service.IRedisConnectService#flushDb(java.lang.String, int)
      */
     @Override
     public String flushDb(String id, int db) {
         return super.executeJedisCommand(new FlushDbCommand(id, db));
     }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * cn.org.tpeach.nosql.redis.service.IRedisConnectService#updateKeyInfo(cn.org.
-	 * tpeach.nosql.redis.bean.RedisKeyInfo,
-	 * cn.org.tpeach.nosql.redis.bean.RedisKeyInfo)
-	 */
-	@Override
-	public RedisKeyInfo updateKeyInfo(RedisKeyInfo newKeyInfo, RedisKeyInfo oldKeyInfo) {
-		String id = newKeyInfo.getId();
-		int db = newKeyInfo.getDb();
-		String key =  newKeyInfo.getKey();
-		System.out.println("newKeyInfo>>>" + newKeyInfo);
-		System.out.println("oldKeyInfo>>>" + oldKeyInfo);
-		switch (oldKeyInfo.getType()) {
-			case STRING:
-				super.executeJedisCommand(new SetString(id, db, key, newKeyInfo.getValue()));
-				break;
-			case LIST:
-	             //查看下标的值是否相等
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * cn.org.tpeach.nosql.redis.service.IRedisConnectService#updateKeyInfo(cn.org.
+     * tpeach.nosql.redis.bean.RedisKeyInfo,
+     * cn.org.tpeach.nosql.redis.bean.RedisKeyInfo)
+     */
+    @Override
+    public RedisKeyInfo updateKeyInfo(RedisKeyInfo newKeyInfo, RedisKeyInfo oldKeyInfo) {
+        String id = newKeyInfo.getId();
+        int db = newKeyInfo.getDb();
+        String key =  newKeyInfo.getKey();
+        switch (oldKeyInfo.getType()) {
+            case STRING:
+                super.executeJedisCommand(new SetString(id, db, key, newKeyInfo.getValue()));
+                break;
+            case LIST:
+                //查看下标的值是否相等
                 List<String> list = super.executeJedisCommand(new LrangeList(id, db, key, newKeyInfo.getIndex(), newKeyInfo.getIndex()));
                 if(CollectionUtils.isEmpty(list)){
                     throw new ServiceException("添加失败，数据已更新");
@@ -420,29 +418,29 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                 if(!oldKeyInfo.getValue().equals(oldValue)){
                     throw new ServiceException("the row has been changed and can't be update now.Reload and try again");
                 }
-				super.executeJedisCommand(new LsetList(id, db, key, newKeyInfo.getIndex(), newKeyInfo.getValue()));
-				break;
-			case SET:
-				super.executeJedisCommand(new SremSet(id, db, key, oldKeyInfo.getValue()));
-				super.executeJedisCommand(new SAddSet(id, db, key, newKeyInfo.getValue()));
-				break;
-			case HASH:
+                super.executeJedisCommand(new LsetList(id, db, key, newKeyInfo.getIndex(), newKeyInfo.getValue()));
+                break;
+            case SET:
+                super.executeJedisCommand(new SremSet(id, db, key, oldKeyInfo.getValue()));
+                super.executeJedisCommand(new SAddSet(id, db, key, newKeyInfo.getValue()));
+                break;
+            case HASH:
                 if(!oldKeyInfo.getField().equals(newKeyInfo.getField())){
                     super.executeJedisCommand(new HdelHash(id,db,key,oldKeyInfo.getField()));
                 }
-				super.executeJedisCommand(new HsetHash(id, db, key, newKeyInfo.getField(), newKeyInfo.getValue()));
-				break;
-			case ZSET:
-				super.executeJedisCommand(new ZremSet(id, db, key, oldKeyInfo.getValue()));
-				super.executeJedisCommand(new ZAddSet(id, db, key, newKeyInfo.getScore(), newKeyInfo.getValue()));
-				break;
-			default:
-				throw new ServiceException("未知的类型：" + oldKeyInfo.getType());
+                super.executeJedisCommand(new HsetHash(id, db, key, newKeyInfo.getField(), newKeyInfo.getValue()));
+                break;
+            case ZSET:
+                super.executeJedisCommand(new ZremSet(id, db, key, oldKeyInfo.getValue()));
+                super.executeJedisCommand(new ZAddSet(id, db, key, newKeyInfo.getScore(), newKeyInfo.getValue()));
+                break;
+            default:
+                throw new ServiceException("未知的类型：" + oldKeyInfo.getType());
 
-		}
-		return oldKeyInfo;
+        }
+        return oldKeyInfo;
 
-	}
+    }
 
     @Override
     public RedisKeyInfo addRowKeyInfo(RedisKeyInfo keyInfo, boolean isLeftList) {
@@ -500,7 +498,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                 super.executeJedisCommand(new SremSet(id, db, key,valueOrField));
                 break;
             case HASH:
-                 count = super.executeJedisCommand(new HdelHash(id, db, key,valueOrField));
+                count = super.executeJedisCommand(new HdelHash(id, db, key,valueOrField));
                 break;
             case ZSET:
                 super.executeJedisCommand(new ZremSet(id, db, key,valueOrField));
@@ -519,7 +517,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     }
     @Override
     public Map<String, String> getConnectInfo(String id,boolean isFresh){
-	    return getConnectInfo(id,isFresh,true);
+        return getConnectInfo(id,isFresh,true);
     }
     @Override
     public Map<String, String> getConnectInfo(String id,boolean isFresh,boolean printLog) {
@@ -533,7 +531,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     }
     @Override
     public List<RedisClientBo>  clientList(String id){
-	    return clientList(id,true);
+        return clientList(id,true);
     }
     @Override
     public List<RedisClientBo>  clientList(String id,boolean printLog){
