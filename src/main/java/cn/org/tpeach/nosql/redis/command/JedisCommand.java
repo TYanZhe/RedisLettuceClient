@@ -63,7 +63,7 @@ public abstract class JedisCommand<T> implements ICommand<T> {
         try{
              t = concreteCommand(redisLarkContext);
         }catch (Exception e){
-            LarkFrame.larkLog.error("",e);
+            LarkFrame.larkLog.receivedError(redisConnectInfo.getName(),"",e);
             throw e;
         }
 //        LarkFrame.larkLog.info("[Server %s] Response Received : %s ", Color.BLUE.darker(),redisConnectInfo.getName(),t);

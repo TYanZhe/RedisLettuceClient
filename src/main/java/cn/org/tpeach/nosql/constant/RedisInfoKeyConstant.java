@@ -50,6 +50,10 @@ public class RedisInfoKeyConstant {
     public final static String totalNetInputBytes = "total_net_input_bytes";
     /** 服务输出网络流量*/
     public final static String totalNetOutputBytes = "total_net_output_bytes";
+    /**输入带宽*/
+    public final static String instantaneousIutputKbps = "instantaneous_input_kbps";
+    /** 输出带宽*/
+    public final static String instantaneousOutputKbps = "instantaneous_output_kbps";
     /** 拒绝连接客户端数*/
     public final static String rejectedConnections = "rejected_connections";
     /**服务主进程在核心态累积CPU耗时 */

@@ -14,16 +14,14 @@ import cn.org.tpeach.nosql.redis.bean.SlowLogBo;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.GsonUtil;
 import cn.org.tpeach.nosql.tools.MapUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.component.EasyJSP;
 import cn.org.tpeach.nosql.view.component.PrefixTextLabel;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
+import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import cn.org.tpeach.nosql.view.ui.RToggleButtonUI;
-import io.lettuce.core.output.KeyStreamingChannel;
-import javafx.collections.ListChangeListener;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -42,12 +40,12 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 @Getter
@@ -71,7 +69,7 @@ public class ServiceInfoPanel extends JPanel {
     private RedisTreeItem oldRedisTreeItem;
     @Getter
     @Setter
-    private  Map<String, String> redinInfoMap;
+    private  Map<String, String> redisInfoMap;
     @Getter
     @Setter
     private List<RedisClientBo> redisClientList;
@@ -87,6 +85,8 @@ public class ServiceInfoPanel extends JPanel {
     private JToggleButton  autoFreshToggleButton;
 
     private JTabbedPane jTabbedPane;
+    @Getter
+    private MonitorDialog monitorDialog;
     private AtomicBoolean isExecute = new AtomicBoolean(false);
     private ChangeListener changeListener = new ChangeListener() {
         @Override
@@ -107,13 +107,15 @@ public class ServiceInfoPanel extends JPanel {
     /**
      * Creates new form ServiceInfoPanel
      */
-    public ServiceInfoPanel(RedisTreeItem redisTreeItem,JTabbedPane jTabbedPane) {
+    public ServiceInfoPanel(RedisTreeItem redisTreeItem, JTabbedPane jTabbedPane, MonitorDialog monitorDialog) {
         this.oldRedisTreeItem = redisTreeItem;
         this.redisTreeItem = redisTreeItem;
         this.jTabbedPane = jTabbedPane;
+        this.monitorDialog = monitorDialog;
         //获取连接信息
-        this.redinInfoMap = redisConnectService.getConnectInfo(redisTreeItem.getId(),false);
-        if(MapUtils.isEmpty(redinInfoMap)){
+        this.redisInfoMap = redisConnectService.getConnectInfo(redisTreeItem.getId(),false);
+        if(MapUtils.isEmpty(redisInfoMap)){
+            SwingTools.showMessageInfoDialog(null,"连接中，请稍后查看...","Server");
             return;
         }
         redisClientList = redisConnectService.clientList(redisTreeItem.getId());
@@ -179,7 +181,7 @@ public class ServiceInfoPanel extends JPanel {
     }
 
     public void requestData(){
-        redinInfoMap = redisConnectService.getConnectInfo(redisTreeItem.getId(),true,false);
+        redisInfoMap = redisConnectService.getConnectInfo(redisTreeItem.getId(),!monitorDialog.isVisible(),false);
         redisClientList = redisConnectService.clientList(redisTreeItem.getId(),false);
         slowLogList = redisConnectService.slowlogGet(redisTreeItem.getId(),false);
     }
@@ -210,49 +212,49 @@ public class ServiceInfoPanel extends JPanel {
 
         //更新top表格
         //更新右边服务列表
-        if(MapUtils.isNotEmpty(redinInfoMap)){
+        if(MapUtils.isNotEmpty(redisInfoMap)){
             DefaultTableModel model = (DefaultTableModel) baseInfoTable.getModel();
             model.getDataVector().clear();
             Vector<String> dataVector = new Vector<>();
-            dataVector.add(redisTreeItem.getName());
-            dataVector.add(redinInfoMap.get(RedisInfoKeyConstant.redisVersion));
-            dataVector.add(redinInfoMap.get(RedisInfoKeyConstant.usedMemoryHuman));
-            dataVector.add(redinInfoMap.get(RedisInfoKeyConstant.connectedClients));
-            dataVector.add(redinInfoMap.get(RedisInfoKeyConstant.totalCommandsProcessed));
-            dataVector.add(redinInfoMap.get(RedisInfoKeyConstant.uptimeInDays));
+            dataVector.add(redisTreeItem.getParentName());
+            dataVector.add(redisInfoMap.get(RedisInfoKeyConstant.redisVersion));
+            dataVector.add(redisInfoMap.get(RedisInfoKeyConstant.usedMemoryHuman));
+            dataVector.add(redisInfoMap.get(RedisInfoKeyConstant.connectedClients));
+            dataVector.add(redisInfoMap.get(RedisInfoKeyConstant.totalCommandsProcessed));
+            dataVector.add(redisInfoMap.get(RedisInfoKeyConstant.uptimeInDays));
             model.addRow(dataVector);
 
-            redisVersionLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.redisVersion));
-            redisModeLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.redisMode));
-            osLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.OS));
-            processIdLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.processId));
-            tcpPortLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.tcpPort));
-            uptimeInSecondsLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.uptimeInSeconds));
+            redisVersionLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.redisVersion));
+            redisModeLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.redisMode));
+            osLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.OS));
+            processIdLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.processId));
+            tcpPortLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.tcpPort));
+            uptimeInSecondsLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.uptimeInSeconds));
 
-            connectedClientsLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.connectedClients));
-            clientLongestOutputListLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.clientLongestOutputList));
-            clientBiggestInputBufLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.clientBiggestInputBuf));
-            blockedClientsLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.blockedClients));
-
-
-            usedMemoryLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.usedMemory));
-            usedMemoryRssLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.usedMemoryRss));
-            usedMemoryPeakHumanLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.usedMemoryPeakHuman));
-            memFragmentationRatioLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.memFragmentationRatio));
-            memAllocatorLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.memAllocator));
+            connectedClientsLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.connectedClients));
+            clientLongestOutputListLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.clientLongestOutputList));
+            clientBiggestInputBufLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.clientBiggestInputBuf));
+            blockedClientsLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.blockedClients));
 
 
-            totalConnectionsReceivedLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.totalConnectionsReceived));
-            totalCommandsProcessedLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.totalCommandsProcessed));
-            instantaneousOpsOerSecLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.instantaneousOpsOerSec));
-            totalNetInputBytesLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.totalNetInputBytes));
-            totalNetOutputBytesLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.totalNetOutputBytes));
-            rejectedConnectionsLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.totalNetOutputBytes));
+            usedMemoryLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.usedMemory));
+            usedMemoryRssLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.usedMemoryRss));
+            usedMemoryPeakHumanLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.usedMemoryPeakHuman));
+            memFragmentationRatioLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.memFragmentationRatio));
+            memAllocatorLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.memAllocator));
 
-            usedCpuSysLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.usedCpuSys));
-            usedCpuUserLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.usedCpuUser));
-            usedCpuSysChildrenLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.usedCpuSysChildren));
-            usedCpuUserChildrenLabel.setText(redinInfoMap.get(RedisInfoKeyConstant.usedCpuUserChildren));
+
+            totalConnectionsReceivedLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.totalConnectionsReceived));
+            totalCommandsProcessedLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.totalCommandsProcessed));
+            instantaneousOpsOerSecLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.instantaneousOpsOerSec));
+            totalNetInputBytesLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.totalNetInputBytes));
+            totalNetOutputBytesLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.totalNetOutputBytes));
+            rejectedConnectionsLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.totalNetOutputBytes));
+
+            usedCpuSysLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.usedCpuSys));
+            usedCpuUserLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.usedCpuUser));
+            usedCpuSysChildrenLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.usedCpuSysChildren));
+            usedCpuUserChildrenLabel.setText(redisInfoMap.get(RedisInfoKeyConstant.usedCpuUserChildren));
         }
         if(CollectionUtils.isNotEmpty(redisClientList)){
             DefaultTableModel model = (DefaultTableModel) clientTable.getModel();

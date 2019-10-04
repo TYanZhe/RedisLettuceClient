@@ -307,13 +307,16 @@ public class RedisMainWindow extends javax.swing.JFrame {
                         serverTreePopMenu.getComponent(5).setEnabled(false);
                         serverTreePopMenu.getComponent(6).setEnabled(false);
                         serverTreePopMenu.getComponent(7).setEnabled(false);
+                        serverTreePopMenu.getComponent(8).setEnabled(false);
                 	}else {
                         //连接
                         serverTreePopMenu.getComponent(0).setEnabled(false);
                         //断开连接
                         serverTreePopMenu.getComponent(1).setEnabled(true);
-                        //服务信息
+                         //设为活动节点
                         serverTreePopMenu.getComponent(2).setEnabled(true);
+                        //服务信息
+                        serverTreePopMenu.getComponent(3).setEnabled(true);
                         //重新加载
                         serverTreePopMenu.getComponent(4).setEnabled(true);
                 	}
@@ -322,6 +325,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                     serverTreePopMenu.getComponent(0).setEnabled(true);
                     serverTreePopMenu.getComponent(1).setEnabled(false);
                     serverTreePopMenu.getComponent(2).setEnabled(false);
+                    serverTreePopMenu.getComponent(3).setEnabled(false);
                     serverTreePopMenu.getComponent(4).setEnabled(false);
                 }
 
@@ -400,14 +404,16 @@ public class RedisMainWindow extends javax.swing.JFrame {
     private void clickLeftTreeNode(MouseEvent evt) {
         RTreeNode treeNode = (RTreeNode) redisTree.getLastSelectedPathComponent();
         final int childCount = treeNode.getChildCount();
-        //判断是否已经加载过
-        if (childCount > 0) {
-            return;
-        }
+
         if (null != treeNode) {
             Object userObject = treeNode.getUserObject();
             if (null != userObject && userObject instanceof RedisTreeItem) {
                 final RedisTreeItem redisTreeItem = (RedisTreeItem) userObject;
+                //判断是否已经加载过
+                if (childCount > 0) {
+                    ((StatePanel) statePanel).doUpdateStatus(redisTreeItem);
+                    return;
+                }
                 switch (redisTreeItem.getType()) {
                     case SERVER:
                         LarkFrame.executorService.execute(() -> {
@@ -465,7 +471,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         redisDataTabbedPane = new RTabbedPane();
         logPanel = new javax.swing.JPanel();
         logTabbedPane = new RTabbedPane();
-        statePanel = new StatePanel();
+        statePanel = new StatePanel(monitorDialog);
         jToolBar = getToolBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
