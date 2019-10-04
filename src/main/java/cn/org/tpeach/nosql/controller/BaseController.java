@@ -26,6 +26,7 @@ public abstract class BaseController {
             return new ResultRes<R>(true, function.apply(params), null);
         } catch (Exception e) {
             if(e instanceof ServiceException || e instanceof RedisException){
+                log.error("业务接口异常",e);
                 return new ResultRes<R>(false, null,  e.getMessage());
             }else{
                 log.error("服务接口异常",e);
@@ -42,6 +43,7 @@ public abstract class BaseController {
             return new ResultRes<T>(true, t, null);
         } catch (Exception e) {
             if(e instanceof ServiceException || e instanceof RedisException){
+                log.error("业务接口异常",e);
                 return new ResultRes<T>(false, null,  e.getMessage());
             }else {
                 log.error("服务接口异常",e);

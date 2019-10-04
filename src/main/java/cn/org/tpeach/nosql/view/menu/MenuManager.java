@@ -23,6 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import cn.org.tpeach.nosql.bean.PageBean;
@@ -118,6 +119,9 @@ public enum MenuManager {
 			//服务信息
 			JMenuItem serverInfoItem = getJMenuItem(I18nKey.RedisResource.SERVERINFO,PublicConstant.Image.server16);
 			reloadItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+			//编辑
+			JMenuItem activeItem = getJMenuItem("设为活动服务");
+
 			openItem.addActionListener(e->{
 				RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
 				RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
@@ -136,7 +140,7 @@ public enum MenuManager {
 						valid = false;
 						int conform = SwingTools.showConfirmDialogYNC(null, "连接已打开，编辑将会关闭连接，是否继续？", "编辑确认");
 						if(conform == JOptionPane.YES_OPTION){
-							disConnecect(tree,topTabbedPane);
+							disConnecect(tree,topTabbedPane,statePanel);
 							//删除包含的标签
 							int tabCount = topTabbedPane.getTabCount();
 							for(int i=tabCount-1;i>=0;i--) {
@@ -191,7 +195,7 @@ public enum MenuManager {
 				}
 			});
 			disConnectItem.addActionListener(e->{
-				disConnecect(tree,topTabbedPane);
+				disConnecect(tree,topTabbedPane,statePanel);
 			});
 			reloadItem.addActionListener(e->{
 				RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
@@ -207,11 +211,19 @@ public enum MenuManager {
 				statePanel.doUpdateStatus(redisTreeItem);
 				addServerInfoToTab(topTabbedPane, statePanel);
 			});
+			activeItem.addActionListener(e->{
+				RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
+				RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
+				tree.setSelectionPath(new TreePath(node.getPath()));
+				statePanel.doUpdateStatus(redisTreeItem);
+			});
+
 			totalItem.setEnabled(false);
 			consoleItem.setEnabled(false);
 			//添加菜单需要修改cn.org.tpeach.nosql.view.RedisMainWindow.redisTreeMouseClicked 下标
 			popMenu.add(openItem);
 			popMenu.add(disConnectItem);
+			popMenu.add(activeItem);
 			popMenu.add(serverInfoItem);
 			popMenu.add(editItem);
 
@@ -242,7 +254,7 @@ public enum MenuManager {
 
 			serviceInfoPanel.updateData(true);
 		}else{
-			topTabbedPane.addTab("SERVER "+statePanel.getCurrentRedisItem().getParentName(), PublicConstant.Image.server16,new ServiceInfoPanel(statePanel.getCurrentRedisItem(),topTabbedPane),"SERVER "+statePanel.getCurrentRedisItem().getParentName());
+			topTabbedPane.addTab("SERVER "+statePanel.getCurrentRedisItem().getParentName(), PublicConstant.Image.server16,new ServiceInfoPanel(statePanel.getCurrentRedisItem(),topTabbedPane,statePanel.getMonitorDialog()),"SERVER "+statePanel.getCurrentRedisItem().getParentName());
 
 		}
 	}
@@ -250,7 +262,7 @@ public enum MenuManager {
 	/**
 	 * @param tree
 	 */
-	private void disConnecect(JTree tree,RTabbedPane jTabbedPane) {
+	private void disConnecect(JTree tree,RTabbedPane jTabbedPane,StatePanel statePanel) {
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
 		RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
 		DefaultTreeModel defaultModel = (DefaultTreeModel)tree.getModel();
@@ -274,6 +286,7 @@ public enum MenuManager {
 		}
 //				tree.updateUI();
 		defaultModel.reload(node);
+		statePanel.doUpdateStatus(null);
 	}
 	
 

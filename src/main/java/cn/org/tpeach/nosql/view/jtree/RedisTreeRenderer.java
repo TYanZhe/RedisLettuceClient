@@ -45,8 +45,11 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 			int row, boolean hasFocus) {
 
 		this.hasFocus = hasFocus;
+
 		// 取得節點
 		RTreeNode treeNode = (RTreeNode) value;
+		RTreeNode selectNode = (RTreeNode) tree.getLastSelectedPathComponent();
+
 		// 取得路徑
 		TreeNode[] paths = treeNode.getPath();
 		Object userObject = treeNode.getUserObject();
@@ -99,8 +102,10 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 				setEnabled(false);
 				LookAndFeel laf = UIManager.getLookAndFeel();
 				Icon disabledIcon = laf.getDisabledIcon(tree, icon);
-				if (disabledIcon != null)
+				if (disabledIcon != null){
 					icon = disabledIcon;
+				}
+
 				setDisabledIcon(icon);
 			} else {
 				setEnabled(true);
@@ -122,8 +127,11 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 
 		setComponentOrientation(tree.getComponentOrientation());
 		selected = sel;
-
-
+		if(selected){
+			this.setBackground(new Color(230, 244, 254));
+		}else{
+			this.setBackground(Color.WHITE);
+		}
 		return this;
 
 	}
@@ -166,14 +174,17 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 
 	@Override
 	public void paint(Graphics g) {
-		if (mouseEnter) {
-			if (backgroundColor == null) {
-				backgroundColor = this.getBackground();
+		if(!selected){
+			if (mouseEnter) {
+				if (backgroundColor == null) {
+					backgroundColor = this.getBackground();
+				}
+				this.setBackground(new Color(230, 244, 254));
+			} else {
+				this.setBackground(backgroundColor);
 			}
-			this.setBackground(new Color(230, 244, 254));
-		} else {
-			this.setBackground(backgroundColor);
 		}
+
 
 		super.paint(g);
 

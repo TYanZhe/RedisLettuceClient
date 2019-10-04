@@ -141,20 +141,20 @@ public class SwingTools {
 	public static void addTextCopyMenu(JTextComponent component ) {
 		addTextCopyMenu(component,null);
 	}
-    public static void enterPressesWhenFocused(JTextField textField,ActionListener actionListener) {
-        textField.registerKeyboardAction(actionListener,
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false),
-                JComponent.WHEN_FOCUSED);
+	public static void enterPressesWhenFocused(JTextField textField,ActionListener actionListener) {
+		textField.registerKeyboardAction(actionListener,
+				KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false),
+				JComponent.WHEN_FOCUSED);
 
-        textField.registerKeyboardAction(actionListener,
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
-                JComponent.WHEN_FOCUSED);
-    }
+		textField.registerKeyboardAction(actionListener,
+				KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
+				JComponent.WHEN_FOCUSED);
+	}
 
 
 	// --------------------------------------监听事件相关结束------------------------------------------------
 	/**
-	 * 
+	 *
 	 * @param parentNode
 	 * @param id
 	 *            唯一标识 SERVER DATABASE KEY
@@ -167,7 +167,7 @@ public class SwingTools {
 	 * @return
 	 */
 	public static RTreeNode addTreeNode(RTreeNode parentNode, RedisTreeItem parentItem, String id, String key,
-			String name, Integer db, RedisType redisType, String path, String tipText) {
+										String name, Integer db, RedisType redisType, String path, String tipText) {
 		if (StringUtils.isBlank(id)) {
 			throw new ServiceException("添加节点id为空");
 		}
@@ -184,7 +184,7 @@ public class SwingTools {
 	}
 
 	public static RTreeNode addServerTreeNode(RTreeNode parentNode, String id, String name, String path,
-			String tipText) {
+											  String tipText) {
 		return addTreeNode(parentNode, null, id, null, name, null, RedisType.SERVER, path, tipText);
 	}
 
@@ -193,24 +193,24 @@ public class SwingTools {
 	}
 
 	public static RTreeNode addDatabaseTreeNode(RTreeNode parentNode, RedisTreeItem parentItem, String name, Integer db,
-			String path, String tipText) {
+												String path, String tipText) {
 		return addTreeNode(parentNode, parentItem, parentItem.getId(), null, name, db, RedisType.DATABASE, path,
 				tipText);
 	}
 
 	public static RTreeNode addDatabaseTreeNode(RTreeNode parentNode, RedisTreeItem parentItem, String name, Integer db,
-			String path) {
+												String path) {
 		return addDatabaseTreeNode(parentNode, parentItem, name, db, path, name);
 	}
 
 	public static RTreeNode addKeyTreeNode(RTreeNode parentNode, RedisTreeItem parentItem, String key, String name,
-			String path, String tipText) {
+										   String path, String tipText) {
 		return addTreeNode(parentNode, parentItem, parentItem.getId(), key, name, parentItem.getDb(), RedisType.KEY,
 				path, tipText);
 	}
 
 	public static RTreeNode addKeyNamespaceTreeNode(RTreeNode parentNode, RedisTreeItem parentItem, String key,
-			String name, String path, String tipText) {
+													String name, String path, String tipText) {
 		return addTreeNode(parentNode, parentItem, parentItem.getId(), key, name, parentItem.getDb(),
 				RedisType.KEY_NAMESPACE, path, tipText);
 	}
@@ -226,29 +226,29 @@ public class SwingTools {
 			while (atomicBoolean.get()) {
 				for(int i=0;i<7;i++) {
 					switch (i) {
-					case 0:
-						loadingTreeNode.setIcon(PublicConstant.Image.loading02);
-						break;
-					case 1:
-						loadingTreeNode.setIcon(PublicConstant.Image.loading03);
-						break;
-					case 2:
-						loadingTreeNode.setIcon(PublicConstant.Image.loading04);
-						break;
-					case 3:
-						loadingTreeNode.setIcon(PublicConstant.Image.loading05);
-						break;
-					case 4:
-						loadingTreeNode.setIcon(PublicConstant.Image.loading06);
-						break;
-					case 5:
-						loadingTreeNode.setIcon(PublicConstant.Image.loading07);
-						break;
-					case 6:
-						loadingTreeNode.setIcon(PublicConstant.Image.loading01);
-						break;
-					default:
-						break;
+						case 0:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading02);
+							break;
+						case 1:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading03);
+							break;
+						case 2:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading04);
+							break;
+						case 3:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading05);
+							break;
+						case 4:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading06);
+							break;
+						case 5:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading07);
+							break;
+						case 6:
+							loadingTreeNode.setIcon(PublicConstant.Image.loading01);
+							break;
+						default:
+							break;
 					}
 					if(atomicBoolean.get() && parentNode.getChildCount() == 1) {
 						defaultModel.reload(loadingTreeNode);
@@ -261,7 +261,7 @@ public class SwingTools {
 				}
 			}
 			countDownLatch.countDown();
-			});
+		});
 
 		LarkFrame.executorService.execute(()->{
 			try {
@@ -278,6 +278,9 @@ public class SwingTools {
 				after.accept(resultRes);
 				redisTree.updateUI();
 			}catch (Exception e){
+				SwingTools.showMessageErrorDialog(null,e.getMessage());
+				parentNode.removeAllChildren();
+				redisTree.updateUI();
 				log.error("addLoadingTreeNode异常",e);
 			}finally {
 				atomicBoolean.set(false);
@@ -290,7 +293,7 @@ public class SwingTools {
 	}
 	/**
 	 * 展开某个节点的所有子节点
-	 * 
+	 *
 	 * @param aTree
 	 * @param node
 	 */
@@ -356,7 +359,7 @@ public class SwingTools {
 
 	/**
 	 * optionType 为 YES_NO_OPTION
-	 * 
+	 *
 	 * @param parentComponent
 	 * @param message
 	 * @param title
@@ -370,7 +373,7 @@ public class SwingTools {
 		return (String) JOptionPane.showInputDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE,
 				null, null, defaultValue);
 	}
-	
+
 	/**
 	 * 创建一个面板，面板中心显示一个标签，用于表示某个选项卡需要显示的内容
 	 */
@@ -398,7 +401,7 @@ public class SwingTools {
 	 * 创建一个面板，面板中心显示一个标签，用于表示某个选项卡需要显示的内容
 	 */
 	public static JPanel createTextRow(JLabel lable, JComponent field, double lableWeightX, double fieldWeightX,
-			int width,int rowHeight, Color bgcolor,Insets labelInsets,Insets fieldInsets) {
+									   int width,int rowHeight, Color bgcolor,Insets labelInsets,Insets fieldInsets) {
 		JPanel pannel = getPannelPreferredSize(width, rowHeight);
 		pannel.setLayout(new GridBagLayout());
 		addLabel(pannel, lable, lableWeightX, 0,labelInsets);
@@ -409,7 +412,7 @@ public class SwingTools {
 
 		return pannel;
 	}
-	
+
 	public static void addTextField(JComponent component, JComponent field, double fieldWeightX, int row,Insets fieldInsets) {
 		component.add(field, EasyGBC.build(1, row, 4, 1).setFill(EasyGBC.HORIZONTAL).setWeight(fieldWeightX, 1.0)
 				.resetInsets(fieldInsets).setAnchor(EasyGBC.WEST));
@@ -424,13 +427,13 @@ public class SwingTools {
 		panel.setPreferredSize(new Dimension(width, height));
 		return panel;
 	}
-	
+
 	public static Dimension getScreenSize() {
 		return Toolkit.getDefaultToolkit().getScreenSize();
 	}
-	
 
-    /**
+
+	/**
 	 * 统一设置字体，父界面设置之后，所有由父界面进入的子界面都不需要再次设置字体
 	 */
 	public static void initGlobalFont(Font font) {

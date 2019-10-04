@@ -8,6 +8,7 @@ import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.redis.bean.RedisClientBo;
 import cn.org.tpeach.nosql.redis.bean.SlowLogBo;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
+import cn.org.tpeach.nosql.redis.command.connection.SelectCommand;
 import cn.org.tpeach.nosql.redis.command.key.*;
 import cn.org.tpeach.nosql.redis.command.server.*;
 import cn.org.tpeach.nosql.tools.*;
@@ -100,21 +101,21 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
 
 
 
-//        SelectCommand selectCommand = new SelectCommand(id, 0);
-//        int dbAmount = 100;
-//        for (int i = 0; i < dbAmount; i++) {
-//            try {
-//                selectCommand.setDb(i);
-//                executeJedisCommand(selectCommand);
-//            } catch (Exception e) {
-//                dbAmount = i;
-//                break;
-//            }
-//        }
-        int dbAmount = 1;
-        if(RedisStructure.SINGLE.equals(redisStructure)){
-            dbAmount = 16;
+        SelectCommand selectCommand = new SelectCommand(id, 0);
+        int dbAmount = 100;
+        for (int i = 0; i < dbAmount; i++) {
+            try {
+                selectCommand.setDb(i);
+                executeJedisCommand(selectCommand);
+            } catch (Exception e) {
+                dbAmount = i;
+                break;
+            }
         }
+//        int dbAmount = 1;
+//        if(RedisStructure.SINGLE.equals(redisStructure)){
+//            dbAmount = 16;
+//        }
         final String[] s = new String[dbAmount];
         IntStream.range(0, dbAmount).forEach(dbIndex -> s[dbIndex] = "db" + dbIndex + "("
                 + executeJedisCommand(new DbSizeCommand(id, dbIndex)) + ")");
@@ -138,19 +139,31 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
 
     @Override
     public Collection<String> getKeys(String id, int db, String pattern) {
-        if(StringUtils.isBlank(pattern)) {
-            pattern = "*";
+        String allPattern = "*";
+        int count = 10000;
+        if(StringUtils.isNotBlank(pattern) && !allPattern.equals(pattern.trim())) {
+            pattern = pattern.trim();
+            final DbSizeCommand dbSizeCommand = new DbSizeCommand(id, db);
+            dbSizeCommand.setPrintLog(false);
+            final Long aLong = dbSizeCommand.execute();
+            if(aLong != null){
+                count = aLong.intValue();
+            }
+        }else{
+            pattern = allPattern;
         }
         final RedisStructure redisStructure = super.executeJedisCommand(new RedisStructureCommand(id));
         if(RedisStructure.SINGLE.equals(redisStructure)){
             ScanCommand command = new ScanCommand(id, db, ScanCursor.INITIAL, 10000);
-            if(StringUtils.isNotBlank(pattern)) {
-                command.match(pattern);
-            }
+            command.match(pattern);
+            command.count(count);
             KeyScanCursor<String> scanResult = command.execute();
             return scanResult.getKeys();
         }else if(RedisStructure.CLUSTER.equals(redisStructure)){
-            final ScanIterator<String> scan = super.executeJedisCommand(new ScanIteratorCommand(id, 10000, pattern));
+            final ScanIteratorCommand command = new ScanIteratorCommand(id, 10000, pattern);
+            command.match(pattern);
+            command.count(count);
+            final ScanIterator<String> scan = super.executeJedisCommand(command);
             final List<String> collect = scan.stream().collect(Collectors.toList());
             Collections.sort(collect);
             return collect;

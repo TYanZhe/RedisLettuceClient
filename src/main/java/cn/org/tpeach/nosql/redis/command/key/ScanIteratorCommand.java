@@ -36,6 +36,13 @@ public class ScanIteratorCommand extends JedisCommand<ScanIterator<String>> {
         return response;
     }
 
+    public void match(String pattern){
+        this.pattern = pattern;
+    }
+
+    public void count(Integer count){
+        this.count = count;
+    }
     @Override
     public RedisVersion getSupportVersion() {
         return RedisVersion.REDIS_1_0;

@@ -141,7 +141,20 @@ public class RToolBar extends JToolBar {
         });
         monitorButton.addActionListener(e->{
             if(!monitorDialog.isVisible() && !monitorDialog.isOutCLose()){
-                monitorDialog.setVisible(true);
+                if(statePanel.getCurrentRedisItem() == null){
+                    SwingTools.showMessageInfoDialog(null,"请选择一个服务","提示");
+                    return;
+                }
+                if(monitorDialog.isInit()){
+                    monitorDialog.setRedisTreeItem(statePanel.getCurrentRedisItem());
+                    monitorDialog.setVisible(true);
+                }else{
+                    monitorDialog.monitorInit(statePanel.getCurrentRedisItem());
+                    if(monitorDialog.isInit()){
+                        monitorDialog.setVisible(true);
+                    }
+                }
+
             }
         });
         this.add(newButton);

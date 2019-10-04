@@ -6,6 +6,7 @@ import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.MapUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,9 +21,11 @@ public class StatePanel extends JPanel {
     private JLabel redisServerVersionLabel;
     private JLabel clientCountLabel;
     private RedisTreeItem currentRedisItem;
-
+    @Getter
+    private MonitorDialog monitorDialog;
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
-    public StatePanel() {
+    public StatePanel(MonitorDialog monitorDialog) {
+        this.monitorDialog = monitorDialog;
         this.connectStateLabel = getLable();
         this.redisServerVersionLabel = getLable();
         this.clientCountLabel = getLable();
@@ -54,9 +57,11 @@ public class StatePanel extends JPanel {
     }
 
     public synchronized void doUpdateStatus(RedisTreeItem redisTreeItem){
-
-        Map<String, String> connectInfo = redisConnectService.getConnectInfo(redisTreeItem.getId(),false);
-        if(MapUtils.isNotEmpty(connectInfo)){
+        Map<String, String> connectInfo = null;
+        if(redisTreeItem != null){
+           connectInfo = redisConnectService.getConnectInfo(redisTreeItem.getId(),false);
+        }
+       if(MapUtils.isNotEmpty(connectInfo)){
             currentRedisItem = redisTreeItem ;
             //设置连接
             this.connectStateLabel.setForeground(Color.GREEN.darker().darker());

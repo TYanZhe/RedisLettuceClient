@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import io.lettuce.core.RedisConnectionException;
+import io.lettuce.core.RedisException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,10 +59,17 @@ public class RedisLarkFactory {
 				redisLark = (RedisLark) constructor.newInstance(redisStructure.getInitargs(conn));
 				if(redisLarkContext == null) {
 					redisLarkContext = new RedisLarkContext(redisLark,conn);
+					try {
+						redisLark.ping();
+					}catch (RedisException e){
+						LarkFrame.larkLog.receivedError(conn.getName(),"",e);
+						throw e;
+					}
 				}else {
 					redisLarkContext.setRedisLark(redisLark);
 				}
 				RedisLarkPool.addRedisLarkContext(conn.getId(), redisLarkContext);
+
 				LarkFrame.larkLog.receivedInfo(conn.getName(), "connected");
 			}
 			return redisLarkContext;

@@ -25,7 +25,7 @@ public class LarkLog extends Observable {
     }
     public void error(String msg, Throwable e){
         if(e !=null){
-            info(msg+" > "+e.getMessage(),Color.RED);
+            info(msg+" < "+e.getMessage(),Color.RED);
         }else{
             info(msg,Color.RED);
         }
@@ -43,7 +43,7 @@ public class LarkLog extends Observable {
     }
     public void receivedError(String server,String msg, Throwable e){
         if(e != null){
-            info("[Server %s] < [Response Received] : %s > %s",Color.RED,server,msg,e.getMessage());
+            info("[Server %s] < [Response Received] : %s %s",Color.RED,server,msg,e.getMessage());
         }else{
             info("[Server %s] < [Response Received] : %s ",Color.RED,server,msg );
         }
