@@ -10,11 +10,10 @@ import cn.org.tpeach.nosql.tools.PropertiesUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.LinkLabel;
 
-import java.awt.*;
-import java.io.*;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.io.*;
 
 /**
  　 * <p>Title: AboutDialog.java</p>

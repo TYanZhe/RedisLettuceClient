@@ -3,9 +3,8 @@
  */
 package cn.org.tpeach.nosql.view.table;
 
-import java.util.Vector;
-
 import javax.swing.table.DefaultTableModel;
+import java.util.Vector;
 
 /**
 　 * <p>Title: RTableModel.java</p> 

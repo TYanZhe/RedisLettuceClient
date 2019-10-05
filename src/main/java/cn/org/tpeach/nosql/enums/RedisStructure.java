@@ -1,12 +1,12 @@
 package cn.org.tpeach.nosql.enums;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.tools.ArraysUtil;
 import cn.org.tpeach.nosql.tools.ReflectUtil;
 import cn.org.tpeach.nosql.tools.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>Title: RedisStructure.java</p> 

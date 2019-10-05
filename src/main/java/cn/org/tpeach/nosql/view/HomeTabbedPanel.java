@@ -11,9 +11,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
 
 /**
  *

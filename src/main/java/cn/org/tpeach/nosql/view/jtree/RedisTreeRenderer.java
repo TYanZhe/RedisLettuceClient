@@ -1,21 +1,18 @@
 package cn.org.tpeach.nosql.view.jtree;
 
-import java.awt.*;
-import java.util.Enumeration;
-import java.util.concurrent.TimeUnit;
+import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.enums.RedisType;
+import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
+import cn.org.tpeach.nosql.tools.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
-
-import cn.org.tpeach.nosql.constant.PublicConstant;
-import cn.org.tpeach.nosql.enums.RedisType;
-import cn.org.tpeach.nosql.framework.LarkFrame;
-import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
-import cn.org.tpeach.nosql.tools.StringUtils;
-import lombok.Getter;
-import lombok.Setter;
+import java.awt.*;
+import java.util.Enumeration;
 
 /**
  * 树节点渲染器

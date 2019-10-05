@@ -3,25 +3,14 @@
  */
 package cn.org.tpeach.nosql.view.component;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.event.*;
-import java.awt.geom.RoundRectangle2D;
-
-import javax.swing.*;
-import javax.swing.plaf.basic.BasicTabbedPaneUI;
-import javax.swing.plaf.metal.MetalTabbedPaneUI;
-
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.swing.*;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
+import java.awt.*;
+import java.awt.event.*;
 
 
 

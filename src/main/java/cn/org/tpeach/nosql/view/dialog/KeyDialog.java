@@ -3,15 +3,10 @@
  */
 package cn.org.tpeach.nosql.view.dialog;
 
-import java.awt.GridBagLayout;
-import java.awt.Image;
-
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import cn.org.tpeach.nosql.view.component.EasyGBC;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
 　 * <p>Title: KeyDialog.java</p> 

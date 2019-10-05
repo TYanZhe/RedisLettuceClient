@@ -1,9 +1,5 @@
 package cn.org.tpeach.nosql.redis.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.redis.bean.RedisClientBo;
@@ -11,6 +7,10 @@ import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.bean.SlowLogBo;
 import io.lettuce.core.ScanCursor;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author tyz

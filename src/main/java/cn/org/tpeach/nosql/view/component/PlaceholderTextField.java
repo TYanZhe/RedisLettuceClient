@@ -1,19 +1,16 @@
 package cn.org.tpeach.nosql.view.component;
 
-import java.awt.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.geom.Rectangle2D;
-
-import javax.swing.BorderFactory;
-import javax.swing.JTextField;
-import javax.swing.text.Document;
-
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import sun.font.FontDesignMetrics;
+
+import javax.swing.*;
+import javax.swing.text.Document;
+import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 
 /**

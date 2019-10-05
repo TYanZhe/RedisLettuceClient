@@ -1,7 +1,6 @@
 package cn.org.tpeach.nosql.redis.command.string;
 
 import cn.org.tpeach.nosql.enums.RedisVersion;
-import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import org.slf4j.Logger;

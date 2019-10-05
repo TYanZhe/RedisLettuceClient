@@ -1,10 +1,5 @@
 package cn.org.tpeach.nosql.redis.bean;
 
-import java.awt.Color;
-
-import javax.swing.ImageIcon;
-
-import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.enums.RedisType;
 import lombok.AllArgsConstructor;
 import lombok.Data;

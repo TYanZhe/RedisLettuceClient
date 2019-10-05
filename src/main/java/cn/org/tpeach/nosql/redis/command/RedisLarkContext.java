@@ -1,13 +1,5 @@
 package cn.org.tpeach.nosql.redis.command;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import cn.org.tpeach.nosql.constant.RedisInfoKeyConstant;
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.enums.RedisVersion;
@@ -23,6 +15,14 @@ import io.lettuce.core.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**

@@ -1,28 +1,13 @@
 package cn.org.tpeach.nosql.view.dialog;
 
-import cn.org.tpeach.nosql.constant.I18nKey;
-import cn.org.tpeach.nosql.constant.PublicConstant;
-import cn.org.tpeach.nosql.framework.LarkFrame;
-import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
-import cn.org.tpeach.nosql.view.common.ServiceManager;
-import cn.org.tpeach.nosql.view.component.EasyJSP;
-import cn.org.tpeach.nosql.view.component.OnlyReadArea;
 import cn.org.tpeach.nosql.view.component.RTextArea;
-import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
-import cn.org.tpeach.nosql.view.menu.MenuManager;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 public class MagnifyTextDialog extends BaseDialog<String,String>{

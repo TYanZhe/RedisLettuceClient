@@ -3,20 +3,8 @@
  */
 package cn.org.tpeach.nosql.view.menu;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Stroke;
-import java.awt.event.MouseEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import javax.swing.UIDefaults;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * <p>

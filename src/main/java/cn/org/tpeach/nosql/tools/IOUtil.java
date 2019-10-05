@@ -1,11 +1,10 @@
 package cn.org.tpeach.nosql.tools;
 
-import java.awt.Image;
-import java.io.*;
-
-import javax.swing.ImageIcon;
-
 import lombok.extern.slf4j.Slf4j;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.*;
 
 /**
  * @author tyz

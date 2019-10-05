@@ -3,18 +3,14 @@
  */
 package cn.org.tpeach.nosql.view.component;
 
-import java.awt.Color;
-import java.awt.Dimension;
+import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.view.ui.RComboBoxUI;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.Vector;
-
-import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
-import javax.swing.JComboBox;
-
-import cn.org.tpeach.nosql.constant.PublicConstant;
-import cn.org.tpeach.nosql.view.ui.RComboBoxUI;
 
 /**
  * <p>

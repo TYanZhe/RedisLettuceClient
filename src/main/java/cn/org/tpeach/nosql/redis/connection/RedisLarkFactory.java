@@ -1,22 +1,20 @@
 package cn.org.tpeach.nosql.redis.connection;
 
-import java.awt.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
+import cn.org.tpeach.nosql.annotation.Component;
+import cn.org.tpeach.nosql.enums.RedisStructure;
+import cn.org.tpeach.nosql.exception.ServiceException;
+import cn.org.tpeach.nosql.framework.BeanContext;
 import cn.org.tpeach.nosql.framework.LarkFrame;
+import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
+import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
+import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import io.lettuce.core.RedisConnectionException;
 import io.lettuce.core.RedisException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.org.tpeach.nosql.annotation.Component;
-import cn.org.tpeach.nosql.enums.RedisStructure;
-import cn.org.tpeach.nosql.exception.ServiceException;
-import cn.org.tpeach.nosql.framework.BeanContext;
-import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
-import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author tyz

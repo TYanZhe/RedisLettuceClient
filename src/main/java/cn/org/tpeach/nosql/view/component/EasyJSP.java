@@ -2,13 +2,9 @@ package cn.org.tpeach.nosql.view.component;
 
 import cn.org.tpeach.nosql.view.ui.RScrollBarUI;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import javax.swing.plaf.ScrollBarUI;
+import java.awt.*;
 
 /**
  * @author tyz
@@ -59,7 +55,7 @@ public class EasyJSP extends JScrollPane {
 		return new RScrollBarUI();
 	}
 	private ScrollBarUI getHorizontalScrollBarUI() {
-		return new RScrollBarUI(false);
+		return new RScrollBarUI();
 	}
 	/**
 	 * 设置水平和垂直滚动条自动出现

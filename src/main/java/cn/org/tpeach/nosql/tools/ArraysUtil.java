@@ -1,9 +1,9 @@
 package cn.org.tpeach.nosql.tools;
 
+import cn.org.tpeach.nosql.function.Each;
+
 import java.util.Arrays;
 import java.util.Collection;
-
-import cn.org.tpeach.nosql.function.Each;
 
 /**
  * @author tyz

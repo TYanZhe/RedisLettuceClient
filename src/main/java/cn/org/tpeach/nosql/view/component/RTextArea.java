@@ -3,16 +3,13 @@
  */
 package cn.org.tpeach.nosql.view.component;
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import cn.org.tpeach.nosql.constant.PublicConstant;
 
-import javax.swing.BorderFactory;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.text.Document;
-
-import cn.org.tpeach.nosql.constant.PublicConstant;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 /**
  * <p>

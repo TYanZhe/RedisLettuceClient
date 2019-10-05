@@ -1,14 +1,9 @@
 package cn.org.tpeach.nosql.redis.bean;
 
-import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import lombok.*;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Base64;
 import java.util.Objects;
 
 /**

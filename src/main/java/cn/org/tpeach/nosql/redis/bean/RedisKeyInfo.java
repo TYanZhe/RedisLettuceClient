@@ -1,14 +1,13 @@
 package cn.org.tpeach.nosql.redis.bean;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.enums.RedisType;
 import io.lettuce.core.ScanCursor;
 import io.lettuce.core.ScoredValue;
 import lombok.Data;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author tyz

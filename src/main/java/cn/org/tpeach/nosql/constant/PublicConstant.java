@@ -1,12 +1,11 @@
 package cn.org.tpeach.nosql.constant;
 
-import java.awt.*;
-import java.io.File;
-
-import javax.swing.ImageIcon;
-
 import cn.org.tpeach.nosql.tools.IOUtil;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
 
 /**
  * @author tyz
@@ -74,6 +73,10 @@ public class PublicConstant {
         public static ImageIcon loading05 = IOUtil.getImageIcon("image/base/loading05.png");
         public static ImageIcon loading06 = IOUtil.getImageIcon("image/base/loading06.png");
         public static ImageIcon loading07 = IOUtil.getImageIcon("image/base/loading07.png");
+        public static ImageIcon arrow_down_scroll = IOUtil.getImageIcon("image/base/arrow_down_scroll.png");
+        public static ImageIcon arrow_up_scroll = IOUtil.getImageIcon("image/base/arrow_up_scroll.png");
+        public static ImageIcon arrow_right_scroll = IOUtil.getImageIcon("image/base/arrow_right_scroll.png");
+        public static ImageIcon arrow_left_scroll = IOUtil.getImageIcon("image/base/arrow_left_scroll.png");
         //菜單
         public static ImageIcon copy = IOUtil.getImageIcon("image/menu/copy.png");
         public static ImageIcon paste = IOUtil.getImageIcon("image/menu/paste.png");

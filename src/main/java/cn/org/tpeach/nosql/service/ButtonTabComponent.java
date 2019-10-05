@@ -1,11 +1,10 @@
 package cn.org.tpeach.nosql.service;
-import javax.swing.*;
-import javax.swing.*;
-import javax.swing.plaf.basic.BasicButtonUI;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.view.NewJFrameTest;
 
+import javax.swing.*;
+import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import java.awt.event.*;
 

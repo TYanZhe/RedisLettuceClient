@@ -293,7 +293,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         keyIdleTimeField.setText("" + redisKeyInfo.getIdleTime());
         searchButton.setText( String.format(TYPEHTML, redisKeyInfo.getType()));
 //        searchButton.setText(redisKeyInfo.getType().name());
-        searchTextField.setVisible(true);
+        searchTextField.setEnabled(true);
         switch (redisKeyInfo.getType()) {
             case LIST:
                 searchButton.setBackground(new Color(2, 122, 180));
@@ -308,7 +308,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 searchButton.setBackground(new Color(24, 170, 110));
                 break;
             case STRING:
-                searchTextField.setVisible(false);
+                searchTextField.setEnabled(false);
             default:
                 searchButton.setBackground(new Color(76,174,81));
                 break;

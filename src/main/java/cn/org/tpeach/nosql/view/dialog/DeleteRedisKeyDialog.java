@@ -3,26 +3,6 @@
  */
 package cn.org.tpeach.nosql.view.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.util.Collection;
-import java.util.Set;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.border.EmptyBorder;
-
 import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
@@ -37,6 +17,12 @@ import cn.org.tpeach.nosql.view.component.OnlyReadArea;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.Collection;
 
 /**
 　 * <p>Title: DeleteRedisKeyDialog.java</p> 

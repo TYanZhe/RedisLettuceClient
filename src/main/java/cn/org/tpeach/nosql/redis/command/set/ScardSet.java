@@ -6,8 +6,6 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
-
 /**
  * @author tyz
  * @Title: ScardSet

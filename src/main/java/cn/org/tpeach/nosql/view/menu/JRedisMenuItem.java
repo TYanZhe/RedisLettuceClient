@@ -3,18 +3,8 @@
  */
 package cn.org.tpeach.nosql.view.menu;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Insets;
-
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
+import javax.swing.*;
+import java.awt.*;
 
 /**
 　 * <p>Title: JRedisMenuItem.java</p> 

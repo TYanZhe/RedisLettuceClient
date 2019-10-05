@@ -1,21 +1,13 @@
 package cn.org.tpeach.nosql.redis.connection;
 
-import java.util.Map;
-import java.util.function.Consumer;
-
 import cn.org.tpeach.nosql.enums.RedisStructure;
-import cn.org.tpeach.nosql.enums.RedisVersion;
-import io.lettuce.core.*;
-import io.lettuce.core.api.sync.BaseRedisCommands;
-import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.api.sync.RedisHashCommands;
-import io.lettuce.core.api.sync.RedisKeyCommands;
-import io.lettuce.core.api.sync.RedisListCommands;
-import io.lettuce.core.api.sync.RedisServerCommands;
-import io.lettuce.core.api.sync.RedisSetCommands;
-import io.lettuce.core.api.sync.RedisSortedSetCommands;
-import io.lettuce.core.api.sync.RedisStringCommands;
-import io.lettuce.core.api.sync.RedisTransactionalCommands;
+import io.lettuce.core.KeyValue;
+import io.lettuce.core.ScanIterator;
+import io.lettuce.core.ScoredValue;
+import io.lettuce.core.TransactionResult;
+import io.lettuce.core.api.sync.*;
+
+import java.util.function.Consumer;
 
 /**
  * @author tyz

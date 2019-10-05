@@ -3,12 +3,10 @@ package cn.org.tpeach.nosql.redis.command.server;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import cn.org.tpeach.nosql.redis.command.string.GetString;
 import cn.org.tpeach.nosql.tools.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
 
 /**

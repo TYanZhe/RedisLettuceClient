@@ -1,18 +1,8 @@
 package cn.org.tpeach.nosql.view.ui;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Paint;
-import java.awt.Rectangle;
-
-import javax.swing.Icon;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
+import java.awt.*;
 
 /**
  * Implements the Eclipse-style tabs.
