@@ -467,12 +467,14 @@ public class ServiceInfoPanel extends JPanel {
 
 
         //---------------------------------------------------
+        infoPanel.setLayout(new BorderLayout());
         infoPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0,0,0,0),BorderFactory.createMatteBorder(1,0,0,0,new Color(192,192,192))));
-        infoPanel.add(leftPanel, EasyGBC.build(0,0,1,1).setFill(EasyGBC.BOTH).setWeight(0.56, 1.0)
-                .resetInsets(0,0,0,0).setAnchor(EasyGBC.EAST));
-        infoPanel.add(rightPanel,EasyGBC.build(1,0,1,1).setFill(EasyGBC.BOTH).setWeight(0.44, 1.0)
-                .resetInsets(0,0,0,0).setAnchor(EasyGBC.EAST));
-
+//        infoPanel.add(leftPanel, EasyGBC.build(0,0,1,1).setFill().setWeight(0.56, 1.0)
+//                .resetInsets(0,0,0,0).setAnchor(EasyGBC.WEST));
+//        infoPanel.add(rightPanel,EasyGBC.build(1,0,1,1).setFill().setWeight(0.44, 1.0)
+//                .resetInsets(0,0,0,0).setAnchor(EasyGBC.EAST));
+        infoPanel.add(leftPanel,BorderLayout.CENTER);
+        infoPanel.add(rightPanel,BorderLayout.EAST);
         leftPanel.setBorder(BorderFactory.createMatteBorder(0,0,0,1,new Color(192,192,192)));
         clientScrollPane.setBorder(BorderFactory.createEmptyBorder());
         logjScrollPane.setBorder(BorderFactory.createEmptyBorder());

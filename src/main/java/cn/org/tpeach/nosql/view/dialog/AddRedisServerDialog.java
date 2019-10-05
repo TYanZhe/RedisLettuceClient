@@ -60,10 +60,7 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
     
     
 
-    @Override
-	public void setMinimumSize() {
-		this.setMinimumSize(getAdaptDialogMinimumSize(minWidth,minHeight));
-	}
+
 	@Override
     public void initDialog(RedisConnectInfo connectInfo){
         if(connectInfo != null){
@@ -89,7 +86,7 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
     
     @Override
     protected void contextUiImpl(JPanel contextPanel,JPanel btnPanel) {
-    	this.rowHeight = LarkFrame.fm.getHeight() > 35 ? LarkFrame.fm.getHeight() : rowHeight;
+//    	this.rowHeight = LarkFrame.fm.getHeight() > 35 ? LarkFrame.fm.getHeight() : rowHeight;
 //    	this.setMinimumSize(new Dimension(1000, 50));
     	super.contextUiImpl(contextPanel, btnPanel);
         //https://www.ibm.com/developerworks/cn/java/j-lo-boxlayout/
@@ -116,10 +113,14 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
         authField = new PlaceholderTextField(20);
         authField.setPlaceholder("连接密码");
         authField.resetHeightSize(LarkFrame.fm.getHeight()-5);
+
+
         panel.add(SwingTools.createTextRow(structureLable,structurecheckBox,0.2,0.8,this.getWidth(),rowHeight,getPanelBgColor(),new Insets(10, 10, 0, 0),new Insets(10, 10, 0, 30)));
         panel.add(SwingTools.createTextRow(nameLable,nameField,this.getWidth(),rowHeight,getPanelBgColor()));
         panel.add(createHostTextRow(hostLable,hostField,portField,isCluster));
         panel.add(SwingTools.createTextRow(authLable,authField,this.getWidth(),rowHeight,getPanelBgColor()));
+//
+
 //        panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1,2,2,2,Color.GRAY),BorderFactory.createEmptyBorder(5,5,5,5)));
 //        tabbedPane.addTab("Server", null, panel, false);
         tabbedPane.addTab("Server",panel);

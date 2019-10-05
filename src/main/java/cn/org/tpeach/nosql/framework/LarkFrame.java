@@ -1,5 +1,28 @@
 package cn.org.tpeach.nosql.framework;
 
+import cn.org.tpeach.nosql.annotation.Component;
+import cn.org.tpeach.nosql.annotation.ComponentScan;
+import cn.org.tpeach.nosql.annotation.JFrameMain;
+import cn.org.tpeach.nosql.constant.ConfigConstant;
+import cn.org.tpeach.nosql.constant.I18nKey;
+import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.tools.*;
+import cn.org.tpeach.nosql.view.component.OnlyReadTextPane;
+import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
+import cn.org.tpeach.nosql.view.menu.MenuManager;
+import lombok.extern.slf4j.Slf4j;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+import sun.font.FontDesignMetrics;
+
+import javax.swing.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -10,38 +33,9 @@ import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import javax.swing.*;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
-
-import cn.org.tpeach.nosql.tools.*;
-import cn.org.tpeach.nosql.view.component.OnlyReadArea;
-import cn.org.tpeach.nosql.view.component.OnlyReadTextPane;
-import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
-import cn.org.tpeach.nosql.view.menu.MenuManager;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cn.org.tpeach.nosql.annotation.Component;
-import cn.org.tpeach.nosql.annotation.ComponentScan;
-import cn.org.tpeach.nosql.annotation.JFrameMain;
-import cn.org.tpeach.nosql.constant.ConfigConstant;
-import cn.org.tpeach.nosql.constant.I18nKey;
-import cn.org.tpeach.nosql.constant.PublicConstant;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * @author tyz
@@ -62,7 +56,7 @@ public class LarkFrame {
 	//资源文件
 	private static ResourceBundle platformResource;
 	public static JFrame frame;
-	public static FontMetrics fm = sun.font.FontDesignMetrics.getMetrics(new Font("Dialog", Font.PLAIN,16));
+	public static FontMetrics fm = FontDesignMetrics.getMetrics(new Font("Dialog", Font.PLAIN,16));
 	public static Properties APPLICATION_VALUE;
 
 	static {
@@ -254,5 +248,6 @@ public class LarkFrame {
 		COUNTRY = country ;
 		platformResource =  ResourceBundle.getBundle(PublicConstant.RESOURCE_CLASSNAME,new Locale(LANGUAGE, COUNTRY));
 	}
+
 
 }

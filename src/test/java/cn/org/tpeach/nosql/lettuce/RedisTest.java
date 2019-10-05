@@ -51,8 +51,8 @@ public class RedisTest {
             list[i] = "测试" +index;
             index++;
             try {
-				TimeUnit.MICROSECONDS.sleep(100);
-			} catch (InterruptedException e) {
+//				TimeUnit.MICROSECONDS.sleep(100);
+			} catch ( Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

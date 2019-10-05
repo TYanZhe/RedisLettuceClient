@@ -213,7 +213,7 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 	public void addTab(String title, Icon icon, Component component, String tip) {
 		super.addTab(title, icon, component, tip);
 		int index = this.indexOfTab(title);
-		addCloseTag(title, icon,index,true);
+		addCloseTag(title, icon,index,true,component);
 	}
 
 	@Override
@@ -224,18 +224,18 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 	public void addTab(String title, Icon icon, Component component,boolean isCloseIcon) {
 		super.addTab(title, icon, component);
 		int index = this.indexOfTab(title);
-		addCloseTag(title, icon,index,isCloseIcon);
+		addCloseTag(title, icon,index,isCloseIcon,component);
 	}
 	@Override
 	public void addTab(String title, Component component) {
 		super.addTab(title, component);
 		int index = this.indexOfTab(title);
-		addCloseTag(title,null,index,true);
+		addCloseTag(title,null,index,true,component);
 	}
 	
 	public Component add(String title, int index, Icon icon ,Component component) {
 		 Component c = super.add(component,index);
-		 addCloseTag(title, icon,index,true);
+		 addCloseTag(title, icon,index,true,component);
 		 return c;
 		 
 	}
@@ -243,7 +243,7 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 	public Component add(String title, int index,Component component) {
 		 return add(title,index,null,component);
 	}
-	public void addCloseTag( String title, Icon icon,int index,boolean isCloseIcon) {
+	public void addCloseTag( String title, Icon icon,int index,boolean isCloseIcon,Component component) {
 		
 		MouseListener close = new MouseAdapter() {
 
@@ -252,7 +252,28 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 				// your code to remove component
 				// I use this way , because I use other methods of control than normal:
 				// tab.remove(int index);
-				RTabbedPane.this.remove(RTabbedPane.this.getSelectedIndex());
+				int selectedIndex = RTabbedPane.this.getSelectedIndex();
+				if(component == RTabbedPane.this.getComponentAt(selectedIndex)){
+					RTabbedPane.this.remove(RTabbedPane.this.getSelectedIndex());
+				}else{
+					int tabCount = RTabbedPane.this.getTabCount();
+					for (int i = selectedIndex+1; i < tabCount; i++) {
+						Component componentAt = RTabbedPane.this.getComponentAt(i);
+						if(component == componentAt){
+							RTabbedPane.this.remove(i);
+							return;
+						}
+					}
+					for (int i = selectedIndex-1; i >=0; i++) {
+						Component componentAt = RTabbedPane.this.getComponentAt(i);
+						if(component == componentAt){
+							RTabbedPane.this.remove(i);
+							return;
+						}
+					}
+
+				}
+
 			}
 
 		};

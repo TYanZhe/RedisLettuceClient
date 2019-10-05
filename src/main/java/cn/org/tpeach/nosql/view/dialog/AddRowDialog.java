@@ -63,8 +63,9 @@ public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
     }
     @Override
 	public void setMinimumSize() {
-		this.setMinimumSize(getAdaptDialogMinimumSize(minWidth,minHeight));
-	}
+
+        super. setMinimumSize();
+    }
     @Override
     protected void contextUiImpl(JPanel contextPanel, JPanel btnPanel) {
         super.contextUiImpl(contextPanel, btnPanel);
