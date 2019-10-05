@@ -1,7 +1,6 @@
 package cn.org.tpeach.nosql.view.component;
 
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import java.awt.*;
 
 /**
  * @author tyz

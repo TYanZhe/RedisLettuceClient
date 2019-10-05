@@ -96,6 +96,7 @@ public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
                 panel.add(SwingTools.createTextRow(fieldHashLabel, hashKeyArea.getJScrollPane(), this.getWidth(), (int) (rowHeight * 3)));
                 JPanel valueHashAreaPanel =  SwingTools.createTextRow(valueHashLabel, valueHashArea.getJScrollPane(), 0.3, 0.7, this.getWidth(), (int) (rowHeight * 3), null, new Insets(13, 10, 0, 0), new Insets(13, 10, 0, 30));
                 panel.add(valueHashAreaPanel);
+                break;
             case ZSET:
                 valueArea = new RTextArea(6, 20);
                 scorePanel = SwingTools.createTextRow(scoreLable, scoreField, this.getWidth(), rowHeight);

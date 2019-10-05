@@ -1,36 +1,20 @@
 package cn.org.tpeach.nosql.view.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.util.function.Consumer;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.tools.SwingTools;
-import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.component.RButton;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.util.function.Consumer;
 
 public abstract class BaseDialog<T,R> extends JDialog implements WindowListener {
 	protected T t;

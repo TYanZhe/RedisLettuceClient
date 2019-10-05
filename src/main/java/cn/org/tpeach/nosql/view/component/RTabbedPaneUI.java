@@ -1,14 +1,8 @@
 package cn.org.tpeach.nosql.view.component;
 
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
-import java.awt.Color;
-import java.awt.FontMetrics;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Rectangle;
+import java.awt.*;
 
 /**
  * Created by SongFei on 2017/11/8.

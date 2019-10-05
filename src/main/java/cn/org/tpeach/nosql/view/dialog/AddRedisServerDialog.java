@@ -1,11 +1,5 @@
 package cn.org.tpeach.nosql.view.dialog;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.concurrent.TimeUnit;
-
-import javax.swing.*;
-
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
@@ -17,8 +11,15 @@ import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
-import cn.org.tpeach.nosql.view.component.*;
+import cn.org.tpeach.nosql.view.component.EasyGBC;
+import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
+import cn.org.tpeach.nosql.view.component.RButton;
 import cn.org.tpeach.nosql.view.ui.ServerTabbedPaneUI;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author tyz

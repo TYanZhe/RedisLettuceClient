@@ -5,16 +5,13 @@
  */
 package cn.org.tpeach.nosql.view.jtree;
 
-import java.awt.Color;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeSelectionModel;
-
-import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeSelectionModel;
+import java.awt.*;
 
 /**
  *

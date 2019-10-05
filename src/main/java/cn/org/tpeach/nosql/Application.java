@@ -5,7 +5,6 @@ import cn.org.tpeach.nosql.annotation.JFrameMain;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 
 import javax.swing.*;
-import java.util.Enumeration;
 
 /**
  * @author tyz

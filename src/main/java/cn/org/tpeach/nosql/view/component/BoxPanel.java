@@ -5,11 +5,8 @@
  */
 package cn.org.tpeach.nosql.view.component;
 
-import java.awt.Component;
-import javax.swing.Box;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  *

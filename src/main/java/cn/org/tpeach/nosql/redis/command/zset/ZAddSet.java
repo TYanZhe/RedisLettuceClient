@@ -3,7 +3,6 @@ package cn.org.tpeach.nosql.redis.command.zset;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import cn.org.tpeach.nosql.redis.command.set.SAddSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

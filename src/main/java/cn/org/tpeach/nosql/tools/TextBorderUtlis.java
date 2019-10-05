@@ -1,11 +1,7 @@
 package cn.org.tpeach.nosql.tools;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import javax.swing.border.LineBorder;
+import java.awt.*;
 
 /**
  * @author user 边框设置

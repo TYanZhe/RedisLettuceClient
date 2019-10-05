@@ -3,29 +3,6 @@
  */
 package cn.org.tpeach.nosql.view.menu;
 
-import java.awt.Component;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Collection;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
 import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
@@ -51,12 +28,27 @@ import cn.org.tpeach.nosql.view.dialog.AddRedisServerDialog;
 import cn.org.tpeach.nosql.view.dialog.DeleteRedisKeyDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 
+import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collection;
+import java.util.function.Consumer;
+
 /**
  * <p>
  * Title: MenuManager.java
  * </p>
  * 
- * @author taoyz @date 2019年8月22日 @version 1.0
+ * @author taoyz
+ * @date 2019年8月22日
+ * @version 1.0
  */
 public enum MenuManager {
 	INSTANCE;

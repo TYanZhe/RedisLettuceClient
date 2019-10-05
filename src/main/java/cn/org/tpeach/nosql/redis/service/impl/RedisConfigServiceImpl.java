@@ -1,6 +1,5 @@
 package cn.org.tpeach.nosql.redis.service.impl;
 
-import cn.org.tpeach.nosql.annotation.Component;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;

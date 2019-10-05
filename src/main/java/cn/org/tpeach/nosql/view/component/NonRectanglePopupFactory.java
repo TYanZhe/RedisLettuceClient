@@ -1,29 +1,13 @@
 package cn.org.tpeach.nosql.view.component;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Robot;
-import java.awt.Shape;
+import cn.org.tpeach.nosql.tools.StringUtils;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JToolTip;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
-import javax.swing.border.Border;
-
-import cn.org.tpeach.nosql.tools.StringUtils;
 
 /**
  * 

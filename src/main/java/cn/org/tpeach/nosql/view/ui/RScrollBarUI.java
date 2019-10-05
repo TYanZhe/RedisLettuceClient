@@ -1,174 +1,238 @@
 package cn.org.tpeach.nosql.view.ui;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.HeadlessException;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.WindowConstants;
-import javax.swing.plaf.basic.BasicArrowButton;
-
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.view.component.EasyJSP;
 import cn.org.tpeach.nosql.view.component.OnlyReadArea;
+import lombok.Getter;
+import lombok.Setter;
 
-class LogFrame extends  JFrame{
+import javax.swing.*;
+import javax.swing.plaf.basic.BasicArrowButton;
+import javax.swing.plaf.basic.BasicScrollBarUI;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-    OnlyReadArea textArea = new OnlyReadArea(50,100,1000);
+class LogFrame extends JFrame {
+
+    OnlyReadArea textArea = new OnlyReadArea(50, 100, 1000);
 
 
     public LogFrame() throws HeadlessException {
         JScrollPane scrollPane = new EasyJSP(textArea);
-        
+
 //        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         this.add(scrollPane);
         this.pack();
-        this.setSize(this.getWidth(), this.getHeight()-50);
+        this.setSize(this.getWidth(), this.getHeight() - 50);
         this.setVisible(true);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     }
 
 
-    public  void appendText(String text){
+    public void appendText(String text) {
         textArea.println(text);
+    }
+}
+class EnterArrowButton extends BasicArrowButton{
+    @Getter
+    @Setter
+    private boolean enter;
+
+    public EnterArrowButton(int direction) {
+        super(direction);
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                setEnter(true);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                setEnter(false);
+            }
+        });
     }
 }
 // BasicScrollBarUI
 public class RScrollBarUI extends javax.swing.plaf.metal.MetalScrollBarUI {
-	private boolean isVerticalScrollBar = true;
-    public static LogFrame logFrame ;
-    public static void main(String[] args) {
-    	logFrame = new LogFrame();
-	}
-    
-    
-    public RScrollBarUI() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+    //    private Color frameColor = new Color(145, 105, 55);
 
 
-	public RScrollBarUI(boolean isVerticalScrollBar) {
-		super();
-		this.isVerticalScrollBar = isVerticalScrollBar;
-	}
-
-
-	/**
-     * 绘制滑动块
-     */
     @Override
-    protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
-        int width = thumbBounds.width;
-        int height = thumbBounds.height;
-        Graphics2D g2 = (Graphics2D)g;
-        // 消除锯齿
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        g2.translate(thumbBounds.x, thumbBounds.y);
-        g2.setColor(new Color(156,190,200));
-        g2.drawRoundRect(1,1,width-2, height-2,3,3);
-        g2.setColor(new Color(205,205,205));
-        g2.fillRoundRect(1,1,width-2,height-2,3,3);
-//        if(height > 25){
-//            g2.setColor(new Color(0,143,207));
-//            g2.drawLine(3,height/2,width-4,height/2);
-//            g2.drawLine(3,height/2+3,width-4,height/2+3);
-//        }
-        // 半透明
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.5f));
-     // 设置填充颜色，这里设置了渐变，由下往上
-      g2.setPaint(new GradientPaint(c.getWidth() / 2, 1, Color.GRAY,c.getWidth() / 2, c.getHeight(), Color.GRAY));
-        g2.translate(-thumbBounds.x, -thumbBounds.y);
+    public Dimension getPreferredSize(JComponent c) {
+        return new Dimension(16, 16);
     }
-    /**
-     * 重绘滑块的滑动区域背景
-     */
-    @Override
-    protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
-        g.setColor(new Color(240,240,240));
-//        g.setColor(Color.RED);
-        int x = trackBounds.x;
-        int y = trackBounds.y;
-        int width = trackBounds.width;
-        int height = trackBounds.height;
-        Graphics2D g2 = (Graphics2D)g;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
 
-        g2.fill3DRect(x, y, width, height, true);
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-        g2.setColor(new Color(141,166,186));
-        g2.fill3DRect(x, y, 1, height+1, true);
-        if(trackHighlight == DECREASE_HIGHLIGHT) {
-            paintDecreaseHighlight(g);
-        } else if(trackHighlight == INCREASE_HIGHLIGHT)  {
-            paintIncreaseHighlight(g);
+    // 重绘滚动条的滑块
+    @Override
+    public void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+        super.paintThumb(g, c, thumbBounds);
+        int tw = thumbBounds.width;
+        int th = thumbBounds.height;
+        // 重定图形上下文的原点，这句一定要写，不然会出现拖动滑块时滑块不动的现象
+        g.translate(thumbBounds.x, thumbBounds.y);
+
+        Graphics2D g2 = (Graphics2D) g;
+        GradientPaint gp = null;
+        if (this.scrollbar.getOrientation() == JScrollBar.VERTICAL) {
+//            gp = new GradientPaint(0, 0, new Color(242, 222, 198), getWidth(), 0, new Color(207, 190, 164));
+            gp = new GradientPaint(0, 0, new Color(205,205,205), tw, 0, new Color(205,205,205));
+        }
+        if (this.scrollbar.getOrientation() == JScrollBar.HORIZONTAL) {
+            gp = new GradientPaint(0, 0, new Color(205,205,205), 0, th, new Color(205,205,205));
+        }
+        g2.setPaint(gp);
+
+        g2.fillRoundRect(0, 0, tw , th , 0, 0);
+//        g2.setColor(frameColor);
+//        g2.drawRoundRect(0, 0, tw - 1, th - 1, 5, 5);
+    }
+
+    // 重绘滑块的滑动区域背景
+    @Override
+    public void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+        Graphics2D g2 = (Graphics2D) g;
+        GradientPaint gp = null;
+        if (this.scrollbar.getOrientation() == JScrollBar.VERTICAL) {
+//            gp = new GradientPaint(0, 0, new Color(198, 178, 151), trackBounds.width, 0, new Color(234, 214, 190));
+            gp = new GradientPaint(0, 0, new Color(240,240,240), trackBounds.width, 0, new Color(240,240,240));
+        }
+        if (this.scrollbar.getOrientation() == JScrollBar.HORIZONTAL) {
+//            gp = new GradientPaint(0, 0, new Color(198, 178, 151), 0, trackBounds.height, new Color(234, 214, 190));
+            gp = new GradientPaint(0, 0, new Color(240,240,240), 0, trackBounds.height, new Color(240,240,240));
+        }
+        g2.setPaint(gp);
+        g2.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
+//        g2.setColor(new Color(175, 155, 95));
+//        g2.drawRect(trackBounds.x, trackBounds.y, trackBounds.width - 1, trackBounds.height - 1);
+        if (trackHighlight == BasicScrollBarUI.DECREASE_HIGHLIGHT){
+            this.paintDecreaseHighlight(g);
+        }
+        if (trackHighlight == BasicScrollBarUI.INCREASE_HIGHLIGHT){
+            this.paintIncreaseHighlight(g);
         }
     }
+
+    // 重绘当鼠标点击滑动到向上或向左按钮之间的区域
+    @Override
+    protected void paintDecreaseHighlight(Graphics g) {
+//        g.setColor(Color.green);
+//        int x = this.getTrackBounds().x;
+//        int y = this.getTrackBounds().y;
+//        int w = 0, h = 0;
+//        if (this.scrollbar.getOrientation() == JScrollBar.VERTICAL) {
+//            w = this.getThumbBounds().width;
+//            h = this.getThumbBounds().y - y;
+//
+//        }
+//        if (this.scrollbar.getOrientation() == JScrollBar.HORIZONTAL) {
+//            w = this.getThumbBounds().x - x;
+//            h = this.getThumbBounds().height;
+//        }
+//        g.fillRect(x, y, w, h);
+    }
+
+    // 重绘当鼠标点击滑块至向下或向右按钮之间的区域
+    @Override
+    protected void paintIncreaseHighlight(Graphics g) {
+//        Insets insets = scrollbar.getInsets();
+//        g.setColor(Color.blue);
+//        int x = this.getThumbBounds().x;
+//        int y = this.getThumbBounds().y;
+//        int w = this.getTrackBounds().width;
+//        int h = this.getTrackBounds().height;
+//        g.fillRect(x, y, w, h);
+    }
+
     @Override
     protected JButton createIncreaseButton(int orientation) {
-    	JButton button;
-//    	button = super.createIncreaseButton(orientation);
-        button = new BasicArrowButton(orientation) {
+        return new EnterArrowButton(orientation) {
+            // 重绘按钮的三角标记
             @Override
-            public void paint(Graphics g) {
-                Graphics2D g2 = (Graphics2D)g;
+            public void paintTriangle(Graphics g, int x, int y, int size, int direction, boolean isEnabled) {
+                Graphics2D g2 = (Graphics2D) g;
+                //        //消除文字锯齿
+                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//        //消除画图锯齿
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(122,138,153));
-                g2.drawLine(0,0,0,getHeight());
-                g2.drawLine(0,0,getWidth(),0-1);
-                if(isVerticalScrollBar) {
-                	g2.drawImage(PublicConstant.Image.arrow_up_blue.getImage(),4,2,null);
-                }else {
-                	g2.drawImage(PublicConstant.Image.arrow_right_blue.getImage(),4,4,null);
+
+                GradientPaint gp = null;
+                Image arrowImg = null;
+                switch (this.getDirection()) {
+                    case BasicArrowButton.SOUTH:
+//                        gp = new GradientPaint(0, 0, new Color(242, 222, 198), getWidth(), 0, new Color(207, 190, 164));
+                        if(!isEnter()){
+                            gp = new GradientPaint(0, 0, new Color(240,240,240), getWidth(), 0, new Color(240,240,240));
+                        }else{
+                            gp = new GradientPaint(0, 0, new Color(218, 218, 218), getWidth(), 0, new Color(218, 218, 218));
+                        }
+
+                        arrowImg = PublicConstant.Image.arrow_down_scroll.getImage();
+                        break;
+                    case BasicArrowButton.EAST:
+//                        gp = new GradientPaint(0, 0, new Color(242, 222, 198), 0, getHeight(), new Color(207, 190, 164));
+                        if(isEnter()){
+                            gp = new GradientPaint(0, 0, new Color(218, 218, 218), 0, getHeight(), new Color(218, 218, 218));
+                        }else{
+                            gp = new GradientPaint(0, 0, new Color(240,240,240), 0, getHeight(), new Color(240,240,240));
+                        }
+                    arrowImg = PublicConstant.Image.arrow_right_scroll.getImage();
+                    break;
+                    default:
+                        break;
                 }
-                
+                g2.setPaint(gp);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+//                g2.setColor(frameColor);
+//                g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+                g2.drawImage(arrowImg, (getWidth() - 2) / 2 - 5, (getHeight() - 2) / 2 - 5,  null);
             }
         };
-        button.setOpaque(false);
-        button.setBorder(BorderFactory.createEmptyBorder());
-//        button.setPreferredSize(new Dimension(button.getPreferredSize().width,button.getPreferredSize().width));
-
-        return button;
     }
+
     @Override
     protected JButton createDecreaseButton(int orientation) {
-
-    	JButton button;
-//    	button = super.createIncreaseButton(orientation);
-        button = new BasicArrowButton(orientation){
+        final BasicArrowButton basicArrowButton = new EnterArrowButton(orientation) {
             @Override
-            public void paint(Graphics g) {
-                Graphics2D g2 = (Graphics2D)g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(122,138,153));
-          
-                if(isVerticalScrollBar) {
-                    g2.drawLine(0,0,0,getHeight());
-                    g2.drawLine(0,getHeight()-1,getWidth(),getHeight());
-                	g2.drawImage(PublicConstant.Image.arrow_down_blue.getImage(),4,3,null);
-                }else {
-                    g2.drawLine(0,getHeight(),getWidth(),getHeight());
-                    g2.drawLine(getWidth(),0,getWidth(),getHeight()-1);
-                	g2.drawImage(PublicConstant.Image.arrow_left_blue.getImage(),3,4,null);
+            public void paintTriangle(Graphics g, int x, int y, int size, int direction, boolean isEnabled) {
+                Graphics2D g2 = (Graphics2D) g;
+                GradientPaint gp = null;
+                Image arrowImg = null;
+                switch (this.getDirection()) {
+                    case BasicArrowButton.NORTH:
+//                        gp = new GradientPaint(0, 0, new Color(242, 222, 198), getWidth(), 0, new Color(207, 190, 164));
+                        if(!isEnter()){
+                            gp = new GradientPaint(0, 0, new Color(240, 240, 240), getWidth(), 0, new Color(240, 240, 240));
+                        }else{
+                            gp = new GradientPaint(0, 0, new Color(218, 218, 218), getWidth(), 0, new Color(218, 218, 218));
+                        }
+
+                        arrowImg = PublicConstant.Image.arrow_up_scroll.getImage();
+                        break;
+                    case BasicArrowButton.WEST:
+
+//                        gp = new GradientPaint(0, 0, new Color(242, 222, 198), 0, getHeight(), new Color(207, 190, 164));
+
+                        if(isEnter()){
+                            gp = new GradientPaint(0, 0, new Color(218, 218, 218), 0, getHeight(), new Color(218, 218, 218));
+                        }else{
+                            gp = new GradientPaint(0, 0, new Color(240, 240, 240), 0, getHeight(), new Color(240, 240, 240));
+                        }
+                        arrowImg = PublicConstant.Image.arrow_left_scroll.getImage();
+                        break;
                 }
+
+                g2.setPaint(gp);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+//                g2.setColor(frameColor);
+//                g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+                g2.drawImage(arrowImg, (getWidth() - 2) / 2 - 5, (getHeight() - 2) / 2 - 5, null);
             }
         };
-        button.setOpaque(false);
-        button.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-        return button;
-    }
 
+
+        return basicArrowButton;
+    }
 }

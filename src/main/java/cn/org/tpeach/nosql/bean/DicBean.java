@@ -3,7 +3,6 @@
  */
 package cn.org.tpeach.nosql.bean;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

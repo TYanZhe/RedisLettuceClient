@@ -16,7 +16,6 @@ import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.MapUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
-import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.component.EasyJSP;
 import cn.org.tpeach.nosql.view.component.PrefixTextLabel;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;

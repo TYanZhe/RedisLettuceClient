@@ -1,22 +1,8 @@
 package cn.org.tpeach.nosql.view.ui;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import cn.org.tpeach.nosql.constant.PublicConstant;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonModel;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
@@ -24,8 +10,7 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
-
-import cn.org.tpeach.nosql.constant.PublicConstant;
+import java.awt.*;
 
 /**
  * <p>

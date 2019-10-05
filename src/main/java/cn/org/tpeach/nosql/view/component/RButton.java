@@ -3,21 +3,12 @@
  */
 package cn.org.tpeach.nosql.view.component;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.event.MouseAdapter;
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicButtonUI;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
-import javax.swing.plaf.basic.BasicButtonUI;
 
 /**
  * <p>
