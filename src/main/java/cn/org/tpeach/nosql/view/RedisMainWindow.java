@@ -21,14 +21,17 @@ import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.ConfigParser;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
-import cn.org.tpeach.nosql.view.component.*;
+import cn.org.tpeach.nosql.view.component.EasyJSP;
+import cn.org.tpeach.nosql.view.component.NonRectanglePopupFactory;
+import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
+import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeModel;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeRenderer;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 import cn.org.tpeach.nosql.view.ui.RScrollBarUI;
-import cn.org.tpeach.nosql.view.ui.RToggleButtonUI;
+import sun.font.FontDesignMetrics;
 
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
@@ -48,8 +51,8 @@ import java.util.List;
 public class RedisMainWindow extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 4087854446377861533L;
-    private final int INIT_WIDTH = 1425;
-    private final int INIT_HEIGHT = 890;
+    private final int INIT_WIDTH = 1152;
+    private final int INIT_HEIGHT = 720;
 
     private RedisTreeRenderer redisTreeRenderer = new RedisTreeRenderer();
     //初始化宽度占总屏幕宽度百分比
@@ -115,7 +118,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         Font font = new Font("Dialog", Font.PLAIN, ConfigParser.getInstance().getInt(ConfigConstant.Section.FONT, ConfigConstant.FONTSIZE, 12));
         Enumeration<Object> keys = UIManager.getDefaults().keys();
 
-        LarkFrame.fm = sun.font.FontDesignMetrics.getMetrics(font);
+        LarkFrame.fm = FontDesignMetrics.getMetrics(font);
         SwingTools.initGlobalFont(font);
         //UIManager.getDefaults().put("TabbedPane.tabRunOverlay", 0);
 //        UIManager.put("TabbedPane.contentAreaColor", new ColorUIResource(Color.GREEN));
@@ -145,7 +148,10 @@ public class RedisMainWindow extends javax.swing.JFrame {
     public RedisMainWindow() {
         //获取屏幕大小
         Dimension screenSize = SwingTools.getScreenSize();
-        width = (int) (screenSize.width * SIZE_PERCENT);
+        width = (int) (screenSize.width * SIZE_PERCENT) ;
+        int maxWidth =  (int) (screenSize.width * 0.7) ;
+        width = width > INIT_WIDTH ? width : INIT_WIDTH;
+        width = width > maxWidth ? maxWidth : width;
         height = INIT_HEIGHT * width / INIT_WIDTH;
         treePanelWidth = width * treePanelWidth / INIT_WIDTH;
 //        System.out.println("计算后的宽度：" + width + ",高度：" + height + ">>>>>treePanelWidth:" + treePanelWidth);
@@ -318,7 +324,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                         //服务信息
                         serverTreePopMenu.getComponent(3).setEnabled(true);
                         //重新加载
-                        serverTreePopMenu.getComponent(4).setEnabled(true);
+                        serverTreePopMenu.getComponent(5).setEnabled(true);
                 	}
         
                 }else{
@@ -326,7 +332,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                     serverTreePopMenu.getComponent(1).setEnabled(false);
                     serverTreePopMenu.getComponent(2).setEnabled(false);
                     serverTreePopMenu.getComponent(3).setEnabled(false);
-                    serverTreePopMenu.getComponent(4).setEnabled(false);
+                    serverTreePopMenu.getComponent(5).setEnabled(false);
                 }
 
             } else if (path.length == 3) {

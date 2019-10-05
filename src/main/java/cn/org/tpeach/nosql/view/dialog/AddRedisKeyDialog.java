@@ -46,7 +46,7 @@ public class AddRedisKeyDialog extends KeyDialog<RedisTreeItem, RedisKeyInfo> {
      *
      */
     private static final long serialVersionUID = -8149532555947009204L;
-    protected int minHeight = 350;
+    protected int minHeight = 300;
     private int strSetListWidth = 390;
     private int zSetHashWidth = 433;
     // 组件
@@ -131,7 +131,9 @@ public class AddRedisKeyDialog extends KeyDialog<RedisTreeItem, RedisKeyInfo> {
     }
     @Override
 	public void setMinimumSize() {
-		this.setMinimumSize(getAdaptDialogMinimumSize(minWidth,minHeight));
+        this.setMinHeight(minHeight);
+        this.setMinWidth(minWidth);
+		super.setMinimumSize();
 	}
     private void changeType(RedisType redisType) {
         switch (redisType) {

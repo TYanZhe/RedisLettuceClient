@@ -1423,14 +1423,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 }
                 break;
             case HASH:
-                if (redisDataTable.getSelectedRowCount() > 0) {
-                    this.deleteRowLabel.setEnabled(true);
-                } else {
-                    this.deleteRowLabel.setEnabled(false);
-                }
-                break;
             case SET:
-
             case ZSET:
                 this.addRowLabel.setEnabled(true);
                 if (redisDataTable.getSelectedRowCount() > 0) {

@@ -127,7 +127,10 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	public abstract void initDialog(T t);
 	
 	public void setMinimumSize() {
-		this.setMinimumSize(new Dimension(minWidth, minHeight));
+		Dimension screenSize = SwingTools.getScreenSize();
+		int width = (int) (screenSize.width * 0.3);
+		Dimension dimension = width < minWidth ? new Dimension(minWidth,minHeight):this.getAdaptDialogMinimumSize(minWidth,minHeight,0.3);
+		this.setMinimumSize( dimension);
 	}
 	
 	public Dimension getAdaptDialogMinimumSize(int minWidth,int minHeight) {

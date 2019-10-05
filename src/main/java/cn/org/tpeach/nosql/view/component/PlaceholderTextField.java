@@ -11,6 +11,9 @@ import javax.swing.text.Document;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.tools.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
+import sun.font.FontDesignMetrics;
 
 
 /**
@@ -27,6 +30,8 @@ public class PlaceholderTextField extends JTextField {
 	 */
 	private static final long serialVersionUID = 2073112779882943540L;
 	//提示信息
+    @Getter
+    @Setter
     private String placeholder;
 
     public PlaceholderTextField(final Document pDoc, final String pText, final int pColumns) {
@@ -93,34 +98,23 @@ public class PlaceholderTextField extends JTextField {
         if (StringUtils.isBlank(placeholder) || StringUtils.isNotBlank(getText())) {
             return;
         }
-        //绘制提示语
-        final Graphics2D graphics = (Graphics2D) pG;
-//        Font font = new Font("宋体",Font.PLAIN,14);
+//        //绘制提示语
+
+        final Graphics2D g = (Graphics2D) pG;
         Font font = this.getFont();
-        graphics.setFont(font);
-        //消除文字锯齿
-        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        //消除画图锯齿
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics.setColor(getDisabledTextColor());
-     // 获取到文字区域大小
-        Rectangle2D rect = font.getStringBounds(placeholder, ((Graphics2D)graphics).getFontRenderContext());
-        //向画板上写字
-//        graphics.drawString(placeholder, getInsets().left, pG.getFontMetrics().getMaxAscent() + getInsets().top);
-        int height = this.getHeight();
-        int rectHeight = (int) rect.getHeight();
-        int y =  getInsets().top + rectHeight  - (height - rectHeight)/2;
-
-        graphics.drawString(placeholder, getInsets().left+2, y);
+        g.setFont(font);
+        g.setColor(getDisabledTextColor());
+//        //消除文字锯齿
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//        //消除画图锯齿
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(getDisabledTextColor());
+        int maxAscent = FontDesignMetrics.getMetrics(font).getHeight();
+//        int y = ( this.getHeight() - maxAscent)/2 + maxAscent + getInsets().top;
+        int y =   maxAscent + getInsets().top;
+        g.drawString(placeholder, getInsets().left+2, y);
     }
 
-    public void setPlaceholder(final String placeholder) {
-        this.placeholder = placeholder;
-    }
-
-    public String getPlaceholder() {
-        return placeholder;
-    }
 
 /*    private int state = 0; //1->修改 0->提示
     private String showText;

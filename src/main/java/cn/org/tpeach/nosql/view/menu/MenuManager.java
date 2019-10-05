@@ -493,7 +493,20 @@ public enum MenuManager {
 		if(componect instanceof RedisTabbedPanel){
 			RedisTabbedPanel redisTabbedPanel = (RedisTabbedPanel) componect;
 			redisTabbedPanel.updateUI(node,tree,new PageBean(),true);
+		}else if(componect instanceof ServiceInfoPanel) {
+			int count = topTabbedPane.getTabCount();
+			for(int i = count -1 ;i>0;i--){
+				if(topTabbedPane.getComponentAt(i) instanceof RedisTabbedPanel){
+					topTabbedPane.add(item.getKey(),i, PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+					topTabbedPane.remove(i+1);
+					topTabbedPane.setSelectedIndex(i);
+					return;
+				}
+			}
+			topTabbedPane.addTab(item.getKey(),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+			topTabbedPane.setSelectedIndex(selectedIndex+1);
 		}else{
+
 			topTabbedPane.add(item.getKey(),selectedIndex, PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
 			topTabbedPane.remove(selectedIndex+1);
 		}

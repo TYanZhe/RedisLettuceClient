@@ -1,10 +1,7 @@
 package cn.org.tpeach.nosql.redis.command;
 
 import cn.org.tpeach.nosql.redis.command.connection.SelectCommand;
-import com.sun.org.apache.bcel.internal.generic.Select;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author tyz
