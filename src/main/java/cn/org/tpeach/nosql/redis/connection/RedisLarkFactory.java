@@ -78,6 +78,9 @@ public class RedisLarkFactory {
 			if(conn !=null){
 				LarkFrame.larkLog.receivedError(conn.getName(),"connect fail",ex);
 			}
+			if(ex instanceof RedisConnectionException){
+				throw (RedisConnectionException)ex;
+			}
 			throw  new RedisConnectionException(ex.getMessage());
 		}
 
