@@ -52,7 +52,7 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         if (StringUtils.isBlank(auth)) {
             auth = "";
         } else {
-            auth = auth + "@";
+//            auth = auth + "@";
         }
         final RedisURI build = RedisURI.Builder.redis(host, port).withPassword(auth).withDatabase(0).build();
         this.client = RedisClient.create(build);
