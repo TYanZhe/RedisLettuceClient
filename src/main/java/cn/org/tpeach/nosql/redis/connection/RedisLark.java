@@ -7,6 +7,8 @@ import io.lettuce.core.ScoredValue;
 import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.sync.*;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.function.Consumer;
 
 /**
@@ -21,6 +23,18 @@ import java.util.function.Consumer;
 public interface RedisLark<K, V> extends BaseRedisCommands<K, V>, RedisStringCommands<K, V>, RedisListCommands<K, V>,
         RedisHashCommands<K, V>, RedisSetCommands<K, V>, RedisSortedSetCommands<K, V>,
         RedisKeyCommands<K, V>, RedisServerCommands<K, V>, RedisTransactionalCommands<K, V> {
+
+    default Class<K> getKeyTpye(){
+        Type type = getClass().getGenericSuperclass();
+        if( type instanceof ParameterizedType){
+            ParameterizedType pType = (ParameterizedType)type;
+            Type claz = pType.getActualTypeArguments()[0];
+            if( claz instanceof Class ){
+                return  (Class<K>) claz;
+            }
+        }
+        return null;
+    }
 
     /**
      * Change the selected database for the current Commands.

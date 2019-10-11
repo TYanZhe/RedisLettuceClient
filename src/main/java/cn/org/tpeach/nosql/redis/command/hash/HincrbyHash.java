@@ -13,8 +13,8 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class HincrbyHash extends JedisDbCommand<Long> {
-    private String key;
-    private String field;
+    private byte[] key;
+    private byte[] field;
     private long increment;
     /**
      * 命令：HINCRBY key field increment
@@ -23,16 +23,21 @@ public class HincrbyHash extends JedisDbCommand<Long> {
      * @param key
      * @param field
      */
-    public HincrbyHash(String id, int db, String key, String field,long increment) {
+    public HincrbyHash(String id, int db, byte[] key, byte[] field,long increment) {
         super(id,db);
         this.key = key;
         this.field = field;
         this.increment = increment;
     }
-
+//    public HincrbyHash(String id, int db, String key, String field,long increment) {
+//        super(id,db);
+//        this.key = strToByte(key);
+//        this.field = strToByte(field);
+//        this.increment = increment;
+//    }
     @Override
     public String sendCommand() {
-        return "HINCRBY "+key +" "+field+" "+increment;
+        return "HINCRBY "+ byteToStr(key) +" "+ byteToStr(field)+" "+increment;
     }
 
     /**
@@ -47,7 +52,7 @@ public class HincrbyHash extends JedisDbCommand<Long> {
      * @return 执行HINCRBY命令之后，哈希表key中域field的值。
      */
     @Override
-    public Long  concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long  concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.hincrBy(key,field,increment);
         return response;

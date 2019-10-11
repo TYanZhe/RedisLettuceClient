@@ -121,7 +121,6 @@ public enum ConfigParser {
 	}
 
 	/**
-	 * @param file
 	 * @throws IOException
 	 */
 	private void readAfter() throws IOException {
@@ -130,9 +129,14 @@ public enum ConfigParser {
 			mapper.put(ConfigConstant.LANGUAGE, ConfigMapper.builder().value(ConfigConstant.Local.zh).build());
 			mapper.put(ConfigConstant.COUNTRY, ConfigMapper.builder().value(ConfigConstant.Local.CN).comment("中文").build());
 			entries.put(ConfigConstant.Section.LOCAL, mapper);
+			//字体
 			mapper = new LinkedHashMap<>(1);
 			mapper.put(ConfigConstant.FONTSIZE, ConfigMapper.builder().value(ConfigConstant.DEFAULT_FONTSIZE).build());
 			entries.put(ConfigConstant.Section.FONT, mapper);
+			//编码
+			mapper = new LinkedHashMap<>(1);
+			mapper.put(ConfigConstant.CHARACTER, ConfigMapper.builder().value(PublicConstant.CharacterEncoding.UTF_8).build());
+			entries.put(ConfigConstant.Section.CHARACTER_ENCODING, mapper);
 			writhConfigFile();
 		} else {
 			if (entries.get(ConfigConstant.Section.LOCAL) == null) {
@@ -150,6 +154,14 @@ public enum ConfigParser {
 				mapper.put(ConfigConstant.FONTSIZE, ConfigMapper.builder().value(ConfigConstant.DEFAULT_FONTSIZE).build());
 				entries.put(ConfigConstant.Section.FONT, mapper);
 				newMapper.put(ConfigConstant.Section.FONT, mapper);
+				IOUtil.fileAppendFW(file, parseWrite(newMapper));
+			}
+			if (entries.get(ConfigConstant.Section.CHARACTER_ENCODING) == null) {
+				Map<String, Object> newMapper = new LinkedHashMap<>();
+				Map<String, ConfigMapper> mapper = new LinkedHashMap<>(1);
+				mapper.put(ConfigConstant.CHARACTER, ConfigMapper.builder().value(PublicConstant.CharacterEncoding.UTF_8).build());
+				entries.put(ConfigConstant.Section.CHARACTER_ENCODING, mapper);
+				newMapper.put(ConfigConstant.Section.CHARACTER_ENCODING, mapper);
 				IOUtil.fileAppendFW(file, parseWrite(newMapper));
 			}
 

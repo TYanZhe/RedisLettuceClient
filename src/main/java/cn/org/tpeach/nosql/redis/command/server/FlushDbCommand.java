@@ -36,7 +36,7 @@ public class FlushDbCommand extends JedisDbCommand<String> {
 	 * @return 给定配置参数的值。
 	 */
 	@Override
-	public String concreteCommand(RedisLarkContext redisLarkContext) {
+	public String concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
 		final String response = redisLarkContext.flushDB();
 		return response;

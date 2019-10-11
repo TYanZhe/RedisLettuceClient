@@ -14,23 +14,23 @@ import org.slf4j.LoggerFactory;
  * @date 2019-06-25 23:48
  * @since 1.0.0
  */
-public class GetString extends JedisDbCommand<String> {
+public class GetString extends JedisDbCommand<byte[]> {
 	final static Logger logger = LoggerFactory.getLogger(GetString.class);
-	private String key;
+	private byte[] key;
 	/**
 	 * 命令: GET key
 	 * @param id
 	 * @param db
 	 * @param key
 	 */
-	public GetString(String id, int db, String key) {
+	public GetString(String id, int db, byte[] key) {
 		super(id,db);
 		this.key = key;
 
 	}
 	@Override
 	public String sendCommand() {
-		return "GET "+key  ;
+		return "GET "+byteToStr(key)  ;
 	}
 	/**
 	 * 返回key所关联的字符串值。
@@ -41,9 +41,9 @@ public class GetString extends JedisDbCommand<String> {
 	 * @return key的值。如果key不存在，返回nil。
 	 */
 	@Override
-	public String concreteCommand(RedisLarkContext redisLarkContext) {
+	public byte[] concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
-		final String response = redisLarkContext.get(key);
+		final byte[] response = redisLarkContext.get(key);
 		return response;
 	}
 

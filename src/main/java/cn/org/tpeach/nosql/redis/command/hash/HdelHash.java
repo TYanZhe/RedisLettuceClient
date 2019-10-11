@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 public class HdelHash extends JedisDbCommand<Long> {
-    private String key;
-    private String[] fields;
+    private byte[] key;
+    private byte[][] fields;
 
     /**
      * 命令：HDEL key field [field ...]
@@ -26,15 +26,19 @@ public class HdelHash extends JedisDbCommand<Long> {
      * @param key
      * @param fields
      */
-    public HdelHash(String id, int db, String key, String... fields) {
+//    public HdelHash(String id, int db, String key, String... fields) {
+//        super(id,db);
+//        this.key = strToByte(key);
+//        this.fields = strArrToByte(fields);
+//    }
+    public HdelHash(String id, int db, byte[] key, byte[]... fields) {
         super(id,db);
         this.key = key;
         this.fields = fields;
     }
-
     @Override
     public String sendCommand() {
-        return "HDEL "+key +" "+ Arrays.stream(fields).collect(Collectors.joining(" "));
+        return "HDEL "+byteToStr(key) +" "+ Arrays.stream(byteArrToStr(fields)).collect(Collectors.joining(" "));
     }
 
     /**
@@ -45,7 +49,7 @@ public class HdelHash extends JedisDbCommand<Long> {
      * @return  被成功移除的域的数量，不包括被忽略的域。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.hdel(key,fields);
         return response;

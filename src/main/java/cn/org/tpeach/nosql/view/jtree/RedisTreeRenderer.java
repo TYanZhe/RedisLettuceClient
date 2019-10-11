@@ -62,7 +62,7 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 				this.setText(redisTreeItem.getName());
 			}else {
 				// 设置文字
-				if (paths.length > 3 && !redisTreeItem.getType().equals(RedisType.KEY) && RedisType.LOADING.equals(redisTreeItem.getType())) {
+				if (paths.length > 3 && !redisTreeItem.getType().equals(RedisType.KEY) && !RedisType.LOADING.equals(redisTreeItem.getType())) {
 					if(treeNode.isEnabled()) {
 						this.setText(redisTreeItem.getName() + "(" + treeNode.getLeafCount() + ")");
 					}else {

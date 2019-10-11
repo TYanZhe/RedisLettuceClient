@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
  */
 public class SetRangeString extends JedisDbCommand<Long> {
     final static Logger logger = LoggerFactory.getLogger(SetRangeString.class);
-    private String key;
+    private byte[] key;
     private long offset;
-    private String value;
+    private byte[] value;
 
     /**
      * 命令：SETRANGE key offset value
@@ -28,7 +28,7 @@ public class SetRangeString extends JedisDbCommand<Long> {
      * @param offset
      * @param value
      */
-    public SetRangeString(String id, int db, String key, long offset, String value) {
+    public SetRangeString(String id, int db, byte[] key, long offset, byte[] value) {
         super(id,db);
         this.key = key;
         this.offset = offset;
@@ -36,7 +36,7 @@ public class SetRangeString extends JedisDbCommand<Long> {
     }
     @Override
     public String sendCommand() {
-        return "SETRANGE "+key +" "+offset+" "+value;
+        return "SETRANGE "+byteToStr(key) +" "+offset+" "+byteToStr(value);
     }
     /**
      * 用value参数覆写(Overwrite)给定key所储存的字符串值，从偏移量offset开始。
@@ -53,7 +53,7 @@ public class SetRangeString extends JedisDbCommand<Long> {
      * @return 被SETRANGE修改之后，字符串的长度。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.setrange(key,offset, value);
         return response;

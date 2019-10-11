@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
  */
 public class RpushList extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(RpushList.class);
-    private String key;
-    private String[] values;
+    private byte[] key;
+    private byte[][] values;
 
     /**
      * 命令：RPUSH key value [value ...]
@@ -30,7 +30,7 @@ public class RpushList extends JedisDbCommand<Long> {
      * @param key
      * @param values
      */
-    public RpushList(String id, int db, String key, String... values) {
+    public RpushList(String id, int db, byte[] key, byte[]... values) {
         super(id, db);
         this.key = key;
         this.values = values;
@@ -38,7 +38,7 @@ public class RpushList extends JedisDbCommand<Long> {
 
     @Override
     public String sendCommand() {
-        return "RPUSH "+ key +" "+ Arrays.stream(values).collect(Collectors.joining(" "));
+        return "RPUSH "+ byteToStr(key) +" "+ Arrays.stream(byteArrToStr(values)).collect(Collectors.joining(" "));
     }
     /**
      * 将一个或多个值value插入到列表key的表尾。
@@ -52,7 +52,7 @@ public class RpushList extends JedisDbCommand<Long> {
      * @return 执行RPUSH操作后，表的长度。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.rpush(key, values);
         return response;

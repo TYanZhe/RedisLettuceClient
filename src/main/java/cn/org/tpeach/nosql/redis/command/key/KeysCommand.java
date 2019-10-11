@@ -14,20 +14,20 @@ import java.util.List;
  * @date 2019-07-03 0:26
  * @since 1.0.0
  */
-public class KeysCommand extends JedisDbCommand<List<String>> {
-    private String pattern;
+public class KeysCommand extends JedisDbCommand<List<byte[]>> {
+    private byte[] pattern;
     /**
      * 命令：KEYS pattern
      * @param id
      */
-    public KeysCommand(String id, int db,String pattern) {
+    public KeysCommand(String id, int db,byte[] pattern) {
         super(id,db);
         this.pattern = pattern;
     }
 
     @Override
     public String sendCommand() {
-        return "KEYS "+pattern;
+        return "KEYS "+byteToStr(pattern);
     }
 
     /**
@@ -38,9 +38,9 @@ public class KeysCommand extends JedisDbCommand<List<String>> {
      * @return 符合给定模式的key列表。
      */
     @Override
-    public List<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public List<byte[]> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final List<String> response = redisLarkContext.keys(pattern);
+        final List<byte[]> response = redisLarkContext.keys(pattern);
         return response;
     }
 

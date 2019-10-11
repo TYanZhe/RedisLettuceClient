@@ -21,8 +21,6 @@ import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -64,19 +62,21 @@ public class ServiceManager {
 	 * @param redisTreeItem
 	 * @param keys
 	 */
-	public void drawRedisKeyTree(RTreeNode treeNode, final RedisTreeItem redisTreeItem, final Collection<String> keys) {
+	public void drawRedisKeyTree(RTreeNode treeNode, final RedisTreeItem redisTreeItem, final List<byte[]> keys) {
 		RedisTreeItem treeItem = (RedisTreeItem) treeNode.getUserObject();
 		boolean isReload = RedisType.KEY_NAMESPACE.equals(treeItem.getType());
 		if (CollectionUtils.isNotEmpty(keys)) {
 //			Set<String> sortKeys = new TreeSet<String>(Comparator.naturalOrder());
-			List<String> sortKeys = new ArrayList<>(keys);
+//			List<byte[]> sortKeys = new ArrayList<>(keys);
 //			sortKeys.addAll(keys);
-			keys.clear();
-			Collections.sort(sortKeys,String.CASE_INSENSITIVE_ORDER);
+//			keys.clear();
+//			Collections.sort(sortKeys,String.CASE_INSENSITIVE_ORDER);
+			List<byte[]> sortKeys = keys;
 			List<RTreeNode> lastRedisNodeList = new ArrayList<>();
 			String lastKeys = null;
-			for (String key : sortKeys) {
+			for (byte[] keySrc : sortKeys) {
 				String pattern = PublicConstant.NAMESPACE_SPLIT;
+				String key = StringUtils.byteToStr(keySrc);
 				if (key != null && key.contains(pattern)) {
 					String[] keySpace = key.split(pattern);
 					if (!ArraysUtil.isEmpty(keySpace)) {
@@ -112,12 +112,12 @@ public class ServiceManager {
 							String nameSpaceKey = keySpace[i];
 							RedisTreeItem parentItem = (RedisTreeItem) tempNode.getUserObject();
 							if (i == keySpace.length - 1) {
-								tempNode = SwingTools.addKeyTreeNode(tempNode, parentItem, key, key,
+								tempNode = SwingTools.addKeyTreeNode(tempNode, parentItem, keySrc, StringUtils.showHexStringValue(key),
 										parentItem.getPath() + "/" + nameSpaceKey, key);
 							} else {
 								if (!isReload) {
-									tempNode = SwingTools.addKeyNamespaceTreeNode(tempNode, parentItem, key,
-											nameSpaceKey, parentItem.getPath() + "/" + nameSpaceKey, nameSpaceKey);
+									tempNode = SwingTools.addKeyNamespaceTreeNode(tempNode, parentItem, keySrc,
+											StringUtils.showHexStringValue(nameSpaceKey), parentItem.getPath() + "/" + nameSpaceKey, nameSpaceKey);
 								} else if(treeItem.getName().equals(nameSpaceKey)){
 										isReload = false;
 								}
@@ -128,7 +128,7 @@ public class ServiceManager {
 					}
 
 				} else {
-					SwingTools.addKeyTreeNode(treeNode, redisTreeItem, key, key, redisTreeItem.getPath() + "/" + key,
+					SwingTools.addKeyTreeNode(treeNode, redisTreeItem, keySrc, StringUtils.showHexStringValue(key), redisTreeItem.getPath() + "/" + key,
 							key);
 				}
 			}
@@ -152,18 +152,20 @@ public class ServiceManager {
 				});
 	}
 	
-	public void openDbRedisTree(RTreeNode treeNode, RedisTreeItem redisTreeItem, JTree redisTree, JTextField keyFilterField) {
+	public void openDbRedisTree(RTreeNode treeNode, RedisTreeItem redisTreeItem, JTree redisTree, JTextField keyFilterField,boolean reload) {
 		SwingTools.addLoadingTreeNode(redisTree,treeNode,redisTreeItem,
-				()->BaseController.dispatcher(() -> redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyFilterField.getText())),
+				()->BaseController.dispatcher(() -> redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyFilterField.getText() ,false)),
 				resDatabase ->{
 					if (resDatabase.isRet()) {
-						final Collection<String> keys = resDatabase.getData();
+						final List<byte[]> keys = resDatabase.getData().getKeys();
 						treeNode.removeAllChildren();
 						this.drawRedisKeyTree(treeNode, redisTreeItem, keys);
 
 						DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
-						String name = redisTreeItem.getName();
-						redisTreeItem.setName(name.substring(0, name.lastIndexOf("("))+"("+redisConnectService.getDbKeySize(redisTreeItem.getId(), redisTreeItem.getDb())+")");
+						if(reload){
+							String name = redisTreeItem.getName();
+							redisTreeItem.setName(name.substring(0, name.lastIndexOf("("))+"("+redisConnectService.getDbKeySize(redisTreeItem.getId(), redisTreeItem.getDb())+")");
+						}
 //            SwingTools.expandTreeNode(redisTree, treeNode);
 						redisTree.expandPath(new TreePath(treeNode.getPath()));
 						defaultModel.reload(treeNode);

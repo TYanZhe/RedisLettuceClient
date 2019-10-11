@@ -15,10 +15,10 @@ import io.lettuce.core.ValueScanCursor;
  *
  * @author Administrator
  */
-public class SscanSet extends AbstractScanCommand<ValueScanCursor<String>> {
+public class SscanSet extends AbstractScanCommand<ValueScanCursor<byte[]>> {
 
 
-    public SscanSet(String id, int db, String key, ScanCursor scanCursor, Integer count) {
+    public SscanSet(String id, int db, byte[] key, ScanCursor scanCursor, Integer count) {
         super(id, db, key, scanCursor, count);
     }
 
@@ -29,9 +29,9 @@ public class SscanSet extends AbstractScanCommand<ValueScanCursor<String>> {
     }
 
     @Override
-    public ValueScanCursor<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public ValueScanCursor<byte[]> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
          super.concreteCommand(redisLarkContext);
-         ValueScanCursor<String> response = redisLarkContext.sscan(key, scanCursor, scanArgs);
+         ValueScanCursor<byte[]> response = redisLarkContext.sscan(key, scanCursor, scanArgs);
         return response;
     }
 

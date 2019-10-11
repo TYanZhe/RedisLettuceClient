@@ -1,5 +1,6 @@
 package cn.org.tpeach.nosql.redis.connection;
 
+import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.tools.StringUtils;
@@ -26,7 +27,7 @@ public class RedisLarkPool {
 	public static void destory(String id) {
 		final RedisLarkContext remove = pool.remove(id);
 		if(remove != null){
-			remove.close();
+			LarkFrame.executorService.execute(()->{try{remove.close();}catch (Exception e){}});
 		}
 
 	}

@@ -19,19 +19,19 @@ import java.util.stream.Collectors;
  */
 public class DelKeysCommand extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(DelKeysCommand.class);
-    private String[] keys;
+    private byte[][] keys;
     /**
      * DEL key [key ...]
      * @param id
      */
-    public DelKeysCommand(String id, int db, String... keys) {
+    public DelKeysCommand(String id, int db, byte[]... keys) {
         super(id,db);
         this.keys = keys;
     }
 
     @Override
     public String sendCommand() {
-        return "DEL "+ Arrays.stream(keys).collect(Collectors.joining(" "));
+        return "DEL "+ Arrays.stream(byteArrToStr(keys)).collect(Collectors.joining(" "));
     }
 
     /**
@@ -43,7 +43,7 @@ public class DelKeysCommand extends JedisDbCommand<Long> {
      * @return 被移除key的数量。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.del(keys);
         return response;

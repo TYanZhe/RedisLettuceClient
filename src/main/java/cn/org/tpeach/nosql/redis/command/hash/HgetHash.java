@@ -12,10 +12,10 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @date 2019-07-02 22:12
  * @since 1.0.0
  */
-public class HgetHash extends JedisDbCommand<String> {
+public class HgetHash extends JedisDbCommand<byte[]> {
 
-    private String key;
-    private String field;
+    private byte[] key;
+    private byte[] field;
 
 
     /**
@@ -25,15 +25,19 @@ public class HgetHash extends JedisDbCommand<String> {
      * @param key
      * @param field
      */
-    public HgetHash(String id, int db, String key, String field) {
+    public HgetHash(String id, int db, byte[] key, byte[] field) {
         super(id,db);
         this.key = key;
         this.field = field;
     }
-
+//    public HgetHash(String id, int db, String key, String field) {
+//        super(id,db);
+//        this.key = strToByte(key);
+//        this.field = strToByte(field);
+//    }
     @Override
     public String sendCommand() {
-        return "HGET "+key+" "+field;
+        return "HGET "+ byteToStr(key) + " "+ byteToStr(field);
     }
 
     /**
@@ -43,9 +47,9 @@ public class HgetHash extends JedisDbCommand<String> {
      * @return 给定域的值。当给定域不存在或是给定key不存在时，返回nil。
      */
     @Override
-    public String concreteCommand(RedisLarkContext redisLarkContext) {
+    public byte[] concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final String response = redisLarkContext.hget(key,field);
+        final byte[] response = redisLarkContext.hget(key,field);
         return response;
     }
 

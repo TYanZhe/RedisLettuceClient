@@ -13,8 +13,8 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class LremList extends JedisDbCommand<Long>{
-	private String key;
-	private String value;
+	private byte[] key;
+	private byte[] value;
 	private long count;
 
 	/**
@@ -25,7 +25,7 @@ public class LremList extends JedisDbCommand<Long>{
 	 * @param count
 	 * @param value
 	 */
-	public LremList(String id, int db, String key, long count, String value) {
+	public LremList(String id, int db, byte[] key, long count, byte[] value) {
 		super(id, db);
 		this.key = key;
 		this.count = count;
@@ -36,7 +36,7 @@ public class LremList extends JedisDbCommand<Long>{
 
 	@Override
 	public String sendCommand() {
-		return "LREM "+ key +" "+ count + " "+value;
+		return "LREM "+ byteToStr(key) +" "+ count + " "+byteToStr(value);
 	}
 
 	/**
@@ -52,7 +52,7 @@ public class LremList extends JedisDbCommand<Long>{
 	 * @return 被移除元素的数量。 因为不存在的key被视作空表(empty list)，所以当key不存在时，LREM命令总是返回0。
 	 */
 	@Override
-	public Long concreteCommand(RedisLarkContext redisLarkContext) {
+	public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
 		Long response = redisLarkContext.lrem(key, count, value);
 		return response;

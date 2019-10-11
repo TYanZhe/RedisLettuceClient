@@ -46,7 +46,7 @@ public class ConfigGet extends JedisCommand<Map<String, String>> {
 	 * @return 给定配置参数的值。
 	 */
 	@Override
-	public Map<String, String> concreteCommand(RedisLarkContext redisLarkContext) {
+	public Map<String, String> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		final Map<String, String> response = redisLarkContext.configGet(pattern);
 		return response;
 	}

@@ -15,9 +15,9 @@ import io.lettuce.core.ScoredValueScanCursor;
  *
  * @author Administrator
  */
-public class ZscanSet extends AbstractScanCommand<ScoredValueScanCursor<String>> {
+public class ZscanSet extends AbstractScanCommand<ScoredValueScanCursor<byte[]>> {
 
-	public ZscanSet(String id, int db, String key, ScanCursor scanCursor, Integer count) {
+	public ZscanSet(String id, int db, byte[] key, ScanCursor scanCursor, Integer count) {
 		super(id, db, key, scanCursor, count);
 	}
 
@@ -27,9 +27,9 @@ public class ZscanSet extends AbstractScanCommand<ScoredValueScanCursor<String>>
 	}
 
 	@Override
-	public ScoredValueScanCursor<String> concreteCommand(RedisLarkContext redisLarkContext) {
+	public ScoredValueScanCursor<byte[]> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
-		ScoredValueScanCursor<String> response = redisLarkContext.zscan(key, scanCursor, scanArgs);
+		ScoredValueScanCursor<byte[]> response = redisLarkContext.zscan(key, scanCursor, scanArgs);
 		return response;
 	}
 

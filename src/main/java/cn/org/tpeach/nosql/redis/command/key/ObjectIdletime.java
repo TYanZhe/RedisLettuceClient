@@ -13,19 +13,19 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class ObjectIdletime extends JedisDbCommand<Long> {
-    private String key;
+    private byte[] key;
     /**
      * 命令：OBJECT subcommand [arguments [arguments]]
      * @param id
      */
-    public ObjectIdletime(String id, int db, String key) {
+    public ObjectIdletime(String id, int db, byte[] key) {
         super(id,db);
         this.key = key;
     }
 
     @Override
     public String sendCommand() {
-        return "OBJECT IDLETIME "+key;
+        return "OBJECT IDLETIME "+byteToStr(key);
     }
 
     /**
@@ -39,7 +39,7 @@ public class ObjectIdletime extends JedisDbCommand<Long> {
      * @return REFCOUNT和IDLETIME返回数字。ENCODING返回相应的编码类型。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.objectIdletime(key);
         return response;

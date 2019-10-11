@@ -16,9 +16,9 @@ import java.util.List;
  * @date 2019-07-09 10:43
  * @since 1.0.0
  */
-public class ZrangeSet extends JedisDbCommand<List<String>> {
+public class ZrangeSet extends JedisDbCommand<List<byte[]>> {
     private static final Logger logger = LoggerFactory.getLogger(ZrangeSet.class);
-    private String key;
+    private byte[] key;
     private long start;
     private long stop;
     /**
@@ -28,7 +28,7 @@ public class ZrangeSet extends JedisDbCommand<List<String>> {
      * @param db
      * @param key
      */
-    public ZrangeSet(String id, int db, String key, long start, long stop) {
+    public ZrangeSet(String id, int db, byte[] key, long start, long stop) {
         super(id, db);
         this.key = key;
         this.start = start;
@@ -36,7 +36,7 @@ public class ZrangeSet extends JedisDbCommand<List<String>> {
     }
     @Override
     public String sendCommand() {
-        return "ZRANGE "+key+" "+start+" "+stop;
+        return "ZRANGE "+byteToStr(key)+" "+start+" "+stop;
     }
     /**
      * 返回有序集key中，指定区间内的成员。
@@ -48,9 +48,9 @@ public class ZrangeSet extends JedisDbCommand<List<String>> {
      * @return 指定区间内，带有score值(可选)的有序集成员的列表。
      */
     @Override
-    public List<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public List<byte[]> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final List<String> response = redisLarkContext.zrange(key,start,stop);
+        final List<byte[]> response = redisLarkContext.zrange(key,start,stop);
         return response;
     }
 

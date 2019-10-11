@@ -14,10 +14,10 @@ import org.slf4j.LoggerFactory;
  * @date 2019-06-25 23:48
  * @since 1.0.0
  */
-public class GetSetString extends JedisDbCommand<String> {
+public class GetSetString extends JedisDbCommand<byte[]> {
 	final static Logger logger = LoggerFactory.getLogger(GetSetString.class);
-	private String key;
-	private String value;
+	private byte[] key;
+	private byte[] value;
 	/**
 	 * 命令: GETSET key value
 	 * @param id
@@ -25,7 +25,7 @@ public class GetSetString extends JedisDbCommand<String> {
 	 * @param key
 	 * @param value
 	 */
-	public GetSetString(String id, int db, String key,String value) {
+	public GetSetString(String id, int db, byte[] key,byte[] value) {
 		super(id,db);
 		this.key = key;
 		this.value = value;
@@ -33,7 +33,7 @@ public class GetSetString extends JedisDbCommand<String> {
 
 	@Override
 	public String sendCommand() {
-		return "GETSET "+key +" "+value;
+		return "GETSET "+byteToStr(key) +" "+byteToStr(value);
 	}
 
 	/**
@@ -44,9 +44,9 @@ public class GetSetString extends JedisDbCommand<String> {
 	 * @return 返回给定key的旧值(old value)。当key没有旧值时，返回nil。
 	 */
 	@Override
-	public String concreteCommand(RedisLarkContext redisLarkContext) {
+	public byte[] concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
-		final String response = redisLarkContext.getSet(key,value);
+		final byte[] response = redisLarkContext.getSet(key,value);
 		return response;
 	}
 

@@ -13,20 +13,20 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class RenameNxCommand extends JedisDbCommand<Boolean> {
-    private String oldkey;
-    private String newkey;
+    private byte[] oldkey;
+    private byte[] newkey;
     /**
      * 命令：RENAME key newkey
      * @param id
      */
-    public RenameNxCommand(String id, int db, final String oldkey, final String newkey) {
+    public RenameNxCommand(String id, int db, final byte[] oldkey, final byte[] newkey) {
         super(id,db);
         this.oldkey = oldkey;
         this.newkey = newkey;
     }
     @Override
     public String sendCommand() {
-        return "RENAME "+oldkey +" "+newkey;
+        return "RENAME "+byteToStr(oldkey) +" "+byteToStr(newkey);
     }
     /**
      * 当且仅当newkey不存在时，将key改为newkey。
@@ -36,7 +36,7 @@ public class RenameNxCommand extends JedisDbCommand<Boolean> {
      * @return 修改成功时，返回1。如果newkey已经存在，返回0。
      */
     @Override
-    public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
+    public Boolean concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
 ;        final Boolean response = redisLarkContext.renamenx(oldkey,newkey);
         return response;

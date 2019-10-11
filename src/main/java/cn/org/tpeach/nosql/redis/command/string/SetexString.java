@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
  */
 public class SetexString extends JedisDbCommand<String> {
 	final static Logger logger = LoggerFactory.getLogger(SetexString.class);
-	private String key;
+	private byte[] key;
 	private int seconds;
-	private String value;
+	private byte[] value;
 
     /**
      * 命令: SETEX key seconds value
@@ -28,7 +28,7 @@ public class SetexString extends JedisDbCommand<String> {
 	 * @param seconds
      * @param value
 	 */
-	public SetexString(String id, int db, String key,int seconds, String value) {
+	public SetexString(String id, int db, byte[] key,int seconds, byte[] value) {
 		super(id,db);
 		this.key = key;
 		this.seconds = seconds;
@@ -36,7 +36,7 @@ public class SetexString extends JedisDbCommand<String> {
 	}
 	@Override
 	public String sendCommand() {
-		return "SETEX "+key +" "+seconds + " "+ value;
+		return "SETEX "+byteToStr(key) +" "+seconds + " "+ byteToStr(value);
 	}
     /**
 	 * 将值value关联到key，并将key的生存时间设为seconds(以秒为单位)。
@@ -46,7 +46,7 @@ public class SetexString extends JedisDbCommand<String> {
      * @return 设置成功时返回OK。 当seconds参数不合法时，返回一个错误。
 	 */
 	@Override
-	public String concreteCommand(RedisLarkContext redisLarkContext) {
+	public String concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
 		final String response = redisLarkContext.setex(key, seconds,value);
 		return response;

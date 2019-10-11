@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
  * @date 2019-07-03 0:37
  * @since 1.0.0
  */
-public class RpopList extends JedisDbCommand<String> {
+public class RpopList extends JedisDbCommand<byte[]> {
     private static final Logger logger = LoggerFactory.getLogger(RpopList.class);
-    private String key;
+    private byte[] key;
 
     /**
      * 命令：RPOP key
@@ -25,14 +25,14 @@ public class RpopList extends JedisDbCommand<String> {
      * @param db
      * @param key
      */
-    public RpopList(String id, int db, String key) {
+    public RpopList(String id, int db, byte[] key) {
         super(id, db);
         this.key = key;
     }
 
     @Override
     public String sendCommand() {
-        return "RPOP "+ key  ;
+        return "RPOP "+ byteToStr(key)  ;
     }
     /**
      * 移除并返回列表key的尾元素。
@@ -42,9 +42,9 @@ public class RpopList extends JedisDbCommand<String> {
      * @return 列表的尾元素。当key不存在时，返回nil。
      */
     @Override
-    public String concreteCommand(RedisLarkContext redisLarkContext) {
+    public byte[] concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final String response = redisLarkContext.rpop(key);
+        final byte[] response = redisLarkContext.rpop(key);
         return response;
     }
 

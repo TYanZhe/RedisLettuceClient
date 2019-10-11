@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 
 /**
  * @author tyz
@@ -28,7 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 public class RedisLarkFactory {
 	final static Logger logger = LoggerFactory.getLogger(RedisLarkFactory.class);
 	private IRedisConfigService redisConfigService = BeanContext.getBean("redisConfigService",IRedisConfigService.class);
-	public RedisLarkContext connectRedis(String id) {
+	public <K, V> RedisLarkContext  connectRedis(String id) {
 		RedisStructure redisStructure = null;
 		RedisConnectInfo conn = null;
 		try{
@@ -42,7 +43,7 @@ public class RedisLarkFactory {
 			}
 			//获取上下文
 			RedisLark redisLark;
-			RedisLarkContext redisLarkContext = RedisLarkPool.getRedisLarkContext(conn.getId());
+			RedisLarkContext<K,V> redisLarkContext = RedisLarkPool.getRedisLarkContext(conn.getId());
 			if (redisLarkContext == null || refresh ) {
 				redisStructure = RedisStructure.getRedisStructure(conn.getStructure());
 				// 根据Structure生成对应的连接服务，并缓存到pool
@@ -56,7 +57,7 @@ public class RedisLarkFactory {
 				LarkFrame.larkLog.sendInfo(conn.getName(),"AUTH");
 				redisLark = (RedisLark) constructor.newInstance(redisStructure.getInitargs(conn));
 				if(redisLarkContext == null) {
-					redisLarkContext = new RedisLarkContext(redisLark,conn);
+					redisLarkContext = new RedisLarkContext<K,V>(redisLark,conn);
 					try {
 						redisLark.ping();
 					}catch (RedisException e){

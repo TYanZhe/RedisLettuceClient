@@ -5,10 +5,10 @@ import io.lettuce.core.ScanCursor;
 
 
 public abstract class AbstractScanCommand<T> extends JedisDbCommand<T>  {
-    protected String key;
+    protected byte[] key;
     protected ScanCursor scanCursor;
     protected ScanArgs scanArgs;
-    public AbstractScanCommand(String id, int db,String key,ScanCursor scanCursor,Integer count) {
+    public AbstractScanCommand(String id, int db,byte[] key,ScanCursor scanCursor,Integer count) {
         super(id, db);
         this.key = key;
         this.scanCursor = scanCursor;

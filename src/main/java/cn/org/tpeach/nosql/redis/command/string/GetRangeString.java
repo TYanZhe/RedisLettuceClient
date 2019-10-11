@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
  * @date 2019-06-26 21:57
  * @since 1.0.0
  */
-public class GetRangeString extends JedisDbCommand<String> {
+public class GetRangeString extends JedisDbCommand<byte[]> {
     final static Logger logger = LoggerFactory.getLogger(GetRangeString.class);
-    private String key;
+    private byte[] key;
     private long startOffset;
     private long endOffset;
     /**
@@ -27,7 +27,7 @@ public class GetRangeString extends JedisDbCommand<String> {
      * @param startOffset
      * @param endOffset
      */
-    public GetRangeString(String id, int db, String key,long startOffset,long endOffset) {
+    public GetRangeString(String id, int db, byte[] key,long startOffset,long endOffset) {
         super(id,db);
         this.key = key;
         this.startOffset = startOffset;
@@ -36,7 +36,7 @@ public class GetRangeString extends JedisDbCommand<String> {
 
     @Override
     public String sendCommand() {
-        return "GETRANGE "+key +" "+startOffset+" "+endOffset;
+        return "GETRANGE "+byteToStr(key) +" "+startOffset+" "+endOffset;
     }
 
     /**
@@ -50,9 +50,9 @@ public class GetRangeString extends JedisDbCommand<String> {
      * @return 截取得出的子字符串。
      */
     @Override
-    public String concreteCommand(RedisLarkContext redisLarkContext) {
+    public byte[] concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final String response = redisLarkContext.getrange(key,startOffset,endOffset);
+        final byte[] response = redisLarkContext.getrange(key,startOffset,endOffset);
         return response;
     }
 

@@ -17,9 +17,9 @@ import java.util.List;
  * @date 2019-07-09 10:43
  * @since 1.0.0
  */
-public class ZrangeWithScoresSet extends JedisDbCommand<List<ScoredValue<String>>> {
+public class ZrangeWithScoresSet extends JedisDbCommand<List<ScoredValue<byte[]>>> {
     private static final Logger logger = LoggerFactory.getLogger(ZrangeWithScoresSet.class);
-    private String key;
+    private byte[] key;
     private long min;
     private long max;
     /**
@@ -29,7 +29,7 @@ public class ZrangeWithScoresSet extends JedisDbCommand<List<ScoredValue<String>
      * @param db
      * @param key
      */
-    public ZrangeWithScoresSet(String id, int db, String key, long min , long max) {
+    public ZrangeWithScoresSet(String id, int db, byte[] key, long min , long max) {
         super(id, db);
         this.key = key;
         this.min = min;
@@ -37,7 +37,7 @@ public class ZrangeWithScoresSet extends JedisDbCommand<List<ScoredValue<String>
     }
     @Override
     public String sendCommand() {
-        return "ZRANGEBYSCORE "+key+" "+min+" "+max;
+        return "ZRANGEBYSCORE "+byteToStr(key)+" "+min+" "+max;
     }
     /**
      返回有序集key中，所有score值介于min和max之间(包括等于min或max)的成员。有序集成员按score值递增(从小到大)次序排列。
@@ -54,9 +54,9 @@ public class ZrangeWithScoresSet extends JedisDbCommand<List<ScoredValue<String>
      * @return 指定区间内，带有score值(可选)的有序集成员的列表。
      */
     @Override
-    public List<ScoredValue<String>> concreteCommand(RedisLarkContext redisLarkContext) {
+    public List<ScoredValue<byte[]>> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final List<ScoredValue<String>> response = redisLarkContext.zrangeWithScores(key,min,max);
+        final List<ScoredValue<byte[]>> response = redisLarkContext.zrangeWithScores(key,min,max);
         return response;
     }
 

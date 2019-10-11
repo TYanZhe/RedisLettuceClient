@@ -6,6 +6,7 @@ import cn.org.tpeach.nosql.redis.bean.RedisClientBo;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.bean.SlowLogBo;
+import io.lettuce.core.KeyScanCursor;
 import io.lettuce.core.ScanCursor;
 
 import java.util.Collection;
@@ -25,7 +26,7 @@ public interface IRedisConnectService {
 	
 	public boolean connectTest(RedisConnectInfo connectInfo) ;
 
-    public String readString(String id, int db, String key);
+    public byte[] readString(String id, int db, byte[] key);
 
     /**
      * 获取数据库数量
@@ -42,18 +43,44 @@ public interface IRedisConnectService {
      * @return
      */
     String[] getDbAmountAndSize(String id);
-
+    Long getDbKeySize(String id, int db,boolean printLog);
     Long getDbKeySize(String id, int db);
 
-    Collection<String> getKeys(String id, int db);
+    /**
+     *
+     * @param id
+     * @param db
+     * @param totalPattren
+     * @return
+     */
+    KeyScanCursor<byte[]> getKeys(String id, int db ,boolean totalPattren);
+    /**
+     *
+     * @param id
+     * @param db
+     * @param totalPattren 是否需要匹配的总数量 效率会有影响
+     * @return
+     */
+    KeyScanCursor<byte[]> getKeys(String id, int db, String pattern,boolean totalPattren );
 
-    Collection<String> getKeys(String id, int db, String pattern);
+    /**
+     * cursor 为空时从最开始匹配
+     * @param id
+     * @param db
+     * @param pattern
+     * @param cursor
+     * @return
+     */
+    KeyScanCursor<byte[]> getKeysForCursor(String id, int db, String pattern,String cursor);
 
-    Long deleteKeys(String id, int db, String... keys);
+
+    Long deleteKeys(String id, int db, byte[]... keys);
+
+    Long deleteKeys(String id, int db, String pattern);
 
     RedisKeyInfo addSingleKeyInfo(RedisKeyInfo keyInfo);
 
-    RedisKeyInfo getRedisKeyInfo(String id, int db, String key, ScanCursor cursor,String pattern,PageBean pageBean);
+    RedisKeyInfo getRedisKeyInfo(String id, int db, byte[] key, ScanCursor cursor,String pattern,PageBean pageBean);
 
     String flushDb(String id, int db);
 
@@ -64,15 +91,15 @@ public interface IRedisConnectService {
      * @param seconds
      * @return
      */
-    Boolean expireKey(String id, int db, String key, int seconds);
+    Boolean expireKey(String id, int db, byte[] key, int seconds);
 
     RedisKeyInfo updateKeyInfo(RedisKeyInfo newKeyInfo, RedisKeyInfo oldKeyInfo);
 
     RedisKeyInfo addRowKeyInfo(RedisKeyInfo keyInfo,boolean isLeftList);
     
-    Long deleteRowKeyInfo(String id,int db,String key,String valueOrField,int index,RedisType type);
+    Long deleteRowKeyInfo(String id,int db,byte[] key,byte[] valueOrField,int index,RedisType type);
 
-    Boolean remamenx(String id, int db,final String oldkey, final String newkey);
+    Boolean remamenx(String id, int db,final byte[] oldkey, final byte[] newkey);
 
 
     Map<String,String> getConnectInfo(String id,boolean isFresh,boolean printLog);

@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
  */
 public class LpushList extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(LpushList.class);
-    private String key;
-    private String[] values;
+    private byte[] key;
+    private byte[][] values;
 
     /**
      * 命令：LPUSH key value [value ...]
@@ -30,7 +30,7 @@ public class LpushList extends JedisDbCommand<Long> {
      * @param key
      * @param values
      */
-    public LpushList(String id, int db, String key, String... values) {
+    public LpushList(String id, int db, byte[] key, byte[]... values) {
         super(id, db);
         this.key = key;
         this.values = values;
@@ -38,7 +38,7 @@ public class LpushList extends JedisDbCommand<Long> {
 
     @Override
     public String sendCommand() {
-        return "LPUSH "+ key +" "+ Arrays.stream(values).collect(Collectors.joining(" "));
+        return "LPUSH "+ byteToStr(key) +" "+  Arrays.stream(byteArrToStr(values)).collect(Collectors.joining(" "));
     }
 
     /**
@@ -53,7 +53,7 @@ public class LpushList extends JedisDbCommand<Long> {
      * @return 执行LPUSH命令后，列表的长度。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.lpush(key, values);
         return response;

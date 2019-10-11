@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
  */
 public class RpushxList  extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(RpushxList.class);
-    private String key;
-    private String[] values;
+    private byte[] key;
+    private byte[][] values;
 
     /**
      * 命令：RPUSHX key value
@@ -30,14 +30,14 @@ public class RpushxList  extends JedisDbCommand<Long> {
      * @param key
      * @param values
      */
-    public RpushxList(String id, int db, String key, String[] values) {
+    public RpushxList(String id, int db, byte[] key, byte[][] values) {
         super(id, db);
         this.key = key;
         this.values = values;
     }
     @Override
     public String sendCommand() {
-        return "RPUSHX "+ key +" "+ Arrays.stream(values).collect(Collectors.joining(" "));
+        return "RPUSHX "+ byteToStr(key) +" "+ Arrays.stream(byteArrToStr(values)).collect(Collectors.joining(" "));
     }
     /**
      * 将值value插入到列表key的表尾，当且仅当key存在并且是一个列表。
@@ -48,7 +48,7 @@ public class RpushxList  extends JedisDbCommand<Long> {
      * @return 执行RPUSHX操作后，表的长度。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.rpushx(key, values);
         return response;

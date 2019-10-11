@@ -399,7 +399,7 @@ public class MonitorDialog extends JDialog {
                     }
                 }
             }else{
-                final Long dbKeySize = redisConnectService.getDbKeySize(redisConnectInfo.getId(), 0);
+                final Long dbKeySize = redisConnectService.getDbKeySize(redisConnectInfo.getId(), 0,false);
                 dataset.addValue(dbKeySize,"db0","db0");
             }
 

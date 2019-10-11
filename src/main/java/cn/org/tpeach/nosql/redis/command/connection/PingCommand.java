@@ -35,7 +35,7 @@ public class PingCommand extends JedisCommand<String> {
      * @return PONG
      */
     @Override
-    public String concreteCommand(RedisLarkContext redisLarkContext) {
+    public String concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         return redisLarkContext.ping();
     }
 

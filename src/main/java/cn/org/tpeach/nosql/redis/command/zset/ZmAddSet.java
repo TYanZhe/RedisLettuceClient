@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
  */
 public class ZmAddSet extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(ZmAddSet.class);
-    private String key;
-    private  ScoredValue<String>[] scoredValues;
+    private byte[] key;
+    private  ScoredValue<byte[]>[] scoredValues;
 
     /**
      * 命令：ZADD key score member [[score member] [score member] ...]
@@ -28,7 +28,7 @@ public class ZmAddSet extends JedisDbCommand<Long> {
      * @param key
      * @param scoredValues
      */
-    public ZmAddSet(String id, int db, String key, ScoredValue<String> ... scoredValues) {
+    public ZmAddSet(String id, int db, byte[] key, ScoredValue<byte[]> ... scoredValues) {
         super(id, db);
         this.key = key;
         this.scoredValues = scoredValues;
@@ -38,11 +38,11 @@ public class ZmAddSet extends JedisDbCommand<Long> {
     public String sendCommand() {
         StringBuffer sb = new StringBuffer();
         if(!ArraysUtil.isEmpty(scoredValues)){
-            for (ScoredValue<String> scoredValue : scoredValues) {
+            for (ScoredValue<byte[]> scoredValue : scoredValues) {
                 sb.append(" ");
                 sb.append(scoredValue.getScore());
                 sb.append(" ");
-                sb.append(scoredValue.getValue());
+                sb.append(byteToStr(scoredValue.getValue()));
             }
         }
         return "ZADD "+ key  + sb.toString();
@@ -60,7 +60,7 @@ public class ZmAddSet extends JedisDbCommand<Long> {
      * @return 被成功添加的新成员的数量，不包括那些被更新的、已经存在的成员。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.zadd(key,scoredValues);
         return response;

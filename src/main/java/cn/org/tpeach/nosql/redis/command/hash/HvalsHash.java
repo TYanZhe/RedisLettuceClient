@@ -14,22 +14,22 @@ import java.util.List;
  * @date 2019-07-02 28:12
  * @since 1.0.0
  */
-public class HvalsHash extends JedisDbCommand<List<String>> {
-    private String key;
+public class HvalsHash extends JedisDbCommand<List<byte[]>> {
+    private byte[] key;
     /**
      * 命令：HKEYS key
      * @param id
      * @param db
      * @param key
      */
-    public HvalsHash(String id, int db, String key) {
+    public HvalsHash(String id, int db, byte[] key) {
         super(id,db);
         this.key = key;
     }
 
     @Override
     public String sendCommand() {
-        return "HKEYS "+key;
+        return "HKEYS "+byteToStr(key);
     }
 
     /**
@@ -39,9 +39,9 @@ public class HvalsHash extends JedisDbCommand<List<String>> {
      * @return 一个包含哈希表中所有域的表。当key不存在时，返回一个空表。
      */
     @Override
-    public List<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public List<byte[]> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final List<String> response = redisLarkContext.hvals(key);
+        final List<byte[]> response = redisLarkContext.hvals(key);
         return response;
     }
 

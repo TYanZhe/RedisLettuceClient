@@ -12,8 +12,8 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @date 2019-09-21 0:41
  * @since 1.0.0
  */
-public class SpopSet extends JedisDbCommand<String> {
-    private String key;
+public class SpopSet extends JedisDbCommand<byte[]> {
+    private byte[] key;
 
     /**
      * 命令：SPOP key
@@ -21,7 +21,7 @@ public class SpopSet extends JedisDbCommand<String> {
      * @param db
      * @param key
      */
-    public SpopSet(String id, int db, String key) {
+    public SpopSet(String id, int db, byte[] key) {
         super(id, db);
         this.key = key;
 
@@ -29,7 +29,7 @@ public class SpopSet extends JedisDbCommand<String> {
 
     @Override
     public String sendCommand() {
-        return "SPOP "+key ;
+        return "SPOP "+byteToStr(key) ;
     }
 
     /**
@@ -39,9 +39,9 @@ public class SpopSet extends JedisDbCommand<String> {
      * @return 被移除的随机元素。当key不存在或key是空集时，返回nil
      */
     @Override
-    public String concreteCommand(RedisLarkContext redisLarkContext) {
+    public byte[] concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final String response = redisLarkContext.spop(key);
+        final byte[] response = redisLarkContext.spop(key);
         return response;
     }
 
