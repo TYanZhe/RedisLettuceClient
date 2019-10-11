@@ -13,19 +13,19 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class TypeCommand extends JedisDbCommand<String> {
-    private String key;
+    private byte[] key;
     /**
      * 命令：TYPE key
      * @param id
      */
-    public TypeCommand(String id,int db,String key) {
+    public TypeCommand(String id,int db,byte[] key) {
         super(id,db);
         this.key = key;
     }
 
     @Override
     public String sendCommand() {
-        return "TYPE "+key;
+        return "TYPE "+byteToStr(key);
     }
 
     /**
@@ -35,7 +35,7 @@ public class TypeCommand extends JedisDbCommand<String> {
      * @return none(key不存在) string(字符串) list(列表) set(集合) zset(有序集) hash(哈希表)
      */
     @Override
-    public String concreteCommand(RedisLarkContext redisLarkContext) {
+    public String concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final String response = redisLarkContext.type(key);
         return response;

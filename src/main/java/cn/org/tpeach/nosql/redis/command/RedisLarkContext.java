@@ -20,6 +20,8 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,12 +31,12 @@ import java.util.stream.Collectors;
  * @author tyz
  * @Title: RedisLarkContext
  * @ProjectName RedisLark
- * @Description: RedisLark策略上下文
+ * @Description: RedisLark策略上下文 支持byte[] 和String
  * @date 2019-06-23 20:11
  * @since 1.0.0
  */
 @Slf4j
-public class RedisLarkContext {
+public class RedisLarkContext<K,V> {
     @Getter
     private Integer db;
     @Getter
@@ -43,10 +45,10 @@ public class RedisLarkContext {
     // 抽象策略算法
     @Getter
     @Setter
-    private RedisLark<String,String> redisLark;
+    private RedisLark<K,V> redisLark;
     private RedisConnectInfo redisConnectInfo;
 
-    public RedisLarkContext(RedisLark<String,String> redisLark,RedisConnectInfo redisConnectInfo) {
+    public RedisLarkContext(RedisLark<K,V> redisLark,RedisConnectInfo redisConnectInfo) {
         if(redisLark == null || redisConnectInfo == null){
             throw new IllegalArgumentException("redisLark or redisConnectInfo can not be null");
         }
@@ -54,7 +56,17 @@ public class RedisLarkContext {
         this.redisConnectInfo = redisConnectInfo;
     }
 
-
+    protected Class<V> getValueTpye(){
+        Type type = getClass().getGenericSuperclass();
+        if( type instanceof ParameterizedType){
+            ParameterizedType pType = (ParameterizedType)type;
+            Type claz = pType.getActualTypeArguments()[1];
+            if( claz instanceof Class ){
+                return  (Class<V>) claz;
+            }
+        }
+        return null;
+    }
 
     public String info() {
         return redisLark.info();
@@ -126,7 +138,7 @@ public class RedisLarkContext {
      * @param scanCursor
      * @param scanArgs
      */
-    public KeyScanCursor<String>  scan(ScanCursor scanCursor, ScanArgs scanArgs){
+    public KeyScanCursor<K>  scan(ScanCursor scanCursor, ScanArgs scanArgs){
         if(scanArgs == null){
             return redisLark.scan(scanCursor);
         }
@@ -141,19 +153,19 @@ public class RedisLarkContext {
      * @param value
      * @return
      */
-    public String set(String key, String value) {
+    public String set(K key, V value) {
         return redisLark.set(key, value);
     }
 
-    public Boolean setnx(final String key, final String value) {
+    public Boolean setnx(final K key, final V value) {
         return redisLark.setnx(key, value);
     }
 
-    public String setex(final String key, final int seconds, final String value) {
+    public String setex(final K key, final int seconds, final V value) {
         return redisLark.setex(key, seconds, value);
     }
 
-    public Long setrange(final String key, final long offset, final String value) {
+    public Long setrange(final K key, final long offset, final V value) {
         return redisLark.setrange(key, offset, value);
     }
 
@@ -163,7 +175,7 @@ public class RedisLarkContext {
      * @param map
      * @return
      */
-    public String mset(Map<String, String> map) {
+    public String mset(Map<K, V> map) {
         return redisLark.mset(map);
     }
 
@@ -173,7 +185,7 @@ public class RedisLarkContext {
      * @param key
      * @return
      */
-    public String get(String key) {
+    public V get(K key) {
         return redisLark.get(key);
     }
 
@@ -185,7 +197,7 @@ public class RedisLarkContext {
      * @param endOffset
      * @return
      */
-    public String getrange(final String key, final long startOffset, final long endOffset) {
+    public V getrange(final K key, final long startOffset, final long endOffset) {
         return redisLark.getrange(key, startOffset, endOffset);
     }
 
@@ -196,7 +208,7 @@ public class RedisLarkContext {
      * @param value
      * @return
      */
-    public String getSet(final String key, final String value) {
+    public V getSet(final K key, final V value) {
         return redisLark.getset(key, value);
     }
 
@@ -206,60 +218,60 @@ public class RedisLarkContext {
      * @param keys
      * @return
      */
-    public List<KeyValue<String, String>> mget(final String... keys) {
+    public List<KeyValue<K, V>> mget(final K... keys) {
         return redisLark.mget(keys);
     }
 
     // hash------------------------------------
-    public Boolean hset(final String key, final String field, final String value) {
+    public Boolean hset(final K key, final K field, final V value) {
         return redisLark.hset(key, field, value);
     }
 
-    public Boolean hsetnx(final String key, final String field, final String value) {
+    public Boolean hsetnx(final K key, final K field, final V value) {
         return redisLark.hsetnx(key, field, value);
     }
 
-    public String hmset(final String key, final Map<String, String> hash) {
+    public String hmset(final K key, final Map<K, V> hash) {
         return redisLark.hmset(key, hash);
     }
 
-    public String hget(final String key, final String field) {
+    public V hget(final K key, final K field) {
         return redisLark.hget(key, field);
     }
 
-    public List<KeyValue<String, String>> hmget(final String key, final String... fields) {
+    public List<KeyValue<K, V>> hmget(final K key, final K... fields) {
         return redisLark.hmget(key, fields);
     }
 
-    public Map<String, String> hgetAll(final String key) {
+    public Map<K, V> hgetAll(final K key) {
         return redisLark.hgetall(key);
     }
 
-    public Long hdel(final String key, final String... fields) {
+    public Long hdel(final K key, final K... fields) {
         return redisLark.hdel(key, fields);
     }
 
-    public Long hlen(final String key) {
+    public Long hlen(final K key) {
         return redisLark.hlen(key);
     }
 
-    public Boolean hexists(final String key, final String field) {
+    public Boolean hexists(final K key, final K field) {
         return redisLark.hexists(key, field);
     }
 
-    public Long hincrBy(final String key, final String field, final long value) {
+    public Long hincrBy(final K key, final K field, final long value) {
         return redisLark.hincrby(key, field, value);
     }
 
-    public List<String> hkeys(final String key) {
+    public List<K> hkeys(final K key) {
         return redisLark.hkeys(key);
     }
 
-    public List<String> hvals(final String key) {
+    public List<V> hvals(final K key) {
         return redisLark.hvals(key);
     }
 
-    public MapScanCursor<String, String> hscan(String key, ScanCursor scanCursor, ScanArgs scanArgs){
+    public MapScanCursor<K, V> hscan(K key, ScanCursor scanCursor, ScanArgs scanArgs){
         if(scanArgs == null){
             return redisLark.hscan(key,scanCursor);
         }
@@ -268,80 +280,100 @@ public class RedisLarkContext {
 
     //-------------list-------------
 
-    public Long rpush(final String key, final String... strings) {
+    public Long rpush(final K key, final V... strings) {
         return redisLark.rpush(key, strings);
     }
 
-    public Long lpush(final String key, final String... strings) {
+    public Long lpush(final K key, final V... strings) {
         return redisLark.lpush(key, strings);
     }
 
-    public Long rpushx(final String key, final String... strings) {
+    public Long rpushx(final K key, final V... strings) {
         return redisLark.rpushx(key, strings);
     }
 
-    public Long lpushx(final String key, final String... strings) {
+    public Long lpushx(final K key, final V... strings) {
         return redisLark.lpushx(key, strings);
     }
 
-    public String rpop(final String key) {
+    public V rpop(final K key) {
     	
         return redisLark.rpop(key);
     }
 
-    public String lpop(final String key) {
+    public V lpop(final K key) {
         return redisLark.lpop(key);
     }
 
-    public Long llen(final String key) {
+    public Long llen(final K key) {
         return redisLark.llen(key);
     }
 
-    public List<String> lrange(final String key, final long start, final long stop) {
+    public List<V> lrange(final K key, final long start, final long stop) {
 
         return redisLark.lrange(key, start, stop);
     }
 
-    public void rrange(final String key, final long start, final long stop) {
+    public void rrange(final K key, final long start, final long stop) {
         redisLark.lrange(key, start, stop);
     }
-    public String lset(final String key, final long index, final String value) {
+    public String lset(final K key, final long index, final V value) {
     	return redisLark.lset(key, index, value);
     }
-    public void ldelRow(final String key, final int index,boolean pringLog) {
 
-        String uuid = StringUtils.getUUID();
+    public void ldelRow(final K key, final int index,boolean pringLog) {
+        String s = "$"+StringUtils.getUUID()+"&"+StringUtils.getUUID()+"$";
+        V uuid ;
+        if(key instanceof byte[]){
+            uuid = (V) s.getBytes();
+        }else{
+            uuid = (V) s;
+        }
+
         if(pringLog){
-            LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"LSET %s %s %s",key, index, uuid);
+            if(key instanceof byte[]){
+                LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(), "LSET %s %s %s", StringUtils.showHexStringValue((byte[]) key), index, StringUtils.showHexStringValue((byte[]) uuid));
+            }else{
+                LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(), "LSET %s %s %s", StringUtils.showHexStringValue((String) key), index, StringUtils.showHexStringValue((String)uuid));
+            }
         }
         try {
+            V finalUuid = uuid;
             TransactionResult execMulti = redisLark.execMulti(c -> {
 
-                c.lset(key, index, uuid);
+                c.lset(key, index, finalUuid);
 
 //            count > 0: 从表头开始向表尾搜索，移除与value相等的元素，数量为count。
 //            count < 0: 从表尾开始向表头搜索，移除与value相等的元素，数量为count的绝对值。
 //            count = 0: 移除表中所有与value相等的值。
 
-                c.lrem(key, 0, uuid);
+                c.lrem(key, 0, finalUuid);
 
             });
             if(!execMulti.isEmpty()){
                 String lset = execMulti.get(0);
                 if(pringLog) {
                     LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(), "%s", lset);
-                    LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(), "LREM %s %s %s", key, 0, uuid);
+                    if(key instanceof byte[]){
+                        LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(), "LREM %s %s %s", StringUtils.showHexStringValue((byte[]) key), 0, StringUtils.showHexStringValue((byte[]) uuid));
+                    }else{
+                        LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(), "LREM %s %s %s", StringUtils.showHexStringValue((String) key), 0, StringUtils.showHexStringValue((String)uuid));
+                    }
                     Long lrem = execMulti.get(1);
                     LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(), "%s", lrem);
                 }
             }
         
         } catch (UnsupportedOperationException e1) {
-            String lset = redisLark.lset(key, index, uuid);
+            String lset = redisLark.lset(key, index,  uuid);
             if(pringLog) {
                 LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(), "%s", lset);
-                LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(), "LREM %s %s %s", key, 0, uuid);
-                Long lrem = redisLark.lrem(key, 0, uuid);
+                if(key instanceof byte[]){
+                    LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(), "LREM %s %s %s", StringUtils.showHexStringValue((byte[]) key), 0, StringUtils.showHexStringValue((byte[]) uuid));
+                }else{
+                    LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(), "LREM %s %s %s", StringUtils.showHexStringValue((String) key), 0, StringUtils.showHexStringValue((String)uuid));
+                }
+                Long lrem = redisLark.lrem(key, 0,  uuid);
                 LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(), "%s", lrem);
             }
             
@@ -350,66 +382,66 @@ public class RedisLarkContext {
 
 
     }
-    public Long lrem(String key, long count, String value){
+    public Long lrem(K key, long count, V value){
         return redisLark.lrem(key,count,value);
     }
 
     //--------------list end------------
     //--------------set start------------
 
-    public Long sadd(String key, String... members) {
+    public Long sadd(K key, V... members) {
         return redisLark.sadd(key, members);
     }
 
-    public Long scard(final String key) {
+    public Long scard(final K key) {
         return redisLark.scard(key);
     }
 
-    public Set<String> smembers(final String key) {
+    public Set<V> smembers(final K key) {
         return redisLark.smembers(key);
     }
 
-    public Long srem(String key, String... members) {
+    public Long srem(K key, V... members) {
         return redisLark.srem(key, members);
     }
-    public ValueScanCursor<String> sscan(String key, ScanCursor scanCursor, ScanArgs scanArgs) {
+    public ValueScanCursor<V> sscan(K key, ScanCursor scanCursor, ScanArgs scanArgs) {
         if(scanArgs == null){
             return redisLark.sscan(key,scanCursor);
         }
         return redisLark.sscan(key,scanCursor,scanArgs);
     }
-    public String spop(final String key) {
+    public V spop(final K key) {
         return redisLark.spop(key);
     }
-    public Set<String> spop(final String key,long count) {
+    public Set<V> spop(final K key,long count) {
         return redisLark.spop(key,count);
     }
 
     //--------------set end------------
     //--------------zset start------------
-    public Long zadd(String key, double score, String member) {
+    public Long zadd(K key, double score, V member) {
         return redisLark.zadd(key, score, member);
     }
-    public Long zadd(String key, ScoredValue<String>... scoredValues) {
+    public Long zadd(K key, ScoredValue<V>... scoredValues) {
         return redisLark.zadd(key, scoredValues);
     }
-    public List<String> zrange(final String key, final long start, final long stop) {
+    public List<V> zrange(final K key, final long start, final long stop) {
         return redisLark.zrange(key, start, stop);
     }
 
-    public  List<ScoredValue<String>> zrangeWithScores(final String key, final long start, final long stop) {
+    public  List<ScoredValue<V>> zrangeWithScores(final K key, final long start, final long stop) {
         return redisLark.zrangeWithScores(key, start, stop);
     }
 
-    public Long zcard(final String key) {
+    public Long zcard(final K key) {
         return redisLark.zcard(key);
     }
 
-    public Long zrem(String key, String... members) {
+    public Long zrem(K key, V... members) {
         return redisLark.zrem(key, members);
     }
 
-    public ScoredValueScanCursor<String> zscan(String key, ScanCursor scanCursor, ScanArgs scanArgs){
+    public ScoredValueScanCursor<V> zscan(K key, ScanCursor scanCursor, ScanArgs scanArgs){
         if(scanArgs == null){
             return redisLark.zscan(key,scanCursor);
         }
@@ -419,10 +451,10 @@ public class RedisLarkContext {
     //---------------key start-------------------
 
 
-    public  String rename(final String oldkey, final String newkey) {
+    public  String rename(final K oldkey, final K newkey) {
         return redisLark.rename( oldkey, newkey);
     }
-    public Boolean renamenx(String oldkey, String newkey) {
+    public Boolean renamenx(K oldkey, K newkey) {
         return redisLark.renamenx( oldkey, newkey);
     }
     //---------------key end-------------------
@@ -435,50 +467,50 @@ public class RedisLarkContext {
         return redisLark.ping();
     }
 
-    public Long ttl(final String key) {
+    public Long ttl(final K key) {
         Long ttl = redisLark.ttl(key);
         return ttl;
     }
 
-    public Boolean persist(final String key) {
+    public Boolean persist(final K key) {
         return redisLark.persist(key);
     }
 
-    public Boolean pexpire(final String key, final long milliseconds) {
+    public Boolean pexpire(final K key, final long milliseconds) {
         return redisLark.pexpire(key, milliseconds);
     }
 
-    public Boolean expire(final String key, final int seconds) {
+    public Boolean expire(final K key, final int seconds) {
         return redisLark.expire(key, seconds);
     }
 
-    public Long exists(final String key) {
+    public Long exists(final K key) {
         return redisLark.exists(key);
     }
 
-    public String type(final String key) {
+    public String type(final K key) {
         return redisLark.type(key);
     }
 
-    public String objectEncoding(final String key) {
+    public String objectEncoding(final K key) {
         return redisLark.objectEncoding(key);
     }
 
-    public Long objectIdletime(final String key) {
+    public Long objectIdletime(final K key) {
         return redisLark.objectIdletime(key);
     }
 
-    public Long objectRefcount(final String key) {
+    public Long objectRefcount(final K key) {
         return redisLark.objectRefcount(key);
     }
 
-    public Long incr(final String key) {
+    public Long incr(final K key) {
         return redisLark.incr(key);
     }
 
 
 
-    public List<String> keys(String pattern) {
+    public List<K> keys(K pattern) {
         return redisLark.keys(pattern);
     }
 
@@ -486,7 +518,7 @@ public class RedisLarkContext {
         return redisLark.dbsize();
     }
 
-    public Long del(String... keys) {
+    public Long del(K... keys) {
         return redisLark.del(keys);
     }
 
@@ -504,19 +536,19 @@ public class RedisLarkContext {
     }
 
 
-    public ScanIterator<String> scanIterator(int count, String pattren){
+    public ScanIterator<K> scanIterator(int count, String pattren){
         return redisLark.scanIterator(count,pattren);
     }
 
-    public ScanIterator<KeyValue<String, String>> hscanIterator(String key, int count, String pattren){
+    public ScanIterator<KeyValue<K, V>> hscanIterator(K key, int count, String pattren){
         return redisLark.hscanIterator(key,count,pattren);
     }
 
-    public ScanIterator<String> sscanIterator(String key, int count, String pattren){
+    public ScanIterator<V> sscanIterator(K key, int count, String pattren){
         return redisLark.sscanIterator(key,count,pattren);
     }
 
-    public ScanIterator<ScoredValue<String>> zscanIterator(String key, int count, String pattren){
+    public ScanIterator<ScoredValue<V>> zscanIterator(K key, int count, String pattren){
         return redisLark.zscanIterator(key,count,pattren);
     }
 

@@ -12,10 +12,11 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class RedisLettuce {
     public static void main(String[] args) throws Exception {
-        single();
+        cluster();
     }
     public static void cluster(){
         ArrayList<RedisURI> list = new ArrayList<>();
@@ -32,17 +33,21 @@ public class RedisLettuce {
 
         /* 同步执行的命令 */
         RedisAdvancedClusterCommands<String, String> commands = connect.sync();
-        commands.dbsize();
-        String str = commands.get("test2");
-        ScanCursor cursor = ScanCursor.INITIAL;
-        ScanArgs scanArgs = new ScanArgs();
-        scanArgs.match("*");
-        scanArgs.limit(1000);
-        KeyScanCursor<String> stringKeyScanCursor = commands.scan(cursor, scanArgs);
-        stringKeyScanCursor.getKeys().forEach(System.err::println);
-        String ping = commands.ping();
-        System.out.println(ping);
-        System.out.println(str);
+        List<Object> objects = commands.clusterSlots();
+        String s = commands.clientList();
+        commands.clusterNodes();
+        System.out.println(commands.dbsize());
+        System.out.println();
+//        String str = commands.get("test2");
+//        ScanCursor cursor = ScanCursor.INITIAL;
+//        ScanArgs scanArgs = new ScanArgs();
+//        scanArgs.match("*");
+//        scanArgs.limit(1000);
+//        KeyScanCursor<String> stringKeyScanCursor = commands.scan(cursor, scanArgs);
+//        stringKeyScanCursor.getKeys().forEach(System.err::println);
+//        String ping = commands.ping();
+//        System.out.println(ping);
+//        System.out.println(str);
 
         /*  异步执行的命令  */
 //      RedisAdvancedClusterAsyncCommands<String, String> commands= connect.async();

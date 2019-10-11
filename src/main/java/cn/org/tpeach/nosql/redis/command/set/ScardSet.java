@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ScardSet extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(ScardSet.class);
-    private String key;
+    private byte[] key;
 
     /**
      * 命令：SCARD key
@@ -25,13 +25,13 @@ public class ScardSet extends JedisDbCommand<Long> {
      * @param db
      * @param key
      */
-    public ScardSet(String id, int db, String key) {
+    public ScardSet(String id, int db, byte[] key) {
         super(id, db);
         this.key = key;
     }
     @Override
     public String sendCommand() {
-        return "SCARD "+key;
+        return "SCARD "+byteToStr(key);
     }
     /**
      * 返回集合key的基数(集合中元素的数量)。
@@ -39,7 +39,7 @@ public class ScardSet extends JedisDbCommand<Long> {
      * @return 集合的基数。 当key不存在时，返回0。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.scard(key);
         return response;

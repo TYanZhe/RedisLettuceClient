@@ -13,15 +13,15 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class LsetList  extends JedisDbCommand<String>{
-	private String key;
-	private String value;
+	private byte[] key;
+	private byte[] value;
 	private int index;
 	/**
 	 * LSET key index value
 	 * @param id
 	 * @param db
 	 */
-	public LsetList(String id, int db,String key,int index,String value) {
+	public LsetList(String id, int db,byte[] key,int index,byte[] value) {
 		super(id, db);
 		this.key = key;
 		this.index = index;
@@ -32,11 +32,11 @@ public class LsetList  extends JedisDbCommand<String>{
 
 	@Override
 	public String sendCommand() {
-		return "LSET "+ key +" "+ index + " "+value;
+		return "LSET "+ byteToStr(key) +" "+ index + " "+byteToStr(value);
 	}
 
 	@Override
-	public String concreteCommand(RedisLarkContext redisLarkContext) {
+	public String concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
 		String response = redisLarkContext.lset(key, index, value);
 		return response;

@@ -1,5 +1,7 @@
 package cn.org.tpeach.nosql.redis.command;
 
+import cn.org.tpeach.nosql.constant.ConfigConstant;
+import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.framework.BeanContext;
@@ -7,10 +9,19 @@ import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkFactory;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
+import cn.org.tpeach.nosql.tools.ArraysUtil;
+import cn.org.tpeach.nosql.tools.ConfigParser;
+import cn.org.tpeach.nosql.tools.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.UnsupportedEncodingException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author tyz
@@ -34,7 +45,7 @@ public abstract class JedisCommand<T> implements ICommand<T> {
     @Override
     public T execute() {
         RedisLarkFactory conn = BeanContext.getBean("redisLarkFactory", RedisLarkFactory.class);
-        final RedisLarkContext redisLarkContext = conn.connectRedis(id);
+        final RedisLarkContext<byte[],byte[]> redisLarkContext = conn.connectRedis(id);
         final RedisVersion redisVersion = redisLarkContext.getRedisVersion();
         final RedisVersion supportVersion = getSupportVersion();
         if(redisVersion == null) {
@@ -66,7 +77,14 @@ public abstract class JedisCommand<T> implements ICommand<T> {
         if(command != null && printLog){
             String response = null;
             if(t != null){
-                response = t.toString();
+                if(t instanceof byte[]){
+                    response = StringUtils.showHexStringValue((byte[]) t);
+                }else if( Collection.class.isAssignableFrom(t.getClass())){
+                    response = "Array";
+                }else{
+                    response = t.toString();
+                }
+
                 if(!isFullResponseLog() && response.length() > responseLogLength()){
                     response = "Bulk";
                 }
@@ -88,7 +106,7 @@ public abstract class JedisCommand<T> implements ICommand<T> {
      * 执行之前的操作
      * @param redisLarkContext
      */
-    protected  void excuteBefore(RedisLarkContext redisLarkContext){
+    protected  void excuteBefore(RedisLarkContext<byte[],byte[]> redisLarkContext){
 
     }
 
@@ -98,7 +116,7 @@ public abstract class JedisCommand<T> implements ICommand<T> {
      * @param redisLarkContext
      * @return true 支持 false 不支持
      */
-     public boolean extraSupportVersion(RedisLarkContext redisLarkContext){
+     public boolean extraSupportVersion(RedisLarkContext<byte[],byte[]> redisLarkContext){
         //集群需3.0以上
         final RedisVersion redisVersion = redisLarkContext.getRedisVersion();
         return redisLarkContext.getRedisStructure() != RedisStructure.CLUSTER || redisVersion.getCode() >= RedisVersion.REDIS_3_0.getCode();
@@ -106,8 +124,22 @@ public abstract class JedisCommand<T> implements ICommand<T> {
     /**
      * 实际执行的命令
      */
-    public abstract T concreteCommand(RedisLarkContext redisLarkContext);
+    public abstract T concreteCommand(RedisLarkContext<byte[],byte[]> redisLarkContext);
 
     public abstract RedisVersion getSupportVersion();
 
+    public  String byteToStr(byte[] b){
+        return StringUtils.showHexStringValue(b);
+    }
+
+    public  byte[] strToByte(String s){
+    	return StringUtils.strToByte(s);
+    }
+    
+    public  byte[][] strArrToByte(String[] arr){
+    	return StringUtils.strArrToByte(arr);
+    }
+    public  String[] byteArrToStr(byte[][] arr){
+    	return StringUtils.byteArrToStr(arr);
+    }
 }

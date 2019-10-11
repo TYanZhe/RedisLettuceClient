@@ -12,9 +12,9 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class HsetHash extends JedisDbCommand<Boolean> {
-    private String key;
-    private String field;
-    private String value;
+    private byte[] key;
+    private byte[] field;
+    private byte[] value;
 
     /**
      * 命令：HSET key field
@@ -24,7 +24,7 @@ public class HsetHash extends JedisDbCommand<Boolean> {
      * @param field
      * @param value
      */
-    public HsetHash(String id, int db, String key, String field, String value) {
+    public HsetHash(String id, int db, byte[] key, byte[] field, byte[] value) {
         super(id,db);
         this.key = key;
         this.field = field;
@@ -33,7 +33,7 @@ public class HsetHash extends JedisDbCommand<Boolean> {
 
     @Override
     public String sendCommand() {
-        return "HSET "+ key +" "+ field+" "+value;
+        return "HSET "+ byteToStr(key) +" "+ byteToStr(field)+" "+byteToStr(value);
     }
 
     /**
@@ -42,7 +42,7 @@ public class HsetHash extends JedisDbCommand<Boolean> {
      * @return 如果field是哈希表中的一个新建域，并且值设置成功，返回1。如果哈希表中域field已经存在且旧值已被新值覆盖，返回0
      */
     @Override
-    public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
+    public Boolean concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Boolean response = redisLarkContext.hset(key, field, value);
         return response;

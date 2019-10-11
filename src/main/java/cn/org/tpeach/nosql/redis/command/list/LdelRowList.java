@@ -13,11 +13,11 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * 先设置再搜索删除
  * @author taoyz
  */
-public class LdelRowList extends JedisDbCommand{
+public class LdelRowList extends JedisDbCommand<Object>{
 
     private int index;
-    private String key;
-    public LdelRowList(String id, int db,String key,int index) {
+    private byte[] key;
+    public LdelRowList(String id, int db,byte[] key,int index) {
         super(id, db);
         this.index = index;
         this.key = key;
@@ -29,7 +29,7 @@ public class LdelRowList extends JedisDbCommand{
     }
 
     @Override
-    public Object concreteCommand(RedisLarkContext redisLarkContext) {
+    public Object concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         redisLarkContext.ldelRow(key, index,this.isPrintLog());
         

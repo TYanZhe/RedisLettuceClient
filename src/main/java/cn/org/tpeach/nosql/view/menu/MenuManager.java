@@ -11,6 +11,7 @@ import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
+import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
@@ -27,6 +28,8 @@ import cn.org.tpeach.nosql.view.dialog.AddRedisKeyDialog;
 import cn.org.tpeach.nosql.view.dialog.AddRedisServerDialog;
 import cn.org.tpeach.nosql.view.dialog.DeleteRedisKeyDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
+import io.lettuce.core.KeyScanCursor;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -40,7 +43,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.function.Consumer;
-
+import java.util.List;
 /**
  * <p>
  * Title: MenuManager.java
@@ -50,6 +53,7 @@ import java.util.function.Consumer;
  * @date 2019年8月22日
  * @version 1.0
  */
+@Slf4j
 public enum MenuManager {
 	INSTANCE;
 	public static MenuManager getInstance() {
@@ -257,28 +261,33 @@ public enum MenuManager {
 	private void disConnecect(JTree tree,RTabbedPane jTabbedPane,StatePanel statePanel) {
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
 		RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
-		DefaultTreeModel defaultModel = (DefaultTreeModel)tree.getModel();
+		DefaultTreeModel defaultModel = (DefaultTreeModel) tree.getModel();
 		String itemId = redisTreeItem.getId();
-		RedisLarkPool.destory(itemId);
-		node.removeAllChildren();
-		for (int i = jTabbedPane.getTabCount() -1; i >= 0; i--) {
-			Component componect = jTabbedPane.getComponentAt(i);
-			if (componect instanceof ServiceInfoPanel) {
-				ServiceInfoPanel serviceInfoPanel = (ServiceInfoPanel) componect;
-				if(itemId.equals(serviceInfoPanel.getRedisTreeItem().getId())){
-					jTabbedPane.remove(i);
-				}
-			}else if(componect instanceof RedisTabbedPanel){
-				RedisTabbedPanel redisTabbedPanel = (RedisTabbedPanel) componect;
-				RedisTreeItem  treeItem = (RedisTreeItem) redisTabbedPanel.getTreeNode().getUserObject();
-				if(itemId.equals(treeItem.getId())){
-					jTabbedPane.remove(i);
+		try {
+			node.removeAllChildren();
+			for (int i = jTabbedPane.getTabCount() - 1; i >= 0; i--) {
+				Component componect = jTabbedPane.getComponentAt(i);
+				if (componect instanceof ServiceInfoPanel) {
+					ServiceInfoPanel serviceInfoPanel = (ServiceInfoPanel) componect;
+					if (itemId.equals(serviceInfoPanel.getRedisTreeItem().getId())) {
+						jTabbedPane.remove(i);
+					}
+				} else if (componect instanceof RedisTabbedPanel) {
+					RedisTabbedPanel redisTabbedPanel = (RedisTabbedPanel) componect;
+					RedisTreeItem treeItem = (RedisTreeItem) redisTabbedPanel.getTreeNode().getUserObject();
+					if (itemId.equals(treeItem.getId())) {
+						jTabbedPane.remove(i);
+					}
 				}
 			}
-		}
 //				tree.updateUI();
-		defaultModel.reload(node);
-		statePanel.doUpdateStatus(null);
+			defaultModel.reload(node);
+			statePanel.doUpdateStatus(null);
+		}catch (Exception e){
+			log.error("断开连接异常",e);
+		}finally {
+			RedisLarkPool.destory(itemId);
+		}
 	}
 	
 
@@ -319,7 +328,7 @@ public enum MenuManager {
     				d.setVisible(false);
     				int confirm = SwingTools.showConfirmDialogYNC(null,"删除 "+d.getKeyPattern()+" 数量: "+number+", 是否重新加载db"+redisTreeItem.getDb(), "删除成功");
     				if(confirm == JOptionPane.YES_OPTION){
-    					ServiceManager.getInstance().openDbRedisTree(node, redisTreeItem, tree,keyFilterField);
+    					ServiceManager.getInstance().openDbRedisTree(node, redisTreeItem, tree,keyFilterField,true);
     				}
     				d.close();
     			});
@@ -335,7 +344,7 @@ public enum MenuManager {
 		reloadItem.addActionListener(e -> {
 			RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); 
 			RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
-			ServiceManager.getInstance().openDbRedisTree(node, redisTreeItem, tree,keyFilterField);
+			ServiceManager.getInstance().openDbRedisTree(node, redisTreeItem, tree,keyFilterField,true);
 			
 		});
 		flushDbItem.addActionListener(e -> {
@@ -383,7 +392,7 @@ public enum MenuManager {
 			RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); 
 			RedisTreeItem item = (RedisTreeItem) node.getUserObject();
 		    Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();  
-		    Transferable tText = new StringSelection(item.getKey());  
+		    Transferable tText = new StringSelection(StringUtils.byteToStr(item.getKey()));  
 		    clip.setContents(tText, null); 
 		});
 		popMenu.add(openKeyItem);
@@ -406,11 +415,11 @@ public enum MenuManager {
 			RTreeNode treeNode = (RTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
 			RedisTreeItem redisTreeItem = (RedisTreeItem) treeNode.getUserObject();
 			String keyPattern = redisTreeItem.getOriginName()+":*";
-			ResultRes<Collection<String>> dispatcher = BaseController.dispatcher(() ->redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(), keyPattern));
+			ResultRes<KeyScanCursor<byte[]>> dispatcher = BaseController.dispatcher(() ->redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(), keyPattern ,false));
 			if(dispatcher.isRet()) {
 				DefaultTreeModel defaultModel = (DefaultTreeModel)tree.getModel();
 				treeNode.removeAllChildren();
-				Collection<String> keys = dispatcher.getData();
+				List<byte[]> keys = dispatcher.getData().getKeys();
 				if(CollectionUtils.isNotEmpty(keys)) {
 					ServiceManager.getInstance().drawRedisKeyTree(treeNode, redisTreeItem, keys);
 				}
@@ -446,10 +455,10 @@ public enum MenuManager {
 		int count = topTabbedPane.getTabCount();
 		RedisTreeItem item = (RedisTreeItem) node.getUserObject();
 		if(count == 0){
-			topTabbedPane.addTab(item.getKey(),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+			topTabbedPane.addTab(item.getName(),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
 		}else{
 			int selectedIndex = topTabbedPane.getSelectedIndex();
-			topTabbedPane.add(item.getKey(),selectedIndex+1,PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+			topTabbedPane.add(item.getName(),selectedIndex+1,PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
 //			topTabbedPane.remove(selectedIndex+1);
 		}
 
@@ -460,7 +469,7 @@ public enum MenuManager {
 		RedisTreeItem item = (RedisTreeItem) node.getUserObject();
 		if(count == 0){
 			
-			topTabbedPane.addTab(item.getKey(),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+			topTabbedPane.addTab(StringUtils.showHexStringValue(item.getKey()),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
 		}else{
 			int selectedIndex = topTabbedPane.getSelectedIndex();
 			if(selectedIndex > 0) {
@@ -471,7 +480,7 @@ public enum MenuManager {
 				if(count > 1) {
 					replaceTabedPane(tree, topTabbedPane, node, item, count-1);
 				}else {
-					topTabbedPane.addTab(item.getKey(),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+					topTabbedPane.addTab(StringUtils.showHexStringValue(item.getKey()),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
 				}
 				
 			}
@@ -484,22 +493,23 @@ public enum MenuManager {
 		Component componect = topTabbedPane.getComponentAt(selectedIndex);
 		if(componect instanceof RedisTabbedPanel){
 			RedisTabbedPanel redisTabbedPanel = (RedisTabbedPanel) componect;
+			topTabbedPane.setSelectedIndex(selectedIndex);
 			redisTabbedPanel.updateUI(node,tree,new PageBean(),true);
 		}else if(componect instanceof ServiceInfoPanel) {
 			int count = topTabbedPane.getTabCount();
 			for(int i = count -1 ;i>0;i--){
 				if(topTabbedPane.getComponentAt(i) instanceof RedisTabbedPanel){
-					topTabbedPane.add(item.getKey(),i, PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+					topTabbedPane.add(StringUtils.showHexStringValue(item.getKey()),i, PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
 					topTabbedPane.remove(i+1);
 					topTabbedPane.setSelectedIndex(i);
 					return;
 				}
 			}
-			topTabbedPane.addTab(item.getKey(),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+			topTabbedPane.addTab(StringUtils.showHexStringValue(item.getKey()),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
 			topTabbedPane.setSelectedIndex(selectedIndex+1);
 		}else{
 
-			topTabbedPane.add(item.getKey(),selectedIndex, PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+			topTabbedPane.add(StringUtils.showHexStringValue(item.getKey()),selectedIndex, PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
 			topTabbedPane.remove(selectedIndex+1);
 		}
 	}
@@ -511,12 +521,12 @@ public enum MenuManager {
 			//重新加载
 //				SwingTools.addTreeNode(node, redisTreeItem.getId(), db+"", item.getKey(), PublicConstant.Image.logo_20, RedisType.KEY);
 			//TODO 与@link{cn.org.tpeach.nosql.view.RedisMainWindow#clickLeftTree} 合并
-			ResultRes<Collection<String>> resDatabase = BaseController.dispatcher(()-> redisConnectService.getKeys(redisTreeItem.getId(), item.getDb()));
+			ResultRes<KeyScanCursor<byte[]>> resDatabase = BaseController.dispatcher(()-> redisConnectService.getKeys(redisTreeItem.getId(), item.getDb(),false ));
 			if (resDatabase.isRet()) {
 				d.close();
 				int conform = SwingTools.showConfirmDialogYNC(null, "key was added.Do you want to reload keys in selected database", "key was added");
 				if(conform == JOptionPane.YES_OPTION){
-					final Collection<String> keys = resDatabase.getData();
+					final List<byte[]> keys = resDatabase.getData().getKeys();
 					if (CollectionUtils.isNotEmpty(keys)) {
 						node.removeAllChildren();
 						ServiceManager.getInstance().drawRedisKeyTree(node, redisTreeItem, keys);
@@ -545,7 +555,7 @@ public enum MenuManager {
 		int confirm = SwingTools.showConfirmDialogYNC(null, "是否确认删除？", "删除确认");
 		if(confirm == JOptionPane.YES_OPTION){
 			RedisTreeItem item = (RedisTreeItem) node.getUserObject();
-			ResultRes<Long> res = BaseController.dispatcher(()->redisConnectService.deleteKeys(item.getId(),item.getDb(),item.getName()));
+			ResultRes<Long> res = BaseController.dispatcher(()->redisConnectService.deleteKeys(item.getId(),item.getDb(),item.getKey()));
 			if(res.isRet()) {
 //				SwingTools.removeTreeNode(tree,node);
 				item.setName(item.getName()+"(remove)");

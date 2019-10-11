@@ -306,7 +306,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                 if(childCount > 0 ){
                 	if(childCount == 1 && RedisType.LOADING.equals(((RedisTreeItem)((RTreeNode) treeNode.getChildAt(0)).getUserObject()).getType())) {
                         serverTreePopMenu.getComponent(0).setEnabled(false);
-                        serverTreePopMenu.getComponent(1).setEnabled(false);
+                        serverTreePopMenu.getComponent(1).setEnabled(RedisType.SERVER == item.getType());
                         serverTreePopMenu.getComponent(2).setEnabled(false);
                         serverTreePopMenu.getComponent(3).setEnabled(false);
                         serverTreePopMenu.getComponent(4).setEnabled(false);
@@ -428,7 +428,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                         });
                         break;
                     case DATABASE:
-                        serviceManager.openDbRedisTree(treeNode, redisTreeItem, redisTree,keyFilterField);
+                        serviceManager.openDbRedisTree(treeNode, redisTreeItem, redisTree,keyFilterField,false);
                         break;
                     case KEY:
                         RTreeNode node = (RTreeNode) redisTree.getLastSelectedPathComponent(); // 获得右键选中的节点

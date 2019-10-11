@@ -13,8 +13,8 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class HexistsHash extends JedisDbCommand<Boolean> {
-    private String key;
-    private String field;
+    private byte[] key;
+    private byte[] field;
     /**
      * 命令：HEXISTS key field
      * @param id
@@ -22,16 +22,21 @@ public class HexistsHash extends JedisDbCommand<Boolean> {
      * @param key
      * @param field
      */
-    public HexistsHash(String id, int db, String key,String field) {
+//    public HexistsHash(String id, int db, String key,String field) {
+//        super(id,db);
+//        this.db = db;
+//        this.key = strToByte(key);
+//        this.field = strToByte(field);
+//    }
+    public HexistsHash(String id, int db, byte[] key,byte[] field) {
         super(id,db);
         this.db = db;
         this.key = key;
         this.field = field;
     }
-
     @Override
     public String sendCommand() {
-        return "HEXISTS "+ key + " "+ field;
+        return "HEXISTS "+ byteToStr(key) + " "+ byteToStr(field);
     }
 
     /**
@@ -41,7 +46,7 @@ public class HexistsHash extends JedisDbCommand<Boolean> {
      * @return 如果哈希表含有给定域，返回1。如果哈希表不含有给定域，或key不存在，返回0。
      */
     @Override
-    public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
+    public Boolean concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Boolean response = redisLarkContext.hexists(key,field);
         return response;

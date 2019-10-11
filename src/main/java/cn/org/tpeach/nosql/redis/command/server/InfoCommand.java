@@ -91,7 +91,7 @@ public class InfoCommand extends JedisCommand<Map<String,String>> {
 	 * db2:keys=1,expires=0</br>
 	 */
 	@Override
-	public Map<String,String> concreteCommand(RedisLarkContext redisLarkContext) {
+	public Map<String,String> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		if(newInfo && MapUtils.isNotEmpty(redisLarkContext.getRedisInfo())){
 			redisLarkContext.getRedisInfo().clear();
 		}

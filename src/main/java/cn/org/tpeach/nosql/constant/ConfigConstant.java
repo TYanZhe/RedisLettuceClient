@@ -22,11 +22,13 @@ public class ConfigConstant {
 		public static final String CONNECTLIST = "ConnectList";
 		public static final String SERVER = "Server";
 		public static final String FONT = "Font";
+		public static final String CHARACTER_ENCODING = "Character Encoding";
 	}
 	
 	public static final String LANGUAGE = "language";
 	public static final String COUNTRY = "country";
 	public static final String FONTSIZE = "font-size";
 	public static final String DEFAULT_FONTSIZE = "14";
+	public static final String CHARACTER = "character";
 
 }

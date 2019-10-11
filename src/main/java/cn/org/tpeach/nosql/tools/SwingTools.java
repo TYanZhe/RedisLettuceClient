@@ -152,7 +152,7 @@ public class SwingTools {
 	 * @param tipText
 	 * @return
 	 */
-	public static RTreeNode addTreeNode(RTreeNode parentNode, RedisTreeItem parentItem, String id, String key,
+	public static RTreeNode addTreeNode(RTreeNode parentNode, RedisTreeItem parentItem, String id, byte[] key,
 										String name, Integer db, RedisType redisType, String path, String tipText) {
 		if (StringUtils.isBlank(id)) {
 			throw new ServiceException("添加节点id为空");
@@ -189,13 +189,13 @@ public class SwingTools {
 		return addDatabaseTreeNode(parentNode, parentItem, name, db, path, name);
 	}
 
-	public static RTreeNode addKeyTreeNode(RTreeNode parentNode, RedisTreeItem parentItem, String key, String name,
+	public static RTreeNode addKeyTreeNode(RTreeNode parentNode, RedisTreeItem parentItem, byte[] key, String name,
 										   String path, String tipText) {
 		return addTreeNode(parentNode, parentItem, parentItem.getId(), key, name, parentItem.getDb(), RedisType.KEY,
 				path, tipText);
 	}
 
-	public static RTreeNode addKeyNamespaceTreeNode(RTreeNode parentNode, RedisTreeItem parentItem, String key,
+	public static RTreeNode addKeyNamespaceTreeNode(RTreeNode parentNode, RedisTreeItem parentItem,byte[] key,
 													String name, String path, String tipText) {
 		return addTreeNode(parentNode, parentItem, parentItem.getId(), key, name, parentItem.getDb(),
 				RedisType.KEY_NAMESPACE, path, tipText);

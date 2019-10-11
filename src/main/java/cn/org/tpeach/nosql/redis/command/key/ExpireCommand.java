@@ -15,13 +15,13 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class ExpireCommand extends JedisDbCommand<Boolean> {
-    private String key;
+    private byte[] key;
     private int seconds;
     /**
      * 命令：EXPIRE key seconds
      * @param id
      */
-    public ExpireCommand(String id, int db,String key,int seconds) {
+    public ExpireCommand(String id, int db,byte[] key,int seconds) {
         super(id,db);
         this.key = key;
         this.seconds = seconds;
@@ -29,7 +29,7 @@ public class ExpireCommand extends JedisDbCommand<Boolean> {
 
     @Override
     public String sendCommand() {
-        return "EXPIRE "+key+" "+seconds;
+        return "EXPIRE "+byteToStr(key)+" "+seconds;
     }
 
     /**
@@ -42,7 +42,7 @@ public class ExpireCommand extends JedisDbCommand<Boolean> {
      * @return 设置成功返回1。当key不存在或者不能为key设置生存时间时(比如在低于2.1.3中你尝试更新key的生存时间)，返回0。
      */
     @Override
-    public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
+    public Boolean concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Boolean response = redisLarkContext.expire(key, seconds);
         return response;

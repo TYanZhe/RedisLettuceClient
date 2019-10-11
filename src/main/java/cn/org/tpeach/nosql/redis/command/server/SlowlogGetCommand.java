@@ -29,7 +29,7 @@ public class SlowlogGetCommand extends JedisCommand<List<SlowLogBo>> {
     }
 
     @Override
-    public List<SlowLogBo> concreteCommand(RedisLarkContext redisLarkContext) {
+    public List<SlowLogBo> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         return redisLarkContext.slowlogGet(count);
     }
 

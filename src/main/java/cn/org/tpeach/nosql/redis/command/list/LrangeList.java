@@ -16,9 +16,9 @@ import java.util.List;
  * @date 2019-07-08 18:37
  * @since 1.0.0
  */
-public class LrangeList extends JedisDbCommand<List<String>> {
+public class LrangeList extends JedisDbCommand<List<byte[]>> {
     private static final Logger logger = LoggerFactory.getLogger(LrangeList.class);
-    private String key;
+    private byte[] key;
     private long start;
     private long stop;
 
@@ -30,7 +30,7 @@ public class LrangeList extends JedisDbCommand<List<String>> {
      * @param start
      * @param stop
      */
-    public LrangeList(String id, int db, String key, long start, long stop) {
+    public LrangeList(String id, int db, byte[] key, long start, long stop) {
         super(id, db);
         this.key = key;
         this.start = start;
@@ -39,7 +39,7 @@ public class LrangeList extends JedisDbCommand<List<String>> {
 
     @Override
     public String sendCommand() {
-        return "LRANGE "+ key +" "+ start + " "+stop;
+        return "LRANGE "+ byteToStr(key) +" "+ start + " "+stop;
     }
     /**
      * 返回列表key中指定区间内的元素，区间以偏移量start和stop指定。
@@ -54,9 +54,9 @@ public class LrangeList extends JedisDbCommand<List<String>> {
      * @return 一个列表，包含指定区间内的元素。
      */
     @Override
-    public List<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public List<byte[]> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final List<String> response = redisLarkContext.lrange(key ,start, stop);
+        final List<byte[]> response = redisLarkContext.lrange(key ,start, stop);
         return response;
     }
 

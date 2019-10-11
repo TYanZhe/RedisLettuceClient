@@ -14,9 +14,9 @@ import java.util.List;
  * @date 2019-07-02 22:12
  * @since 1.0.0
  */
-public class HkeysHash extends JedisDbCommand<List<String>> {
+public class HkeysHash extends JedisDbCommand<List<byte[]>> {
 
-    private String key;
+    private byte[] key;
 
 
     /**
@@ -25,14 +25,14 @@ public class HkeysHash extends JedisDbCommand<List<String>> {
      * @param db
      * @param key
      */
-    public HkeysHash(String id, int db, String key) {
+    public HkeysHash(String id, int db, byte[] key) {
         super(id,db);
         this.key = key;
     }
 
     @Override
     public String sendCommand() {
-        return "HKEYS "+key;
+        return "HKEYS " + byteToStr(key);
     }
 
     /**
@@ -42,9 +42,9 @@ public class HkeysHash extends JedisDbCommand<List<String>> {
      * @return 一个包含哈希表中所有域的表。当key不存在时，返回一个空表。
      */
     @Override
-    public List<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public List<byte[]> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final List<String> response = redisLarkContext.hkeys(key);
+        final List<byte[]> response = redisLarkContext.hkeys(key);
         return response;
     }
 

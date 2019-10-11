@@ -13,9 +13,9 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class HsetnxHash extends JedisDbCommand<Boolean> {
-    private String key;
-    private String field;
-    private String value;
+    private byte[] key;
+    private byte[] field;
+    private byte[] value;
 
     /**
      * 命令：HSETNX key field value
@@ -25,7 +25,7 @@ public class HsetnxHash extends JedisDbCommand<Boolean> {
      * @param field
      * @param value
      */
-    public HsetnxHash(String id, int db, String key, String field, String value) {
+    public HsetnxHash(String id, int db, byte[] key, byte[] field, byte[] value) {
         super(id,db);
         this.key = key;
         this.field = field;
@@ -34,7 +34,7 @@ public class HsetnxHash extends JedisDbCommand<Boolean> {
 
     @Override
     public String sendCommand() {
-        return "HSETNX "+key+" "+field +" "+ value;
+        return "HSETNX "+ byteToStr(key) +" "+ byteToStr(field)+" "+byteToStr(value);
     }
 
     /**
@@ -46,7 +46,7 @@ public class HsetnxHash extends JedisDbCommand<Boolean> {
      * @return 设置成功，返回1。如果给定域已经存在且没有操作被执行，返回0
      */
     @Override
-    public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
+    public Boolean concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Boolean response = redisLarkContext.hsetnx(key, field, value);
         return response;

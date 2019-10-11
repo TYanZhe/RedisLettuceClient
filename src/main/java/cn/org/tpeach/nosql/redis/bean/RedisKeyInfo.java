@@ -21,19 +21,19 @@ import java.util.Map;
 public class RedisKeyInfo {
     private String id;
     private int db;
-    private String key;
+    private byte[] key;
+    private byte[] value;
     private Long ttl;
     private RedisType type;
     private int size;
-    private String value;
     private int index;
     private Double score;
-    private String field;
+    private byte[] field;
     private Long idleTime;
-    private Map<String,String> valueHash;
-    private List<String> valueList;
-    private List<String> valueSet;
-    private List<ScoredValue<String>> valueZSet;
+    private Map<byte[],byte[]> valueHash;
+    private List<byte[]> valueList;
+    private List<byte[]> valueSet;
+    private List<ScoredValue<byte[]>> valueZSet;
     private PageBean pageBean;
     private ScanCursor cursor;
     

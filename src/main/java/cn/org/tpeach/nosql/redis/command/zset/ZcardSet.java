@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ZcardSet extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(ZcardSet.class);
-    private String key;
+    private byte[] key;
 
     /**
      * 命令：ZCARD  key
@@ -25,13 +25,13 @@ public class ZcardSet extends JedisDbCommand<Long> {
      * @param db
      * @param key
      */
-    public ZcardSet(String id, int db, String key) {
+    public ZcardSet(String id, int db, byte[] key) {
         super(id, db);
         this.key = key;
     }
     @Override
     public String sendCommand() {
-        return "ZCARD "+key ;
+        return "ZCARD "+byteToStr(key) ;
     }
     /**
      * 返回有序集key的基数。
@@ -39,7 +39,7 @@ public class ZcardSet extends JedisDbCommand<Long> {
      * @return 当key存在且是有序集类型时，返回有序集的基数。当key不存在时，返回0。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.zcard(key);
         return response;

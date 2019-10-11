@@ -4,7 +4,13 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cn.org.tpeach.nosql.constant.ConfigConstant;
+import cn.org.tpeach.nosql.constant.PublicConstant;
+import lombok.extern.slf4j.Slf4j;
+
 import static java.util.regex.Pattern.compile;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * 提取org.apache.commons.lang.StringUtils常用方法
@@ -12,6 +18,7 @@ import static java.util.regex.Pattern.compile;
  * @author taoyz
  *
  */
+@Slf4j
 public class StringUtils {
 	public static final String EMPTY = "";
 	public static final String BLANK = " ";
@@ -149,7 +156,34 @@ public class StringUtils {
 		}
 		return true;
 	}
+	public static boolean isText(byte[] bytes){
+		return isText(byteToStr(bytes));
+	}
+	public static String showHexStringValue(String value) {
+		char[] chars = value.toCharArray();
+		StringBuffer sb = new StringBuffer();
+		for (char c : chars) {
+			Character.UnicodeBlock ub = Character.UnicodeBlock.of(c);
+			if((c >= 32 && c <= 126) || (c==8 || c==9 || c==10 || c==13) || (c >= 0x4E00 &&  c <= 0x9FA5)
+					|| ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS
+					|| ub == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS
+					|| ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A
+					|| ub == Character.UnicodeBlock.GENERAL_PUNCTUATION
+					|| ub == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION
+					|| ub == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS){
+				sb.append(c);
+			}else{
+				int intNum = c;
+				String s = "\\x" + StringUtils.intToHexStringSmall(intNum);
+				sb.append(s);
+			}
+		}
+		return sb.toString();
+	}
 
+	public static String showHexStringValue(byte[] value) {
+		return showHexStringValue(byteToStr(value));
+	}
 	/**
 	 * byte——>hexString
 	 *
@@ -246,4 +280,48 @@ public class StringUtils {
 		}
 		return new String(buf);
 	}
+	
+	
+    public static String byteToStr(byte[] b){
+        String character = ConfigParser.getInstance().getString(ConfigConstant.Section.CHARACTER_ENCODING, ConfigConstant.CHARACTER, PublicConstant.CharacterEncoding.UTF_8);
+        try {
+            return new String(b,character);
+        } catch (UnsupportedEncodingException e) {
+        	log.error("不支持的编码格式",e);
+        }
+        return null;
+    }
+
+    public static byte[] strToByte(String s){
+        if(StringUtils.isNotBlank(s)){
+            String character = ConfigParser.getInstance().getString(ConfigConstant.Section.CHARACTER_ENCODING, ConfigConstant.CHARACTER, PublicConstant.CharacterEncoding.UTF_8);
+            try {
+                return s.getBytes(character);
+            } catch (UnsupportedEncodingException e) {
+                log.error("不支持的编码格式",e);
+            }
+        }
+        return null;
+    }
+    
+    public static byte[][] strArrToByte(String[] arr){
+    	if(!ArraysUtil.isEmpty(arr)) {
+    		byte[][] bytes = new byte[arr.length][];
+            for (int i = 0; i < arr.length; i++) {
+                bytes[i] = strToByte(arr[i]);
+            }
+            return bytes;
+    	}
+    	return null;
+    }
+    public static String[] byteArrToStr(byte[][] arr){
+        if(!ArraysUtil.isEmpty(arr)) {
+            String[] s = new String[arr.length];
+            for (int i = 0; i < arr.length; i++) {
+                s[i] = byteToStr(arr[i]);
+            }
+            return s;
+        }
+        return null;
+    }
 }

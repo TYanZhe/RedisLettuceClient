@@ -13,7 +13,7 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class IncrCommand extends JedisDbCommand<Long> {
-    private String key;
+    private byte[] key;
 
     /**
      * 命令：INCR key
@@ -21,13 +21,13 @@ public class IncrCommand extends JedisDbCommand<Long> {
      * @param db
      * @param key
      */
-    public IncrCommand(String id, int db, String key) {
+    public IncrCommand(String id, int db, byte[] key) {
         super(id,db);
         this.key = key;
     }
     @Override
     public String sendCommand() {
-        return "INCR "+key  ;
+        return "INCR "+byteToStr(key)  ;
     }
     /**
      * 将key中储存的数字值增一。
@@ -41,7 +41,7 @@ public class IncrCommand extends JedisDbCommand<Long> {
      * @return 执行INCR命令之后key的值。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.incr(key);
         return response;

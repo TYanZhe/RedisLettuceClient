@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  */
 public class LlenList extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(LlenList.class);
-    private String key;
+    private byte[] key;
 
     /**
      * 命令：LLEN key
@@ -25,14 +25,14 @@ public class LlenList extends JedisDbCommand<Long> {
      * @param db
      * @param key
      */
-    public LlenList(String id, int db, String key) {
+    public LlenList(String id, int db, byte[] key) {
         super(id, db);
         this.key = key;
     }
 
     @Override
     public String sendCommand() {
-        return "LLEN "+key;
+        return "LLEN "+byteToStr(key);
     }
 
     /**
@@ -45,7 +45,7 @@ public class LlenList extends JedisDbCommand<Long> {
      * @return 列表key的长度。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.llen(key);
         return response;

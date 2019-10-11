@@ -16,9 +16,9 @@ import java.util.Set;
  * @date 2019-07-09 10:43
  * @since 1.0.0
  */
-public class SmembersSet extends JedisDbCommand<Set<String>> {
+public class SmembersSet extends JedisDbCommand<Set<byte[]>> {
     private static final Logger logger = LoggerFactory.getLogger(SmembersSet.class);
-    private String key;
+    private byte[] key;
 
     /**
      * 命令：SMEMBERS key
@@ -27,13 +27,13 @@ public class SmembersSet extends JedisDbCommand<Set<String>> {
      * @param db
      * @param key
      */
-    public SmembersSet(String id, int db, String key) {
+    public SmembersSet(String id, int db, byte[] key) {
         super(id, db);
         this.key = key;
     }
     @Override
     public String sendCommand() {
-        return "SMEMBERS "+key;
+        return "SMEMBERS "+byteToStr(key);
     }
     /**
      * 返回集合key中的所有成员。
@@ -42,10 +42,10 @@ public class SmembersSet extends JedisDbCommand<Set<String>> {
      * @return 集合中的所有成员。
      */
     @Override
-    public Set<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public Set<byte[]> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         logger.info("[runCommand] SMEMBERS  {}", key);
-        final Set<String> response = redisLarkContext.smembers(key);
+        final Set<byte[]> response = redisLarkContext.smembers(key);
         return response;
     }
 

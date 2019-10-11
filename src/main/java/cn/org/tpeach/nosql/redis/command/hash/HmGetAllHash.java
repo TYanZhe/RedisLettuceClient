@@ -14,15 +14,15 @@ import java.util.Map;
  * @date 2019-07-02 23:10
  * @since 1.0.0
  */
-public class HmGetAllHash extends JedisDbCommand<Map<String, String>> {
-    private String key;
+public class HmGetAllHash extends JedisDbCommand<Map<byte[], byte[]>> {
+    private byte[] key;
 
     /**
      * 命令：HGETALL key
      * @param id
      * @param db
      */
-    public HmGetAllHash(String id, int db, String key) {
+    public HmGetAllHash(String id, int db, byte[] key) {
         super(id,db);
         this.key = key;
     }
@@ -30,7 +30,7 @@ public class HmGetAllHash extends JedisDbCommand<Map<String, String>> {
 
     @Override
     public String sendCommand() {
-        return "HGETALL "+key;
+        return "HGETALL "+byteToStr(key);
     }
 
     /**
@@ -41,9 +41,9 @@ public class HmGetAllHash extends JedisDbCommand<Map<String, String>> {
      * @return 以列表形式返回哈希表的域和域的值。 若key不存在，返回空列表。
      */
     @Override
-    public Map<String, String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public Map<byte[], byte[]> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
-        final Map<String, String> response = redisLarkContext.hgetAll(key);
+        final Map<byte[], byte[]> response = redisLarkContext.hgetAll(key);
         return response;
     }
 

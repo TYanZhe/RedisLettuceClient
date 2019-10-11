@@ -14,21 +14,21 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  */
 public class TTLCommand extends JedisDbCommand<Long> {
 
-    private String key;
+    private byte[] key;
     /**
      * 命令：TTL key
      * @param id
      *  @param db
      * @param key
      */
-    public TTLCommand(String id, int db,String key) {
+    public TTLCommand(String id, int db,byte[] key) {
         super(id,db);
         this.key = key;
     }
 
     @Override
     public String sendCommand() {
-        return "TTL "+key;
+        return "TTL "+byteToStr(key);
     }
 
     /**
@@ -38,7 +38,7 @@ public class TTLCommand extends JedisDbCommand<Long> {
      * @return key的剩余生存时间(以秒为单位)。当key不存在或没有设置生存时间时，返回-1 。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.ttl(key);
         return response;

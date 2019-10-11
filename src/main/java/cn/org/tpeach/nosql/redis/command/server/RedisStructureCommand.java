@@ -24,7 +24,7 @@ public class RedisStructureCommand extends JedisCommand<RedisStructure> {
     }
 
     @Override
-    public RedisStructure concreteCommand(RedisLarkContext redisLarkContext) {
+    public RedisStructure concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         return redisLarkContext.getRedisStructure();
     }
 

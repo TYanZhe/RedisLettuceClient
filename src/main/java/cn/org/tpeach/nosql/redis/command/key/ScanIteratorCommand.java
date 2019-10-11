@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 1.0.0
  */
 @Slf4j
-public class ScanIteratorCommand extends JedisCommand<ScanIterator<String>> {
+public class ScanIteratorCommand extends JedisCommand<ScanIterator<byte[]>> {
     private int count;
     private String pattern;
 
@@ -31,8 +31,8 @@ public class ScanIteratorCommand extends JedisCommand<ScanIterator<String>> {
     }
 
     @Override
-    public ScanIterator<String> concreteCommand(RedisLarkContext redisLarkContext) {
-        final ScanIterator<String> response = redisLarkContext.scanIterator(count, pattern);
+    public ScanIterator<byte[]> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
+        final ScanIterator<byte[]> response = redisLarkContext.scanIterator(count, pattern);
         return response;
     }
 

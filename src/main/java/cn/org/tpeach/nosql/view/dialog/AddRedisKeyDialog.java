@@ -8,6 +8,7 @@ import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
+import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.StringUtils;
@@ -186,7 +187,7 @@ public class AddRedisKeyDialog extends KeyDialog<RedisTreeItem, RedisKeyInfo> {
         RedisKeyInfo keyInfo = new RedisKeyInfo();
         keyInfo.setId(treeItem.getId());
         keyInfo.setDb(treeItem.getDb());
-        keyInfo.setKey(key);
+        keyInfo.setKey(StringUtils.strToByte(key));
         keyInfo.setTtl(ttl);
         keyInfo.setType(type);
         switch (type) {
@@ -208,11 +209,11 @@ public class AddRedisKeyDialog extends KeyDialog<RedisTreeItem, RedisKeyInfo> {
                     SwingTools.showMessageErrorDialog(this, "请输入键值");
                     return;
                 }
-                keyInfo.setValue(value);
+                keyInfo.setValue(StringUtils.strToByte(value));
                 break;
             case HASH:
-                keyInfo.setValue(valueHash);
-                keyInfo.setField(filedHash);
+                keyInfo.setValue(StringUtils.strToByte(valueHash));
+                keyInfo.setField(StringUtils.strToByte(filedHash));
                 break;
         }
         this.okBtn.setEnabled(false);

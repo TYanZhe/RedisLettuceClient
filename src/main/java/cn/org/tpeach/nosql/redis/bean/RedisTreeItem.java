@@ -1,6 +1,8 @@
 package cn.org.tpeach.nosql.redis.bean;
 
 import cn.org.tpeach.nosql.enums.RedisType;
+import cn.org.tpeach.nosql.redis.command.JedisCommand;
+import cn.org.tpeach.nosql.tools.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,7 +25,7 @@ public class RedisTreeItem {
 	private String id;
 	public RedisTreeItem parentItem;
 	private Integer db;
-	private String key;
+	private byte[] key;
 	private String name;
 	private String originName;
 	private RedisType type;
@@ -44,11 +46,11 @@ public class RedisTreeItem {
 	}
 
 
-	public void updateKeyName(String name){
+	public void updateKeyName(byte[] key,String name){
 		if(RedisType.KEY.equals(this.getType())){
 			this.setName(name);
 			this.setTipText(name);
-			this.setKey(name);
+			this.setKey(key);
 			this.setOriginName(name);
 			int i = this.getPath().lastIndexOf("/");
 			if(i != -1){

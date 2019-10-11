@@ -7,14 +7,17 @@ import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
+import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
+import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.EasyJSP;
 import cn.org.tpeach.nosql.view.component.OnlyReadArea;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
+import io.lettuce.core.KeyScanCursor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,7 +40,8 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,Long>{
 	private static final long serialVersionUID = -8995563355788221649L;
 	IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
 	IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
-	Collection<String> keys;
+	Collection<byte[]> keys;
+	String totalKeys;
 	@Getter
 	@Setter
 	private String keyPattern;
@@ -83,9 +87,10 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,Long>{
 	protected void contextUiImpl(JPanel contextPanel, JPanel btnPanel) {
 
 		RedisTreeItem item = (RedisTreeItem) t.getUserObject();
-		ResultRes<Collection<String>> dispatcher = BaseController.dispatcher(() ->redisConnectService.getKeys(item.getId(), item.getDb(), keyPattern));
+		ResultRes<KeyScanCursor<byte[]>> dispatcher = BaseController.dispatcher(() ->redisConnectService.getKeys(item.getId(), item.getDb(), keyPattern,true));
 		if(dispatcher.isRet()) {
-			keys = dispatcher.getData();
+			keys = dispatcher.getData().getKeys();
+			totalKeys = dispatcher.getData().getCursor();
 		}else {
 			this.isError = true;
 			SwingTools.showMessageErrorDialog(null,"获取"+keyPattern+"失败");
@@ -104,7 +109,8 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,Long>{
 		JLabel serverLabel = this.getLable("Redis Server:",JLabel.LEFT);
 		JLabel dbIndexLabel = this.getLable("Database Index:",JLabel.LEFT);
 		JLabel keyPatternLabel = this.getLable("Key Pattern:",JLabel.LEFT);
-		JLabel affectedKeyLabel = this.getLable("Affected Keys:"+keys.size(),JLabel.LEFT);
+		JLabel affectedKeyLabel = this.getLable("show Keys:"+keys.size(),JLabel.LEFT);
+        JLabel totalPattenLabel = this.getLable("Affected Keys:"+totalKeys,JLabel.LEFT);
 		titleLabel.setPreferredSize(new Dimension(150,28));
 		serverLabel.setPreferredSize(new Dimension(150,22));
 		dbIndexLabel.setPreferredSize(new Dimension(150,22));
@@ -132,20 +138,24 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,Long>{
 		Box hBox2 = Box.createHorizontalBox();
 		hBox2.add(affectedKeyLabel);
 		hBox2.add(Box.createHorizontalGlue());
-		
+		Box hBox3 = Box.createHorizontalBox();
+		hBox3.add(totalPattenLabel);
+		hBox3.add(Box.createHorizontalGlue());
 		topPanel.add(Box.createVerticalStrut(10)); 
 		topPanel.add(hBox1);
 		topPanel.add(new JSeparator(JSeparator.HORIZONTAL));
 		topPanel.add(createRowBox(serverLabel,serverTextLabel));
 		topPanel.add(createRowBox(dbIndexLabel,dbIndexTextLabel));
 		topPanel.add(createRowBox(keyPatternLabel,keyPatternTextLabel));
-		topPanel.add(Box.createVerticalStrut(15)); 
+		topPanel.add(Box.createVerticalStrut(5));
 		
 		
 		topPanel.add(hBox2);
-		topPanel.add(Box.createVerticalStrut(5)); 
+		topPanel.add(Box.createVerticalStrut(5));
+		topPanel.add(hBox3);
+		topPanel.add(Box.createVerticalStrut(5));
 		OnlyReadArea textArea = new OnlyReadArea(10,100,1000);
-		keys.forEach(s->textArea.println(s));
+		keys.forEach(s->textArea.println(StringUtils.showHexStringValue(s)));
 		JScrollPane scrollPane = new EasyJSP(textArea).hiddenHorizontalScrollBar();
 		contextPanel.add(scrollPane);
 		
@@ -157,10 +167,8 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,Long>{
 	@Override
 	protected void submit(ActionEvent e) {
 		int conform = SwingTools.showConfirmDialogYNC(null, "是否确认删除？", "删除确认");
-		String[] keysArr = new String[keys.size()];
-		keys.toArray(keysArr);
 		if(conform == JOptionPane.YES_OPTION){
-			 ResultRes<Long> dispatcher = BaseController.dispatcher(() ->redisConnectService.deleteKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keysArr));
+			 ResultRes<Long> dispatcher = BaseController.dispatcher(() ->redisConnectService.deleteKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyPattern));
 			 if(dispatcher.isRet()) {
 				 consumer.accept(dispatcher.getData());
 			 }else {

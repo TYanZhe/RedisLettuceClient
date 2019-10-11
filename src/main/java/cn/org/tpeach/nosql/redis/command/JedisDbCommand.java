@@ -21,17 +21,14 @@ public abstract class JedisDbCommand<T> extends JedisCommand<T> {
 	}
 
 	@Override
-	protected void excuteBefore(RedisLarkContext redisLarkContext) {
+	protected void excuteBefore(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		if(redisLarkContext.getDb() == null || !redisLarkContext.getDb().equals(db)){
 			new SelectCommand(id,db).execute();
 		}
 	}
 
 	@Override
-	public T concreteCommand(RedisLarkContext redisLarkContext) {
-
-
-
+	public T concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		return null;
 	}
 }

@@ -7,6 +7,7 @@ import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 
 import java.util.Map;
+import java.util.Map.Entry;
 /**
  * @author tyz
  * @Title: HmSetHash
@@ -16,8 +17,8 @@ import java.util.Map;
  * @since 1.0.0
  */
 public class HmSetHash extends JedisDbCommand<String> {
-    private String key;
-    private  Map<String, String> hash;
+    private byte[] key;
+    private  Map<byte[], byte[]> hash;
 
     /**
      * 命令：HMSET key field value [field value ...]
@@ -26,7 +27,7 @@ public class HmSetHash extends JedisDbCommand<String> {
      * @param key
      * @param hash
      */
-    public HmSetHash(String id, int db, String key, Map<String, String> hash) {
+    public HmSetHash(String id, int db, byte[] key, Map<byte[], byte[]> hash) {
         super(id,db);
         this.key = key;
         this.hash = hash;
@@ -35,13 +36,13 @@ public class HmSetHash extends JedisDbCommand<String> {
     @Override
     public String sendCommand() {
         StringBuffer sb = new StringBuffer();
-        for (Map.Entry<String, String> entry : hash.entrySet()) {
+        for (Entry<byte[], byte[]> entry : hash.entrySet()) {
             sb.append(" ");
-            sb.append(entry.getKey());
+            sb.append(byteToStr(entry.getKey()));
             sb.append(" ");
-            sb.append(entry.getValue());
+            sb.append(byteToStr(entry.getValue()));
         }
-        return "HMSET "+key+sb.toString();
+        return "HMSET "+byteToStr(key)+sb.toString();
     }
 
     /**
@@ -53,7 +54,7 @@ public class HmSetHash extends JedisDbCommand<String> {
      * @return 如果命令执行成功，返回OK。当key不是哈希表(hash)类型时，返回一个错误。[(error) ERR Operation against a key holding the wrong kind of value)]
      */
     @Override
-    public String concreteCommand(RedisLarkContext redisLarkContext) {
+    public String concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         if(redisLarkContext.exists(key) > 0){
             final String type = redisLarkContext.type(key);

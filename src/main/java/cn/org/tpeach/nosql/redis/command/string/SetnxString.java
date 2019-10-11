@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
  */
 public class SetnxString extends JedisDbCommand<Boolean> {
 	final static Logger logger = LoggerFactory.getLogger(SetnxString.class);
-	private String key;
-	private String value;
+	private byte[] key;
+	private byte[] value;
 
     /**
      * 命令: SETNX key value
@@ -26,14 +26,14 @@ public class SetnxString extends JedisDbCommand<Boolean> {
      * @param key
      * @param value
 	 */
-	public SetnxString(String id, int db, String key, String value) {
+	public SetnxString(String id, int db, byte[] key, byte[] value) {
 		super(id,db);
 		this.key = key;
 		this.value = value;
 	}
 	@Override
 	public String sendCommand() {
-		return "SETNX "+key +" "+value ;
+		return "SETNX "+byteToStr(key) +" "+byteToStr(value) ;
 	}
     /**
 	 * 将key的值设为value，当且仅当key不存在。
@@ -44,7 +44,7 @@ public class SetnxString extends JedisDbCommand<Boolean> {
      * @return 设置成功，返回1 true。设置失败，返回0 false。
 	 */
 	@Override
-	public Boolean concreteCommand(RedisLarkContext redisLarkContext) {
+	public Boolean concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
 		final Boolean response = redisLarkContext.setnx(key, value);
 		return response;

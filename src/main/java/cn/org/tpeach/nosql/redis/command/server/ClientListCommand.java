@@ -64,7 +64,7 @@ public class ClientListCommand extends JedisCommand<String> {
      * w : 客户端套接字（在事件 loop 中）是可写的（writeable）
      */
     @Override
-    public String concreteCommand(RedisLarkContext redisLarkContext) {
+    public String concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         return redisLarkContext.clientList();
     }
 

@@ -35,7 +35,7 @@ public class DbSizeCommand extends JedisDbCommand<Long> {
 	 * @return 当前数据库的 key 的数量。
 	 */
 	@Override
-	public Long concreteCommand(RedisLarkContext redisLarkContext) {
+	public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		super.concreteCommand(redisLarkContext);
 		final Long response = redisLarkContext.dbSize();
 		return response;

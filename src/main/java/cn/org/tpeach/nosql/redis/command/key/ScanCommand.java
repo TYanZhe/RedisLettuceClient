@@ -6,7 +6,7 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import io.lettuce.core.KeyScanCursor;
 import io.lettuce.core.ScanCursor;
 
-public class ScanCommand extends AbstractScanCommand<KeyScanCursor<String>> {
+public class ScanCommand extends AbstractScanCommand<KeyScanCursor<byte[]>> {
 
     public ScanCommand(String id, int db, ScanCursor scanCursor, Integer count) {
         super(id, db, scanCursor, count);
@@ -18,9 +18,9 @@ public class ScanCommand extends AbstractScanCommand<KeyScanCursor<String>> {
     }
 
     @Override
-    public KeyScanCursor<String> concreteCommand(RedisLarkContext redisLarkContext) {
+    public KeyScanCursor<byte[]> concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
          super.concreteCommand(redisLarkContext);
-         KeyScanCursor<String> response = redisLarkContext.scan(scanCursor, scanArgs);
+         KeyScanCursor<byte[]> response = redisLarkContext.scan(scanCursor, scanArgs);
         return response;
     }
 

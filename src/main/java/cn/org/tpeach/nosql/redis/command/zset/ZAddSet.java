@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
  */
 public class ZAddSet extends JedisDbCommand<Long> {
     private static final Logger logger = LoggerFactory.getLogger(ZAddSet.class);
-    private String key;
+    private byte[] key;
     private double score;
-    private String members;
+    private byte[] members;
 
     /**
      * 命令：ZADD key score member
@@ -28,7 +28,7 @@ public class ZAddSet extends JedisDbCommand<Long> {
      * @param score
      * @param members
      */
-    public ZAddSet(String id, int db, String key, double score, String members) {
+    public ZAddSet(String id, int db, byte[] key, double score, byte[] members) {
         super(id, db);
         this.key = key;
         this.score = score;
@@ -37,7 +37,7 @@ public class ZAddSet extends JedisDbCommand<Long> {
 
     @Override
     public String sendCommand() {
-        return "ZADD "+key+" "+score+" "+members;
+        return "ZADD "+byteToStr(key)+" "+score+" "+byteToStr(members);
     }
 
     /**
@@ -51,7 +51,7 @@ public class ZAddSet extends JedisDbCommand<Long> {
      * @return 被成功添加的新成员的数量，不包括那些被更新的、已经存在的成员。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.zadd(key,score, members);
         return response;

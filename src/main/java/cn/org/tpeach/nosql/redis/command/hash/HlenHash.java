@@ -13,7 +13,7 @@ import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
  * @since 1.0.0
  */
 public class HlenHash extends JedisDbCommand<Long > {
-    private String key;
+    private byte[] key;
 
     /**
      * 命令：HLEN key
@@ -21,14 +21,14 @@ public class HlenHash extends JedisDbCommand<Long > {
      * @param db
      * @param key
      */
-    public HlenHash(String id, int db, String key) {
+    public HlenHash(String id, int db, byte[] key) {
         super(id,db);
         this.key = key;
     }
 
     @Override
     public String sendCommand() {
-        return "HLEN "+ key;
+        return "HLEN "+ byteToStr(key);
     }
 
     /**
@@ -38,7 +38,7 @@ public class HlenHash extends JedisDbCommand<Long > {
      * @return 哈希表中域的数量。当key不存在时，返回0。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.hlen(key);
         return response;

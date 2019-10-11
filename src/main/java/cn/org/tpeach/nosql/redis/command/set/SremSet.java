@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class SremSet extends JedisDbCommand<Long>{
-    private String key;
-    private String[] members;
+    private byte[] key;
+    private byte[][] members;
        /**
      * 命令：SREM key member [member ...]
      * @param id
@@ -32,14 +32,14 @@ public class SremSet extends JedisDbCommand<Long>{
      * @param key
      * @param members
      */
-    public SremSet(String id, int db,String key,String... members) {
+    public SremSet(String id, int db,byte[] key,byte[]... members) {
         super(id, db);
         this.key = key;
         this.members = members;
     }
     @Override
     public String sendCommand() {
-        return "SREM "+key+" "+ Arrays.stream(members).collect(Collectors.joining(" "));
+        return "SREM "+byteToStr(key)+" "+ Arrays.stream(byteArrToStr(members)).collect(Collectors.joining(" "));
     }
     /**
      * 移除集合key中的一个或多个member元素，不存在的member元素会被忽略。
@@ -49,7 +49,7 @@ public class SremSet extends JedisDbCommand<Long>{
      * @return 被成功移除的元素的数量，不包括被忽略的元素。
      */
     @Override
-    public Long concreteCommand(RedisLarkContext redisLarkContext) {
+    public Long concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
         super.concreteCommand(redisLarkContext);
         final Long response = redisLarkContext.srem(key, members);
         return response;

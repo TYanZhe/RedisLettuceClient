@@ -17,8 +17,8 @@ import java.util.Map;
 public enum RedisStructure {
 	//	SINGLE(0, "cn.org.tpeach.nosql.redis.connection.impl.RedisLarkSingle","java.lang.String,java.lang.String,int,java.lang.String","id,host,port,auth"),
 //	CLUSTER(1, "cn.org.tpeach.nosql.redis.connection.impl.RedisLarkCluster","java.lang.String,java.lang.String,java.lang.String","id,host,auth"),
-	SINGLE(0, "cn.org.tpeach.nosql.redis.connection.impl.RedisLarkLettuce","java.lang.String,java.lang.String,int,java.lang.String","id,host,port,auth"),
-	CLUSTER(1, "cn.org.tpeach.nosql.redis.connection.impl.RedisLarkLettuce","java.lang.String,java.lang.String,java.lang.String","id,host,auth"),
+	SINGLE(0, "cn.org.tpeach.nosql.redis.connection.impl.RedisLarkLettuceByte","java.lang.String,java.lang.String,int,java.lang.String","id,host,port,auth"),
+	CLUSTER(1, "cn.org.tpeach.nosql.redis.connection.impl.RedisLarkLettuceByte","java.lang.String,java.lang.String,java.lang.String","id,host,auth"),
 	UNKNOW(-1, "unknow","","");
 	private int code;
 	private String service;

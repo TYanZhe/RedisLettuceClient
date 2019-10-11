@@ -13,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
+import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.StringUtils;
@@ -140,7 +141,7 @@ public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
                     SwingTools.showMessageErrorDialog(this, "请输入键值");
                     return;
                 }
-                t.setValue(valueArea.getText());
+                t.setValue(StringUtils.strToByte(valueArea.getText()));
                 break;
             case HASH:
                 if (StringUtils.isBlank(valueHashArea.getText())) {
@@ -151,8 +152,8 @@ public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
                     SwingTools.showMessageErrorDialog(this, "请输入Field");
                     return;
                 }
-                t.setField(hashKeyArea.getText());
-                t.setValue(valueHashArea.getText());
+                t.setField(StringUtils.strToByte(hashKeyArea.getText()));
+                t.setValue(StringUtils.strToByte(valueHashArea.getText()));
                 break;
  
         }

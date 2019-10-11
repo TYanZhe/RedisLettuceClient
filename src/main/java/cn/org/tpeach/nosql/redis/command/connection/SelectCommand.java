@@ -46,13 +46,15 @@ public class SelectCommand extends JedisCommand<String> {
      * @param redisLarkContext
      * @return OK
      */
-    @Override
-    public String concreteCommand(RedisLarkContext redisLarkContext) {
-        return redisLarkContext.select(db);
-    }
+	@Override
+	public String concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
+		return redisLarkContext.select(db);
+	}
 
     @Override
     public RedisVersion getSupportVersion() {
         return RedisVersion.REDIS_1_0;
     }
+
+
 }
