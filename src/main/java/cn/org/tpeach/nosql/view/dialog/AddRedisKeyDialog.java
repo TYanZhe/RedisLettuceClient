@@ -216,17 +216,20 @@ public class AddRedisKeyDialog extends KeyDialog<RedisTreeItem, RedisKeyInfo> {
                 keyInfo.setField(StringUtils.strToByte(filedHash));
                 break;
         }
-        this.okBtn.setEnabled(false);
-        ResultRes<?> res = BaseController.dispatcher(() -> redisConnectService.addSingleKeyInfo(keyInfo));
-        if (res.isRet()) {
-            consumer.accept(keyInfo);
-            this.dispose();
-        } else {
-            SwingTools.showMessageErrorDialog(this, "未知错误：添加失败");
-        }
+        super.submit(okBtn,()->{
+            ResultRes<?> res = BaseController.dispatcher(() -> redisConnectService.addSingleKeyInfo(keyInfo));
+            if (res.isRet()) {
+                consumer.accept(keyInfo);
+                this.dispose();
+            } else {
+                SwingTools.showMessageErrorDialog(this, "未知错误：添加失败");
 
-        this.okBtn.setEnabled(true);
+            }
+            return !res.isRet();
+        });
     }
+
+
 
 	@Override
 	public boolean isNeedBtn() {

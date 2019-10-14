@@ -166,16 +166,18 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,Long>{
 	
 	@Override
 	protected void submit(ActionEvent e) {
-		int conform = SwingTools.showConfirmDialogYNC(null, "是否确认删除？", "删除确认");
-		if(conform == JOptionPane.YES_OPTION){
-			 ResultRes<Long> dispatcher = BaseController.dispatcher(() ->redisConnectService.deleteKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyPattern));
-			 if(dispatcher.isRet()) {
-				 consumer.accept(dispatcher.getData());
-			 }else {
-				 SwingTools.showMessageErrorDialog(null,dispatcher.getMsg());
-			 }
-		
-		}
+        int conform = SwingTools.showConfirmDialogYNC(null, "是否确认删除？", "删除确认");
+        if(conform == JOptionPane.YES_OPTION){
+            super.submit(()->{
+                ResultRes<Long> dispatcher = BaseController.dispatcher(() ->redisConnectService.deleteKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyPattern));
+                if(dispatcher.isRet()) {
+                    consumer.accept(dispatcher.getData());
+                }else {
+                    SwingTools.showMessageErrorDialog(null,dispatcher.getMsg());
+                }
+                return !dispatcher.isRet();
+            });
+        }
 	}
 
 	private Box createRowBox(JLabel label,JLabel context) {

@@ -22,6 +22,8 @@ import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RTextArea;
 
 import java.awt.event.ActionEvent;
+import java.util.concurrent.CountDownLatch;
+
 import lombok.Setter;
 
 /**
@@ -157,15 +159,16 @@ public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
                 break;
  
         }
-        this.okBtn.setEnabled(false);
-        ResultRes<?> res = BaseController.dispatcher(() -> redisConnectService.addRowKeyInfo(t,isLeftList));
-        if (res.isRet()) {
-            consumer.accept(t);
-            this.dispose();
-        } else {
-            SwingTools.showMessageErrorDialog(this, "未知错误：添加失败");
-        }
-        this.okBtn.setEnabled(true);
+        super.submit(okBtn,()->{
+            ResultRes<?> res = BaseController.dispatcher(() -> redisConnectService.addRowKeyInfo(t,isLeftList));
+            if (res.isRet()) {
+                consumer.accept(t);
+                this.dispose();
+            } else {
+                SwingTools.showMessageErrorDialog(this, "未知错误：添加失败");
+            }
+            return !res.isRet();
+        });
     }
 
 

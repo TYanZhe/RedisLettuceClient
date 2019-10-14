@@ -114,14 +114,19 @@ public class LarkFrame {
 				ConfigParser.getInstance().getString(ConfigConstant.Section.LOCAL, ConfigConstant.COUNTRY, ConfigConstant.Local.CN));
 		//启动主窗口
 		final JFrameMain swingMain = (JFrameMain) AnnotationUtil.getClassAnnotation(primarySource,JFrameMain.class);
-		if(swingMain != null) {
-			try {
-				frame = (JFrame) Thread.currentThread().getContextClassLoader().loadClass(swingMain.value()).newInstance();
-			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-				log.error("主窗口类不存在"+swingMain.value());
-				System.exit(0);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				if(swingMain != null) {
+					try {
+						frame = (JFrame) Thread.currentThread().getContextClassLoader().loadClass(swingMain.value()).newInstance();
+					} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+						log.error("主窗口类不存在"+swingMain.value());
+						System.exit(0);
+					}
+				}
 			}
-		}
+		});
 
 	}
 

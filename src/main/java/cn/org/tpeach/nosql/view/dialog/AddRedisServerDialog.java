@@ -260,27 +260,28 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
     
     @Override
     protected void submit(ActionEvent e) {
-		try {
-			this.okBtn.setEnabled(false);
-            RedisConnectInfo item = validForm();
-            ResultRes<RedisConnectInfo> resultRes ;
-            if(connectInfo == null){
-                resultRes = BaseController.dispatcher(() -> redisConfigService.addRedisConfig(item));
-            }else{
-                item.setId(connectInfo.getId());
-                resultRes = BaseController.dispatcher(() -> redisConfigService.updateRedisConfig(item));
+        super.submit(okBtn,()->{
+            try {
+                RedisConnectInfo item = validForm();
+                ResultRes<RedisConnectInfo> resultRes ;
+                if(connectInfo == null){
+                    resultRes = BaseController.dispatcher(() -> redisConfigService.addRedisConfig(item));
+                }else{
+                    item.setId(connectInfo.getId());
+                    resultRes = BaseController.dispatcher(() -> redisConfigService.updateRedisConfig(item));
+                }
+                if(resultRes.isRet()){
+                    consumer.accept(item);
+                    this.dispose();
+                    return false;
+                }else{
+                    SwingTools.showMessageErrorDialog(this,"未知错误：添加配置失败");
+                }
+            }catch (ServiceException ex) {
+                SwingTools.showMessageErrorDialog(this,ex.getMessage());
             }
-            if(resultRes.isRet()){
-                consumer.accept(item);
-                this.dispose();
-            }else{
-                SwingTools.showMessageErrorDialog(this,"未知错误：添加配置失败");
-            }	
-		}catch (ServiceException ex) {
-			 SwingTools.showMessageErrorDialog(this,ex.getMessage());
-		}finally {
-			this.okBtn.setEnabled(true);
-		}
+            return true;
+        });
     }
 
     @Override

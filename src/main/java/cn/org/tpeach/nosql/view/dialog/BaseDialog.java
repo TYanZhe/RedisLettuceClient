@@ -15,6 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public abstract class BaseDialog<T,R> extends JDialog implements WindowListener {
 	protected T t;
@@ -257,7 +258,24 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	protected void submit(ActionEvent e) {
 
 	}
+	public void submit(final JButton okBtn, Supplier<Boolean> request){
+		LoadingDialog.showDialogLoading(this,true,()->{
+			if(okBtn != null){
+				okBtn.setEnabled(false);
+			}
 
+			try{
+				return request.get();
+			}finally {
+				if(okBtn != null){
+					okBtn.setEnabled(true);
+				}
+			}
+		});
+	}
+	public void submit(Supplier<Boolean> request){
+		submit(null,request);
+	}
 	/**
 	 * @param e
 	 */
