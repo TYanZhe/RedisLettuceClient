@@ -73,11 +73,12 @@ public class LoadingDialog extends JDialog {
         //透明
         this.setUndecorated(true);
 //        container.setBackground (new Color (0, 0, 0, 0));
-//        this.setBackground(new Color (0, 0, 0, 0));
-//        this.getRootPane().setOpaque(false);
-//        contextPanel.setOpaque(false);
-//        contextPanel.setBackground(Color.RED);
-        com.sun.awt.AWTUtilities.setWindowOpacity(this, 0.5F);// 设置整个窗体的不透明度为0.5
+        this.setBackground(new Color (0, 0, 0, 5));
+        this.setOpacity(0.8f);
+        this.getRootPane().setOpaque(false);
+        contextPanel.setOpaque(false);
+        contextPanel.setBackground(Color.RED);
+//        com.sun.awt.AWTUtilities.setWindowOpacity(this, 0.5F);// 设置整个窗体的不透明度为0.5
     }
     public static void showDialogLoading(JDialog jDialog, boolean isload, Supplier<Boolean> doInBackground) {
         jDialog.setVisible(false);
@@ -96,7 +97,18 @@ public class LoadingDialog extends JDialog {
             loadingSet.add(uuid);
             CountDownLatch countDownLatch = new CountDownLatch(1);
             AtomicBoolean atomicBoolean = new AtomicBoolean(true);
-            LarkFrame.executorService.execute(()->{
+            SwingTools.swingWorkerExec(() -> {
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if(atomicBoolean.get()){
+                    LoadingDialog.getInstance().setVisible(true);
+                }
+                return null;
+            });
+            SwingTools.swingWorkerExec(()->{
                 Boolean needVisible = true;
                 try {
 
@@ -111,16 +123,6 @@ public class LoadingDialog extends JDialog {
                         hidden.accept(needVisible);
                     }
 
-                }
-            });
-            SwingTools.swingWorkerExec(() -> {
-                try {
-                    countDownLatch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if(atomicBoolean.get()){
-                    LoadingDialog.getInstance().setVisible(true);
                 }
                 return null;
             });

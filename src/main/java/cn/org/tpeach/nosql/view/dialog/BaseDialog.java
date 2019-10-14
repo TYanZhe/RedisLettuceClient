@@ -14,6 +14,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -52,8 +54,10 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	protected JPanel btnPanel;
 	protected Image icon = PublicConstant.Image.logo.getImage();
 	protected Box btnbox = Box.createHorizontalBox();
+	protected Map<String,Object> containerMap = new HashMap<>();
 	JButton okBtn = new RButton(LarkFrame.getI18nUpText(I18nKey.RedisResource.OK));
 	JButton cancelBtn = new RButton(LarkFrame.getI18nUpText(I18nKey.RedisResource.CANCEL));
+
 	// 错误关闭 单开一个线程调用dispose()才可以关闭 原因未知
 	protected boolean isError = false;
 	// 改变后通知
@@ -133,37 +137,40 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 		middlePanel.setBorder(new EmptyBorder(10, 10, 35, 10));
 	}
 	public void open() {
-		
-		setMinimumSize();
-		if (isError) {
+		try {
+			setMinimumSize();
+			if (isError) {
 //			new Thread(() -> this.dispose()).start();
-			close();
-			return;
+				close();
+				return;
+			}
+			if (!init) {
+				// 设置网格包布局
+				Container container = this.getContentPane();
+				// this.getRootPane().setBorder(BorderFactory.createLineBorder(new
+				// Color(66,153,221),1));
+				containerStyle(container);
+				middlePanel.setOpaque(false);
+				middlePanel.setLayout(new BorderLayout());
+				setMiddlePanel(middlePanel);
+
+				btnPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(173, 173, 173)));
+				btnPanel.setPreferredSize(new Dimension(this.getWidth(), btnPanelHeight));
+				btnPanel.add(btnbox);
+				addBtnToBtnPanel(btnPanel);
+				middlePanel.add(contextPanel, BorderLayout.CENTER);
+				contextUiImpl(contextPanel, btnPanel);
+
+
+			}
+			btnPanel.setVisible(isNeedBtn());
+
+			// middlePanel.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(10,
+			// 10, 10, 10), new EtchedBorder()));
+
+		}finally {
+			after();
 		}
-		if(!init){
-			// 设置网格包布局
-			Container container = this.getContentPane();
-			// this.getRootPane().setBorder(BorderFactory.createLineBorder(new
-			// Color(66,153,221),1));
-			containerStyle(container);
-			middlePanel.setOpaque(false);
-			middlePanel.setLayout(new BorderLayout());
-			setMiddlePanel(middlePanel);
-
-			btnPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(173, 173, 173)));
-			btnPanel.setPreferredSize(new Dimension(this.getWidth(), btnPanelHeight));
-			btnPanel.add(btnbox);
-			addBtnToBtnPanel(btnPanel);
-			middlePanel.add(contextPanel, BorderLayout.CENTER);
-			contextUiImpl(contextPanel, btnPanel);
-
-
-		}
-		btnPanel.setVisible(isNeedBtn());
-
-		// middlePanel.setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(10,
-		// 10, 10, 10), new EtchedBorder()));
-		after();
 		this.setVisible(true);
 		this.init = true;
 		if (isError) {

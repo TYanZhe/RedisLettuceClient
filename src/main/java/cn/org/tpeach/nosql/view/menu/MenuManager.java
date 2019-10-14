@@ -331,7 +331,7 @@ public enum MenuManager {
     				}
     				d.close();
     			});
-    			d.open();
+    			SwingTools.swingWorkerExec(()->{d.open();return null;});
             }
             
 		});
@@ -441,7 +441,7 @@ public enum MenuManager {
 				defaultModel.reload(node);
 				
 			});
-			d.open();
+			SwingTools.swingWorkerExec(()->{d.open();return null;});
 		});
 
 		popMenu.add(reloadItem);
