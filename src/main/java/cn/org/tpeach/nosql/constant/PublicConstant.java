@@ -158,6 +158,7 @@ public class PublicConstant {
         public static ImageIcon switch_on = IOUtil.getImageIcon("image/base/switch_on.png" );
         public static ImageIcon switch_off = IOUtil.getImageIcon("image/base/switch_off.png" );
 //        public static ImageIcon tempIcon = IOUtil.getImageIcon("image/base/箭头.png" );
+        public static ImageIcon loading_g = IOUtil.getImageIcon("image/base/loading_g.gif" );
     }
 
 

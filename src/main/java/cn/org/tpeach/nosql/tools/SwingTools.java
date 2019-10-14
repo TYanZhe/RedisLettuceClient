@@ -7,6 +7,7 @@ import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.exception.ServiceException;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
+import cn.org.tpeach.nosql.view.StatePanel;
 import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
@@ -203,77 +204,71 @@ public class SwingTools {
 	public static <T> void addLoadingTreeNode(JTree redisTree,RTreeNode parentNode, RedisTreeItem parentItem,Supplier<ResultRes<T>> request,Consumer<ResultRes<T>> after) {
 		AtomicBoolean atomicBoolean = new AtomicBoolean(true);
 		CountDownLatch countDownLatch = new CountDownLatch(1);
-		RTreeNode loadingTreeNode = addTreeNode(parentNode, parentItem, parentItem.getId(), null, "loading...", parentItem.getDb(), RedisType.LOADING, null , "loading...");
-		loadingTreeNode.setIcon(PublicConstant.Image.loading01);
-		redisTree.expandPath(new TreePath(parentNode.getPath()));
-		DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
-//		defaultModel.reload(parentNode);
-		LarkFrame.executorService.execute(()->{
-			while (atomicBoolean.get()) {
-				for(int i=0;i<7;i++) {
-					switch (i) {
-						case 0:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading02);
-							break;
-						case 1:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading03);
-							break;
-						case 2:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading04);
-							break;
-						case 3:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading05);
-							break;
-						case 4:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading06);
-							break;
-						case 5:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading07);
-							break;
-						case 6:
-							loadingTreeNode.setIcon(PublicConstant.Image.loading01);
-							break;
-						default:
-							break;
-					}
-					if(atomicBoolean.get() && parentNode.getChildCount() == 1) {
-						defaultModel.reload(loadingTreeNode);
-					}
-					try {
-						TimeUnit.MILLISECONDS.sleep(300);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			countDownLatch.countDown();
-		});
+        RTreeNode loadingTreeNode = addTreeNode(parentNode, parentItem, parentItem.getId(), null, "loading...", parentItem.getDb(), RedisType.LOADING, null , "loading...");
+        loadingTreeNode.setIcon(PublicConstant.Image.loading01);
+        redisTree.expandPath(new TreePath(parentNode.getPath()));
+        DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
+		SwingTools.swingWorkerExec( ()->{
 
-		LarkFrame.executorService.execute(()->{
-			try {
-
-				ResultRes<T> resultRes = request.get();
+                while (atomicBoolean.get()) {
+                    for(int i=0;i<7;i++) {
+                        switch (i) {
+                            case 0:
+                                loadingTreeNode.setIcon(PublicConstant.Image.loading02);
+                                break;
+                            case 1:
+                                loadingTreeNode.setIcon(PublicConstant.Image.loading03);
+                                break;
+                            case 2:
+                                loadingTreeNode.setIcon(PublicConstant.Image.loading04);
+                                break;
+                            case 3:
+                                loadingTreeNode.setIcon(PublicConstant.Image.loading05);
+                                break;
+                            case 4:
+                                loadingTreeNode.setIcon(PublicConstant.Image.loading06);
+                                break;
+                            case 5:
+                                loadingTreeNode.setIcon(PublicConstant.Image.loading07);
+                                break;
+                            case 6:
+                                loadingTreeNode.setIcon(PublicConstant.Image.loading01);
+                                break;
+                            default:
+                                break;
+                        }
+                        if(atomicBoolean.get() && parentNode.getChildCount() == 1) {
+                            defaultModel.reload(loadingTreeNode);
+                        }
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(300);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                parentNode.removeAllChildren();
+                countDownLatch.countDown();
+		    return "success";
+        },null);
+        try {
+            ResultRes<T> resultRes = request.get();
 //			ResultRes resultRes = new ResultRes(true,new String[]{"db0","db1"},"");
-				atomicBoolean.set(false);
-				try {
-					countDownLatch.await();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				parentNode.removeAllChildren();
-				after.accept(resultRes);
-				redisTree.updateUI();
-			}catch (Exception e){
-				SwingTools.showMessageErrorDialog(null,e.getMessage());
-				parentNode.removeAllChildren();
-				redisTree.updateUI();
-				log.error("addLoadingTreeNode异常",e);
-			}finally {
-				atomicBoolean.set(false);
-			}
-		});
-
-
+            atomicBoolean.set(false);
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            after.accept(resultRes);
+            redisTree.updateUI();
+        }catch (Exception e){
+            SwingTools.showMessageErrorDialog(null,e.getMessage());
+            redisTree.updateUI();
+            log.error("addLoadingTreeNode异常",e);
+        }finally {
+            atomicBoolean.set(false);
+        }
 
 
 	}
@@ -462,4 +457,26 @@ public class SwingTools {
 		column.setHeaderRenderer(cellRenderer);
 	}
 
+
+	public static <T> void  swingWorkerExec(Supplier<T> doInBackground,Runnable done){
+		SwingWorker<T, Object> task = new SwingWorker<T, Object>() {
+			@Override
+			protected T doInBackground() throws Exception {
+			    if(null == doInBackground){
+			        return null;
+                }
+				return doInBackground.get();
+			}
+			@Override
+			protected void done() {
+				if(done != null){
+					done.run();
+				}
+			}
+		};
+		task.execute();
+	}
+	public static <T> void  swingWorkerExec(Supplier<T> doInBackground ){
+		swingWorkerExec(doInBackground,null);
+	}
 }

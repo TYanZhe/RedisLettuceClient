@@ -11,7 +11,6 @@ import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
-import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
@@ -27,6 +26,7 @@ import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.AddRedisKeyDialog;
 import cn.org.tpeach.nosql.view.dialog.AddRedisServerDialog;
 import cn.org.tpeach.nosql.view.dialog.DeleteRedisKeyDialog;
+import cn.org.tpeach.nosql.view.dialog.LoadingDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import io.lettuce.core.KeyScanCursor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.List;
 /**
@@ -451,42 +450,46 @@ public enum MenuManager {
 	}
         
 	public void openTabbedPane(JTree tree,RTabbedPane topTabbedPane,RTreeNode node) {
-		//获取数量
-		int count = topTabbedPane.getTabCount();
-		RedisTreeItem item = (RedisTreeItem) node.getUserObject();
-		if(count == 0){
-			topTabbedPane.addTab(item.getName(),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
-		}else{
-			int selectedIndex = topTabbedPane.getSelectedIndex();
-			topTabbedPane.add(item.getName(),selectedIndex+1,PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+		LoadingDialog.showLoading(true,()->{
+			//获取数量
+			int count = topTabbedPane.getTabCount();
+			RedisTreeItem item = (RedisTreeItem) node.getUserObject();
+			if (count == 0) {
+				topTabbedPane.addTab(item.getName(), PublicConstant.Image.key_icon, new RedisTabbedPanel(node, tree));
+			} else {
+				int selectedIndex = topTabbedPane.getSelectedIndex();
+				topTabbedPane.add(item.getName(), selectedIndex + 1, PublicConstant.Image.key_icon, new RedisTabbedPanel(node, tree));
 //			topTabbedPane.remove(selectedIndex+1);
-		}
+			}
+			return;
+		});
 
 	}
 	public void replaceTabbedPane(JTree tree,RTabbedPane topTabbedPane,RTreeNode node) {
-		//获取数量
-		int count = topTabbedPane.getTabCount();
-		RedisTreeItem item = (RedisTreeItem) node.getUserObject();
-		if(count == 0){
-			
-			topTabbedPane.addTab(StringUtils.showHexStringValue(item.getKey()),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
-		}else{
-			int selectedIndex = topTabbedPane.getSelectedIndex();
-			if(selectedIndex > 0) {
+		LoadingDialog.showLoading(true,()->{
+			//获取数量
+			int count = topTabbedPane.getTabCount();
+			RedisTreeItem item = (RedisTreeItem) node.getUserObject();
+			if(count == 0){
+
+				topTabbedPane.addTab(StringUtils.showHexStringValue(item.getKey()),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+			}else{
+				int selectedIndex = topTabbedPane.getSelectedIndex();
+				if(selectedIndex > 0) {
 //				topTabbedPane.add(item.getKey(),selectedIndex,PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
 //				topTabbedPane.remove(selectedIndex+1);
-				replaceTabedPane(tree, topTabbedPane, node, item, selectedIndex);
-			}else {
-				if(count > 1) {
-					replaceTabedPane(tree, topTabbedPane, node, item, count-1);
+					replaceTabedPane(tree, topTabbedPane, node, item, selectedIndex);
 				}else {
-					topTabbedPane.addTab(StringUtils.showHexStringValue(item.getKey()),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
-				}
-				
-			}
-		
-		}
+					if(count > 1) {
+						replaceTabedPane(tree, topTabbedPane, node, item, count-1);
+					}else {
+						topTabbedPane.addTab(StringUtils.showHexStringValue(item.getKey()),PublicConstant.Image.key_icon,new RedisTabbedPanel(node,tree));
+					}
 
+				}
+
+			}
+		});
 	}
 
 	private void replaceTabedPane(JTree tree, RTabbedPane topTabbedPane, RTreeNode node,RedisTreeItem item, int selectedIndex) {
@@ -494,7 +497,7 @@ public enum MenuManager {
 		if(componect instanceof RedisTabbedPanel){
 			RedisTabbedPanel redisTabbedPanel = (RedisTabbedPanel) componect;
 			topTabbedPane.setSelectedIndex(selectedIndex);
-			redisTabbedPanel.updateUI(node,tree,new PageBean(),true);
+			redisTabbedPanel.updateUI(node,tree,new PageBean(),true,true);
 		}else if(componect instanceof ServiceInfoPanel) {
 			int count = topTabbedPane.getTabCount();
 			for(int i = count -1 ;i>0;i--){

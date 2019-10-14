@@ -25,6 +25,7 @@ import cn.org.tpeach.nosql.view.component.EasyJSP;
 import cn.org.tpeach.nosql.view.component.NonRectanglePopupFactory;
 import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
+import cn.org.tpeach.nosql.view.dialog.LoadingDialog;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeModel;
@@ -221,7 +222,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                 monitorDialog.setSize(new Dimension(width,height));
                 final Point location = RedisMainWindow.this.getLocation();
                 monitorDialog.setLocation(location.x+10,location.y+RedisMainWindow.this.getHeight()-monitorDialog.getHeight()-statePanel.getHeight()-10);
-
+                LoadingDialog.resizeDialog(source.getWidth(),source.getHeight());
             }
 
             @Override
@@ -296,8 +297,8 @@ public class RedisMainWindow extends javax.swing.JFrame {
         //双击连接名称进行连接 如果已经有子节点 则展开 缩放
         if (evt.getModifiers() == InputEvent.BUTTON1_MASK && evt.getClickCount() == 2 && path.length == 2) {
 
-            doubleClickTreeNode(evt);
-        } else if (evt.getButton() == MouseEvent.BUTTON1) {//左键
+//            doubleClickTreeNode(evt);
+        } else if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 1) {//左键
 
             clickLeftTreeNode(evt);
         } else if (evt.getButton() == MouseEvent.BUTTON3) {//右键
@@ -390,13 +391,44 @@ public class RedisMainWindow extends javax.swing.JFrame {
                 switch (redisTreeItem.getType()) {
                     case SERVER:
                         // 连接 查询redis数据库
-                        LarkFrame.executorService.execute(() -> serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree));
+//                        LarkFrame.executorService.execute(() -> serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree));
+                        SwingWorker<String, Object> task = new SwingWorker<String, Object>() {
+                            @Override
+                            protected String doInBackground() throws Exception {
+                                serviceManager.openConnectRedisTree((StatePanel) statePanel, treeNode, redisTreeItem, redisTree);
+                                return "SUCCESS";
+                            }
+                            @Override
+                            protected void done() {
+
+                            }
+                        };
+                        // 启动任务
+                        task.execute();
                         break;
                     case DATABASE:
 
                         break;
                     case KEY:
 
+                        break;
+                    case KEY_NAMESPACE:
+                        break;
+                    case STRING:
+                        break;
+                    case LIST:
+                        break;
+                    case SET:
+                        break;
+                    case ZSET:
+                        break;
+                    case HASH:
+                        break;
+                    case ROOT:
+                        break;
+                    case LOADING:
+                        break;
+                    case UNKNOWN:
                         break;
                     default:
                 }
@@ -422,13 +454,11 @@ public class RedisMainWindow extends javax.swing.JFrame {
                 }
                 switch (redisTreeItem.getType()) {
                     case SERVER:
-                        LarkFrame.executorService.execute(() -> {
-                            serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree);
+                        SwingTools.swingWorkerExec(()->{serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree);return null;});
 
-                        });
                         break;
                     case DATABASE:
-                        serviceManager.openDbRedisTree(treeNode, redisTreeItem, redisTree,keyFilterField,false);
+                        SwingTools.swingWorkerExec(()->{serviceManager.openDbRedisTree(treeNode, redisTreeItem, redisTree,keyFilterField,false);return null;});
                         break;
                     case KEY:
                         RTreeNode node = (RTreeNode) redisTree.getLastSelectedPathComponent(); // 获得右键选中的节点
