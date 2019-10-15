@@ -32,6 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -323,19 +324,32 @@ public class SwingTools {
 	}
 
 	public static void showMessageErrorDialog(Component parentComponent, Object message, String title) {
-		JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.ERROR_MESSAGE);
+		swingWorkerExec(()->{
+			JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.ERROR_MESSAGE);
+			return null;
+		});
 	}
 
 	public static void showMessageErrorDialog(Component parentComponent, Object message) {
-		JOptionPane.showMessageDialog(parentComponent, message, "错误提示", JOptionPane.ERROR_MESSAGE);
+		swingWorkerExec(()->{
+			JOptionPane.showMessageDialog(parentComponent, message, "错误提示", JOptionPane.ERROR_MESSAGE);
+			return null;
+		});
 	}
 
 	public static void showMessageMessageDialog(Component parentComponent, Object message, String title) {
-		JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.WARNING_MESSAGE);
+		swingWorkerExec(()->{
+			JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.WARNING_MESSAGE);
+			return null;
+		});
 	}
 
 	public static void showMessageInfoDialog(Component parentComponent, Object message, String title) {
-		JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE);
+		swingWorkerExec(()->{
+			JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE);
+			return null;
+		});
+
 	}
 
 	/**
@@ -478,5 +492,72 @@ public class SwingTools {
 	}
 	public static <T> void  swingWorkerExec(Supplier<T> doInBackground ){
 		swingWorkerExec(doInBackground,null);
+	}
+
+
+	public static void addTableToolTipText(JTable jTable, Function<Object,String> toStringFun){
+		if(jTable != null){
+			jTable.addMouseMotionListener(new MouseAdapter(){
+				@Override
+				public void mouseMoved(MouseEvent e) {
+					int row=jTable.rowAtPoint(e.getPoint());
+					int col=jTable.columnAtPoint(e.getPoint());
+					if(row > -1 && col > -1){
+						Object value=jTable.getValueAt(row, col);
+						String s ;
+						if(toStringFun != null){
+							s = toStringFun.apply(value);
+						}else{
+							s = StringUtils.defaultNullToString(value);
+						}
+						if(StringUtils.isNotBlank(s)){
+							//悬浮显示单元格内容
+							jTable.setToolTipText(s);
+						}else {
+							//关闭提示
+							jTable.setToolTipText(null);
+						}
+					}
+				}
+			});
+		}
+	}
+	public static void addTableToolTipText(JTable jTable ){
+		addTableToolTipText(jTable,null);
+	}
+
+	public static void comboBoxChangeSelected(JComboBox jComboBox,Consumer<ItemEvent> consumer){
+		if(jComboBox == null){
+			return;
+		}
+		jComboBox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if(e.getStateChange() == ItemEvent.SELECTED){
+					consumer.accept(e);
+				}else if(e.getStateChange() == ItemEvent.DESELECTED){
+				}
+			}
+		});
+	}
+
+	/**
+	 * 使宽度与parentComponent保持一致
+	 * @param parentComponent
+	 * @param panel
+	 */
+	public static  void fillWidthPanel(JComponent parentComponent,JPanel panel ){
+
+		parentComponent.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				int width = parentComponent.getWidth();
+				Dimension preferredSize = panel.getPreferredSize();
+				panel.setPreferredSize(new Dimension(width,preferredSize.height));
+				panel.setMinimumSize(new Dimension(width,preferredSize.height));
+				panel.setMaximumSize(new Dimension(width,preferredSize.height));
+				panel.updateUI();
+			}
+		});
 	}
 }

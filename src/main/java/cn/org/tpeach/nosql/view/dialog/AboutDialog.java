@@ -25,20 +25,9 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 	private Font font = new Font("黑体", Font.PLAIN, 16);
 	private Font boldFont = new Font("黑体", Font.BOLD, 18);
 	private JPanel leftPanel,rightPanel;
-	public AboutDialog(JFrame parent, boolean modal, Image icon, Object t) {
-		super(parent, modal, icon, t);
-	}
 
-	public AboutDialog(JFrame parent, boolean modal, Object t) {
-		super(parent, modal, t);
-	}
-
-	public AboutDialog(JFrame parent, Image icon, Object t) {
-		super(parent, icon, t);
-	}
-
-	public AboutDialog(JFrame parent, Object t) {
-		super(parent, t);
+	public AboutDialog( ) {
+		super(LarkFrame.frame, null);
 
 	}
 	@Override

@@ -161,6 +161,9 @@ public class StringUtils {
 	}
 	public static String showHexStringValue(String value) {
 		char[] chars = value.toCharArray();
+		char[] hex = {'0', '1', '2', '3', '4', '5', '6', '7',
+				'8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
 		StringBuffer sb = new StringBuffer();
 		for (char c : chars) {
 			Character.UnicodeBlock ub = Character.UnicodeBlock.of(c);
@@ -173,17 +176,52 @@ public class StringUtils {
 					|| ub == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS){
 				sb.append(c);
 			}else{
-				int intNum = c;
-				String s = "\\x" + StringUtils.intToHexStringSmall(intNum);
-				sb.append(s);
+//				int intNum = c;
+//				String s = "\\x" + StringUtils.numToHex8(intNum);
+//				sb.append(s);
+				sb.append("\\x");
+				sb.append(hex[(c & 0xF0) >> 4] );
+				sb.append(hex[(c & 0xF)] );
 			}
 		}
 		return sb.toString();
+
 	}
 
 	public static String showHexStringValue(byte[] value) {
-		return showHexStringValue(byteToStr(value));
+//		char[] hex = {'0', '1', '2', '3', '4', '5', '6', '7',
+//				'8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+//		StringBuffer sb = new StringBuffer();
+//		for (int i = 0; i < value.length; i++) {
+//			byte aByte = value[i];
+//			boolean printableChar = false;
+//			if((aByte >= 0x20 && aByte <= 0x7e &&
+//					!('\r' == aByte || '\t' == aByte ||
+//					'\n' == aByte|| 0x0b == aByte ||
+//					'\f' == aByte )) || ' ' == aByte){
+//				printableChar = true;
+//			}
+//			if (printableChar) {
+//				sb.append((char)aByte);
+//			}else{
+//				sb.append("\\x");
+//				sb.append(hex[(aByte & 0xF0) >> 4] );
+//				sb.append(hex[(aByte & 0xF)] );
+//			}
+//		}
+//		return sb.toString();
+		try {
+//			String s = new String(value,PublicConstant.CharacterEncoding.ISO_8859_1);
+			return showHexStringValue(byteToStr(value));
+		} catch ( Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+
 	}
+
+
+
 	/**
 	 * byte——>hexString
 	 *

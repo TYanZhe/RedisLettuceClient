@@ -6,6 +6,8 @@ package cn.org.tpeach.nosql.bean;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Objects;
+
 /**
 　 * <p>Title: DicBean.java</p> 
 　 * @author taoyz 
@@ -39,6 +41,18 @@ public class DicBean {
 	public String toString() {
 		return value ;
 	}
-	
-	
+
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		DicBean dicBean = (DicBean) o;
+		return Objects.equals(code, dicBean.code);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(code);
+	}
 }

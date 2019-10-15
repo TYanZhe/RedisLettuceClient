@@ -43,7 +43,7 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,Long>{
 	IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
 	IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
 	Collection<byte[]> keys;
-	String totalKeys;
+	String totalKeys = "0";
 	@Getter
 	@Setter
 	private String keyPattern;
@@ -185,7 +185,7 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,Long>{
         int conform = SwingTools.showConfirmDialogYNC(null, "是否确认删除？", "删除确认");
         if(conform == JOptionPane.YES_OPTION){
             super.submit(()->{
-                ResultRes<Long> dispatcher = BaseController.dispatcher(() ->redisConnectService.deleteKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyPattern));
+                ResultRes<Long> dispatcher = BaseController.dispatcher(() ->redisConnectService.deleteKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyPattern,Integer.valueOf(totalKeys)));
                 if(dispatcher.isRet()) {
                     consumer.accept(dispatcher.getData());
                 }else {

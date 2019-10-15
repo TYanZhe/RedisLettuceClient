@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
+import java.time.LocalDateTime;
 
 /**
  * @author tyz
@@ -54,7 +55,7 @@ public class RedisLarkFactory {
 				// 根据RedisStructure 配置和RedisConnectInfo 构造方法动态生成RedisLark
 				Class<?> clz = Class.forName(redisStructure.getService());
 				Constructor<?> constructor = clz.getConstructor(redisStructure.getParameterTypes());
-				LarkFrame.larkLog.sendInfo(conn.getName(),"AUTH");
+				LocalDateTime now = LocalDateTime.now();
 				redisLark = (RedisLark) constructor.newInstance(redisStructure.getInitargs(conn));
 				if(redisLarkContext == null) {
 					redisLarkContext = new RedisLarkContext<K,V>(redisLark,conn);
@@ -68,7 +69,7 @@ public class RedisLarkFactory {
 					redisLarkContext.setRedisLark(redisLark);
 				}
 				RedisLarkPool.addRedisLarkContext(conn.getId(), redisLarkContext);
-
+				LarkFrame.larkLog.sendInfo(now,conn.getName(),"AUTH");
 				LarkFrame.larkLog.receivedInfo(conn.getName(), "connected");
 			}
 			return redisLarkContext;

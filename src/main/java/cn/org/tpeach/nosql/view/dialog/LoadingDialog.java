@@ -96,6 +96,7 @@ public class LoadingDialog extends JDialog {
             String uuid = StringUtils.getUUID();
             loadingSet.add(uuid);
             CountDownLatch countDownLatch = new CountDownLatch(1);
+            CountDownLatch countDownLatch2 = new CountDownLatch(1);
             AtomicBoolean atomicBoolean = new AtomicBoolean(true);
             SwingTools.swingWorkerExec(() -> {
                 try {
@@ -115,7 +116,32 @@ public class LoadingDialog extends JDialog {
                     LarkFrame.executorService.schedule(()->{
                         countDownLatch.countDown();
                     },300,TimeUnit.MILLISECONDS);
+                    LarkFrame.executorService.execute(()->{
+                        try {
+                            AtomicBoolean longTime = new AtomicBoolean(true);
+                            Thread thread = Thread.currentThread();
+                            LarkFrame.executorService.execute(()->{
+                                try {
+                                    countDownLatch2.await();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                if(longTime.get()){
+                                    thread.interrupt();
+                                }
+                            });
+                            TimeUnit.SECONDS.sleep(60);
+                            longTime.set(false);
+                        } catch (InterruptedException e) {
+
+                        }
+                        if(atomicBoolean.get()){
+                            SwingTools.showMessageErrorDialog(null,"请求超时");
+                            hiddenLoading(uuid);
+                        }
+                    });
                     needVisible = doInBackground.get();
+                    countDownLatch2.countDown();
                     atomicBoolean.set(false);
                 } finally {
                     hiddenLoading(uuid);
@@ -133,20 +159,25 @@ public class LoadingDialog extends JDialog {
     }
 
     private static void hiddenLoading(String loadId) {
-        if (StringUtils.isNotBlank(loadId)) {
-            if (loadingSet.contains(loadId)) {
-                loadingSet.remove(loadId);
-                if (loadingSet.isEmpty()) {
-                    SwingTools.swingWorkerExec(() -> {
-                        try {
-//                TimeUnit.SECONDS.sleep(5);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        return null;
-                    }, () -> LoadingDialog.getInstance().setVisible(false));
-                }
-            }
-        }
+//        if (StringUtils.isNotBlank(loadId)) {
+//            if (loadingSet.contains(loadId)) {
+//                loadingSet.remove(loadId);
+//                if (loadingSet.isEmpty()) {
+//                    SwingTools.swingWorkerExec(() -> {
+//                        try {
+////                TimeUnit.SECONDS.sleep(5);
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                        return null;
+//                    }, () -> LoadingDialog.getInstance().setVisible(false));
+//                }
+//            }
+//        }
+        loadingSet.remove(loadId);
+        SwingTools.swingWorkerExec(() -> {
+            LoadingDialog.getInstance().setVisible(false);
+            return null;
+        });
     }
 }

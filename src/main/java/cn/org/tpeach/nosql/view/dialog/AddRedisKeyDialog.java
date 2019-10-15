@@ -101,8 +101,7 @@ public class AddRedisKeyDialog extends KeyDialog<RedisTreeItem, RedisKeyInfo> {
         //添加默认string
         changeType(RedisType.STRING);
         // 监听事件
-
-        typeField.addItemListener(e -> changeType((RedisType) e.getItem()));
+        SwingTools.comboBoxChangeSelected(typeField,e -> changeType((RedisType) e.getItem()));
     }
 
     /* (non-Javadoc)

@@ -5,10 +5,11 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 @Getter
 public class LogMsg {
-    private LocalDateTime receiveTime = LocalDateTime.now();
+    private LocalDateTime receiveTime;
     private String msg;
 
-    public LogMsg(String msg) {
+    public LogMsg(String msg,LocalDateTime receiveTime) {
         this.msg = msg;
+        this.receiveTime = receiveTime;
     }
 }

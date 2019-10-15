@@ -31,10 +31,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -131,7 +128,9 @@ public class ServiceInfoPanel extends JPanel {
         model.getDataVector().clear();
         updateData(false);
         jTabbedPane.addChangeListener(changeListener);
-
+        SwingTools.addTableToolTipText(logListTable);
+        SwingTools.addTableToolTipText(clientTable);
+        SwingTools.addTableToolTipText(baseInfoTable);
     }
 
     private boolean isCurentSelect(Consumer<JTabbedPane> consumer){
@@ -326,25 +325,13 @@ public class ServiceInfoPanel extends JPanel {
         rightPanel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                liPanlList.forEach(item ->fillWidthPanel(rightPanel,item));
-                contextPanelist.forEach(item ->fillWidthPanel(rightPanel,item));
+                liPanlList.forEach(item ->SwingTools.fillWidthPanel(rightPanel,item));
+                contextPanelist.forEach(item ->SwingTools.fillWidthPanel(rightPanel,item));
             }
         });
     }
 
-    /**
-     * 使宽度与parentComponent保持一致
-     * @param parentComponent
-     * @param panel
-     */
-    private void fillWidthPanel(JComponent parentComponent,JPanel panel ){
-        int width = parentComponent.getWidth();
-        Dimension preferredSize = panel.getPreferredSize();
-        panel.setPreferredSize(new Dimension(width,preferredSize.height));
-        panel.setMinimumSize(new Dimension(width,preferredSize.height));
-        panel.setMaximumSize(new Dimension(width,preferredSize.height));
-        panel.updateUI();
-    }
+
 
     private LiPanel getLiPanel(String liName){
         LiPanel panel = new LiPanel();

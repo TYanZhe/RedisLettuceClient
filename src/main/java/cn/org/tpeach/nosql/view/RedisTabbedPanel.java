@@ -442,11 +442,9 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         Vector<TableColumnBean> rowData = null;
         columnNames.add("");
         headersIcon.add(PublicConstant.Image.logo_16);
-        String searchText = StringUtils.isBlank(searchTextField.getText()) || "*".equals(searchTextField.getText())? ".*":searchTextField.getText().trim();
-        Pattern pattern ;
-        if(StringUtils.isBlank(searchTextField.getText())){
-            pattern = compile(".*");
-        }else{
+//        String searchText = StringUtils.isBlank(searchTextField.getText()) || "*".equals(searchTextField.getText())? ".*":searchTextField.getText().trim();
+        Pattern pattern =null;
+        if(StringUtils.isNotBlank(searchTextField.getText())){
             pattern = compile(".*"+searchTextField.getText().trim().replaceAll("\\*",".*")+".*");
         }
         int index = 0;
@@ -467,7 +465,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 headersIcon.add(PublicConstant.Image.database);
                 java.util.List<byte[]> list = redisKeyInfo.getValueList();
                 for (byte[] s : list) {
-                    if(pattern.matcher(StringUtils.byteToStr(s)).matches()){
+                    String v = StringUtils.showHexStringValue(s);
+                    if(pattern == null || pattern.matcher(v).find()){
                         rowData = new Vector<>();
                         rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX,StringUtils.strToByte((startIndex+index)+""), index));
                         rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,s, index));
@@ -962,17 +961,23 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     private String getSelectDicText(DicBean dicBean, TableColumnBean tableColumnBean, RTextArea textArea) {
         String text = "";
         textArea.setEditable(false);
-        if ("1".equals(dicBean.getCode())) {
-            text = tableColumnBean.getShowValue();
-            textArea.setEditable(true);
-        } else if ("2".equals(dicBean.getCode())) {
-            text = GsonUtil.toPrettyFormat(tableColumnBean.getShowValue());
-        } else if ("3".equals(dicBean.getCode())) {
-            text = tableColumnBean.getShowValue();
-        } else if ("4".equals(dicBean.getCode())) {
-            text = StringUtils.bytesToHexString(tableColumnBean.getValue(), true);
+        if(tableColumnBean != null){
+            if ("1".equals(dicBean.getCode())) {
+                text = tableColumnBean.getShowValue();
+                textArea.setEditable(true);
+            } else if ("2".equals(dicBean.getCode())) {
+                if(StringUtils.isNotEmpty(tableColumnBean.getShowValue())){
+                    text = GsonUtil.toPrettyFormat(tableColumnBean.getShowValue());
+                }
+            } else if ("3".equals(dicBean.getCode())) {
+                text = tableColumnBean.getShowValue();
+            } else if ("4".equals(dicBean.getCode())) {
+                text = StringUtils.bytesToHexString(tableColumnBean.getValue(), true);
+            }
+            saveLabelEnabled();
         }
-        saveLabelEnabled();
+
+
         return text;
     }
 
@@ -1100,8 +1105,13 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         selectPageComboBox.setMinimumSize(new java.awt.Dimension(60, borderWidth));
         selectPageComboBox.setPreferredSize(new java.awt.Dimension(60, borderWidth));
         selectPageComboBox.addItemListener(e -> {
-            pageBean.setRows((Integer) e.getItem());
-            RedisTabbedPanel.this.updateUI(treeNode, pageBean,true);
+            if(e.getStateChange() == ItemEvent.SELECTED){
+                pageBean.setRows((Integer) e.getItem());
+                RedisTabbedPanel.this.updateUI(treeNode, pageBean,true);
+            }else if(e.getStateChange() == ItemEvent.DESELECTED){
+
+            }
+
         });
         addToPagePanel(selectPageComboBox);
         addToPagePanel(firstPageLabel);

@@ -76,7 +76,7 @@ public interface IRedisConnectService {
 
     Long deleteKeys(String id, int db, byte[]... keys);
 
-    Long deleteKeys(String id, int db, String pattern);
+    Long deleteKeys(String id, int db, String pattern,Integer totalCount);
 
     RedisKeyInfo addSingleKeyInfo(RedisKeyInfo keyInfo);
 

@@ -23,7 +23,9 @@ public class LogAreaAppender implements Observer {
             LarkLog larkLog = (LarkLog) o;
             LogMsg logMsg = larkLog.getLogMsg();
             Color  color = (Color) arg;
-//            LarkFrame.logArea.println(logMsg.getReceiveTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))+" "+logMsg.getMsg(), color);
+                LarkFrame.logArea.println(logMsg.getReceiveTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))+" "+logMsg.getMsg(), color);
+//            if (logMsg != null) {
+//            }
         }catch (Exception e){
             log.error("LogAreaAppender 接受消息异常",e);
         }

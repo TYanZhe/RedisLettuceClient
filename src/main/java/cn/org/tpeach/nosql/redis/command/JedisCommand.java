@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -62,10 +63,7 @@ public abstract class JedisCommand<T> implements ICommand<T> {
         RedisConnectInfo redisConnectInfo = RedisLarkPool.getConnectInfo(id);
         String command = sendCommand();
         excuteBefore(redisLarkContext);
-        if(command != null && printLog){
-            LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"%s",sendCommand());
-        }
-
+        LocalDateTime now = LocalDateTime.now();
         T t;
         try{
              t = concreteCommand(redisLarkContext);
@@ -90,7 +88,7 @@ public abstract class JedisCommand<T> implements ICommand<T> {
                 }
             }
 
-
+            LarkFrame.larkLog.sendInfo(now,redisConnectInfo.getName(),"%s",sendCommand());
             LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",response);
         }
         return t;
