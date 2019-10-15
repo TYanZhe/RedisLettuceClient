@@ -144,7 +144,7 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 				hbox.add(close);
 				hbox.add(Box.createHorizontalStrut(5));
 			}
-		
+			this.setToolTipText(title);
 			this.add(hbox,BorderLayout.CENTER);
 			this.setBackground(Color.green);
 			this.setOpaque(false);

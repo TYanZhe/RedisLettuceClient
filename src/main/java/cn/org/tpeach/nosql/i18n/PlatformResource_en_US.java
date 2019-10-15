@@ -53,7 +53,8 @@ public class PlatformResource_en_US extends ListResourceBundle {
                     {I18nKey.RedisResource.RETRY.getKey(), "Retry"},
                     {I18nKey.RedisResource.CONNECTING.getKey(), "Connecting"},
                     {I18nKey.RedisResource.SERVERINFO.getKey(), "Server Info"},
-
+                    {I18nKey.RedisResource.SIM_CHINESE.getKey(), "Chinese(simplified)"},
+                    {I18nKey.RedisResource.ENGLISH.getKey(), "English"},
             };
 
     @Override

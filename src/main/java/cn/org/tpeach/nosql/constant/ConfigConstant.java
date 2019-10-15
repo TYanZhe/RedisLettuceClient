@@ -13,8 +13,8 @@ public class ConfigConstant {
 	public static  class Local{
 		public static final String zh = "zh";
 		public static final String CN = "CN";
-		private  static final String en = "en";
-		private  static final String US = "US";
+		public  static final String en = "en";
+		public  static final String US = "US";
 	}
 	
 	public static class Section{

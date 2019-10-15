@@ -10,6 +10,7 @@ import cn.org.tpeach.nosql.view.component.RButton;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.AboutDialog;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
+import cn.org.tpeach.nosql.view.dialog.SettingDialog;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 
 import javax.swing.*;
@@ -22,6 +23,7 @@ public class RToolBar extends JToolBar {
 
     private int jToolBarHeight;
     private AboutDialog aboutDialog;
+    private SettingDialog settingDialog;
     private StatePanel statePanel;
     private RTabbedPane tabbedPane;
     private JTree redisTree;
@@ -126,7 +128,7 @@ public class RToolBar extends JToolBar {
 
         aboutButton.addActionListener(e->{
             if(aboutDialog == null){
-                aboutDialog = new AboutDialog(null, null);
+                aboutDialog = new AboutDialog();
             }
             aboutDialog.open();
         });
@@ -137,6 +139,12 @@ public class RToolBar extends JToolBar {
             }
             MenuManager.getInstance().addServerInfoToTab(tabbedPane,statePanel);
 
+        });
+        settingsButton.addActionListener(e->{
+            if(settingDialog == null){
+                settingDialog = new SettingDialog();
+            }
+            settingDialog.open();
         });
         monitorButton.addActionListener(e->{
             if(!monitorDialog.isVisible() && !monitorDialog.isOutCLose()){

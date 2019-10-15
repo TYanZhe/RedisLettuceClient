@@ -75,14 +75,7 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
         this.isEdit = connectInfo == null ? false : true;
         this.setTitle(this.isEdit?"编辑连接":"新增连接");
     }
-    /**
-     * 面板背景颜色
-     * @return
-     */
-    private Color getPanelBgColor() {
-    	return Color.WHITE;
-    }
-    
+
     
     
     @Override

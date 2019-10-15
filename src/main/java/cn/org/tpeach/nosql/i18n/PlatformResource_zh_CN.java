@@ -53,6 +53,8 @@ public class PlatformResource_zh_CN extends ListResourceBundle {
                     {I18nKey.RedisResource.RETRY.getKey(), "重试"},
                     {I18nKey.RedisResource.CONNECTING.getKey(), "连接中"},
                     {I18nKey.RedisResource.SERVERINFO.getKey(), "服务信息"},
+                    {I18nKey.RedisResource.SIM_CHINESE.getKey(), "简体中文"},
+                    {I18nKey.RedisResource.ENGLISH.getKey(), "英文"},
             };
 
     @Override

@@ -2,6 +2,7 @@ package cn.org.tpeach.nosql.view.component;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -11,9 +12,10 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-
+@Slf4j
 public class OnlyReadTextPane extends JTextPane {
     private int rowHeight;
     private SimpleAttributeSet attrSet = new SimpleAttributeSet();
@@ -81,8 +83,13 @@ public class OnlyReadTextPane extends JTextPane {
             }
         });
     }
-    public void clear(){
-        this.setText("");
+    public synchronized void clear(){
+        try {
+            getDocument().remove(0, getDocument().getLength());
+        } catch (BadLocationException e) {
+            this.setText("");
+            e.printStackTrace();
+        }
         this.entries = 0;
     }
     @Override
@@ -110,7 +117,7 @@ public class OnlyReadTextPane extends JTextPane {
         }
     }
 
-    private StyledDocument autoClear() {
+    private synchronized StyledDocument autoClear() {
 
         StyledDocument doc = null;
         try {
@@ -130,23 +137,14 @@ public class OnlyReadTextPane extends JTextPane {
         return doc;
     }
 
-    public void println(int x, Color fontColor) {
+    public synchronized void println(int x, Color fontColor) {
         if (fontColor != null) {
             out.setFontColor(fontColor);
         }
         this.printStream.println(x);
     }
 
-    public void println(char x, Color fontColor) {
-        if (fontColor != null) {
-            out.setFontColor(fontColor);
-        }
-        Document document = autoClear();
-        this.printStream.println(x);
-        this.setCaretPosition(document.getLength());
-    }
-
-    public void println(long x, Color fontColor) {
+    public synchronized void println(char x, Color fontColor) {
         if (fontColor != null) {
             out.setFontColor(fontColor);
         }
@@ -155,7 +153,7 @@ public class OnlyReadTextPane extends JTextPane {
         this.setCaretPosition(document.getLength());
     }
 
-    public void println(float x, Color fontColor) {
+    public synchronized void println(long x, Color fontColor) {
         if (fontColor != null) {
             out.setFontColor(fontColor);
         }
@@ -164,7 +162,7 @@ public class OnlyReadTextPane extends JTextPane {
         this.setCaretPosition(document.getLength());
     }
 
-    public void println(double x, Color fontColor) {
+    public synchronized void println(float x, Color fontColor) {
         if (fontColor != null) {
             out.setFontColor(fontColor);
         }
@@ -173,7 +171,7 @@ public class OnlyReadTextPane extends JTextPane {
         this.setCaretPosition(document.getLength());
     }
 
-    public void println(char[] x, Color fontColor) {
+    public synchronized void println(double x, Color fontColor) {
         if (fontColor != null) {
             out.setFontColor(fontColor);
         }
@@ -182,7 +180,7 @@ public class OnlyReadTextPane extends JTextPane {
         this.setCaretPosition(document.getLength());
     }
 
-    public void println(boolean x, Color fontColor) {
+    public synchronized void println(char[] x, Color fontColor) {
         if (fontColor != null) {
             out.setFontColor(fontColor);
         }
@@ -191,7 +189,16 @@ public class OnlyReadTextPane extends JTextPane {
         this.setCaretPosition(document.getLength());
     }
 
-    public void println(String x, Color fontColor) {
+    public synchronized void println(boolean x, Color fontColor) {
+        if (fontColor != null) {
+            out.setFontColor(fontColor);
+        }
+        Document document = autoClear();
+        this.printStream.println(x);
+        this.setCaretPosition(document.getLength());
+    }
+
+    public synchronized void println(String x, Color fontColor) {
         if (fontColor != null) {
             out.setFontColor(fontColor);
         }
@@ -210,15 +217,16 @@ public class OnlyReadTextPane extends JTextPane {
         return rowHeight;
     }
 
-    private void insert(String text) {
+    private synchronized void insert(String text) {
         insert(text, defaultFontColor, null);
     }
 
-    private void insert(String text, Color color) {
+    private synchronized void insert(String text, Color color) {
         insert(text, color,null);
     }
 
-    private void insert(String text, Color color, Color backColor) {
+    private  synchronized void insert(String text, Color color, Color backColor) {
+        Integer length = null;
         try { // 插入文本
             if (color != null) {
                 StyleConstants.setForeground(attrSet, color);
@@ -227,9 +235,10 @@ public class OnlyReadTextPane extends JTextPane {
             if (backColor != null) {
                 StyleConstants.setBackground(attrSet, backColor);
             }
+            length = this.getStyledDocument().getLength();
             this.getStyledDocument().insertString(this.getStyledDocument().getLength(), text, attrSet);
         } catch (BadLocationException e) {
-            e.printStackTrace();
+            log.error(length+" 插入日志Panel失败:"+text,e);
         }
     }
 
@@ -265,7 +274,7 @@ public class OnlyReadTextPane extends JTextPane {
         private Color fontColor;
 
         @Override
-        public void write(int b) {
+        public synchronized void write(int b) {
             out.write(b);
             if ('\n' == (char) b) {
                 insert(out.toString(), fontColor);

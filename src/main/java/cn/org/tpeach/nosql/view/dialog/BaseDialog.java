@@ -136,6 +136,14 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	protected void setMiddlePanel(JPanel middlePanel){
 		middlePanel.setBorder(new EmptyBorder(10, 10, 35, 10));
 	}
+	/**
+	 * 面板背景颜色
+	 * @return
+	 */
+	protected Color getPanelBgColor() {
+		return Color.WHITE;
+	}
+
 	public void open() {
 		try {
 			setMinimumSize();

@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -76,12 +77,10 @@ public class RedisLarkContext<K,V> {
         if(MapUtils.isNotEmpty(redisInfo)){
             return redisInfo;
         }
-        if(printLog){
-            LarkFrame.larkLog.sendInfo(redisConnectInfo.getName(),"%s","INFO");
-        }
-
+        LocalDateTime now = LocalDateTime.now();
         String info = this.info();
         if(printLog){
+            LarkFrame.larkLog.sendInfo(now,redisConnectInfo.getName(),"%s","INFO");
             LarkFrame.larkLog.receivedInfo(redisConnectInfo.getName(),"%s",info);
         }
 
@@ -571,8 +570,8 @@ public class RedisLarkContext<K,V> {
                     slowLogBo.setId((Long) context.get(0));
                     slowLogBo.setOperTime((Long) context.get(1));
                     slowLogBo.setExcuteTime((Long) context.get(2));
-                    List<String> cmd = (List) context.get(3);
-                    String collect = cmd.stream().collect(Collectors.joining(" "));
+                    List<byte[]> cmd = (List) context.get(3);
+                    String collect = cmd.stream().map(StringUtils::showHexStringValue).collect(Collectors.joining(" "));
                     slowLogBo.setCmd(collect);
                     resultList.add(slowLogBo);
                 }

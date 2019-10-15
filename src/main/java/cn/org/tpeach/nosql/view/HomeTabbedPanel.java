@@ -40,12 +40,15 @@ public class HomeTabbedPanel extends javax.swing.JPanel {
 		ComponentAdapter componentAdapter = new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
+				if(index > 0){
+					topPanel.removeComponentListener(this);
+					return;
+				}
 				imageIcon.setImage(PublicConstant.Image.logo.getImage().getScaledInstance(topPanel.getHeight(), topPanel.getHeight(),
 						Image.SCALE_DEFAULT));
+				topPanel.updateUI();
 				index++;
-				if(index == 2){
-					topPanel.removeComponentListener(this);
-				}
+
 			}
 		};
 		topPanel.addComponentListener(componentAdapter);

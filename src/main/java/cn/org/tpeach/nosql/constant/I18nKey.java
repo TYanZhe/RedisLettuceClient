@@ -67,6 +67,8 @@ public class I18nKey {
 		RETRY,
 		CONNECTING,
 		SERVERINFO,
+		SIM_CHINESE,
+		ENGLISH,
 		/**不支持的版本异常*/
 		VERSION_NOTSUPPORT;
 
