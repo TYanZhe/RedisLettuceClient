@@ -53,6 +53,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -1222,7 +1223,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         AddRowDialog d = new AddRowDialog(LarkFrame.frame, newKeyInfo);
         d.setLeftList(isLeftList);
         d.getResult(item -> {
-            RedisTabbedPanel.this.updateUI(RedisTabbedPanel.this.treeNode, RedisTabbedPanel.this.pageBean,true);
+            RedisTabbedPanel.this.updateUI(RedisTabbedPanel.this.treeNode, RedisTabbedPanel.this.pageBean,false);
             d.close();
         });
         d.open();
@@ -1230,6 +1231,11 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
     private void saveKeyInfo(MouseEvent evt) {//TODO
         Layer.showLoading(true,()->{
+            try {
+                TimeUnit.MILLISECONDS.sleep(600);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             int selectRow = ((ValueInfoPanel) valueInfoPanel).getSelectRow();
             final TableColumnBean keyColumnBean = ((ValueInfoPanel) valueInfoPanel).getKeyColumnBean();
             final TableColumnBean valueColumnBean = ((ValueInfoPanel) valueInfoPanel).getValueColumnBean();
@@ -1292,6 +1298,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.updateKeyInfo(newKeyInfo, oldKeyInfo));
 
             final RTableModel model = (RTableModel) redisDataTable.getModel();
+
             if (resultRes.isRet()) {
 
                 valueColumnBean.setValue(newKeyInfo.getValue());
@@ -1329,14 +1336,19 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                     case HASH:
                         Map<byte[], byte[]> valueHash = redisKeyInfo.getValueHash();
                         if (!Arrays.equals(oldKeyInfo.getField(), newKeyInfo.getField())) {
-                            if (valueHash.containsKey(newKeyInfo.getField())) {
-                                try {
-                                    int size = Integer.valueOf(keySizeField.getText());
-                                    keySizeField.setText((size - 1) + "");
-                                } catch (Exception e) {
+                            int size = 1;
+                            for (Iterator<Map.Entry<byte[],byte[]>> iterator = valueHash.entrySet().iterator(); iterator.hasNext();){
+                                Map.Entry<byte[], byte[]> entry = iterator.next();
+                                if(Arrays.equals(newKeyInfo.getField(),entry.getKey())){
+                                    size++;
+                                    iterator.remove();
                                 }
                             }
                             valueHash.remove(oldKeyInfo.getField());
+                            try {
+                                keySizeField.setText((Integer.valueOf(keySizeField.getText()) - size) + "");
+                            } catch (Exception e) {
+                            }
                         }
                         valueHash.put(newKeyInfo.getField(), newKeyInfo.getValue());
 //                    keyColumnBean.setValue(fieldArea.getText());

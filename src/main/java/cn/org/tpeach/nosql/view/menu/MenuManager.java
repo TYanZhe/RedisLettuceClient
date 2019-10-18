@@ -525,7 +525,6 @@ public enum MenuManager {
         int count = topTabbedPane.getTabCount();
         RedisTreeItem item = (RedisTreeItem) node.getUserObject();
         if (count == 0) {
-
             topTabbedPane.addTab(StringUtils.showHexStringValue(item.getKey()), PublicConstant.Image.key_icon, new RedisTabbedPanel(node, tree));
         } else {
             int selectedIndex = topTabbedPane.getSelectedIndex();

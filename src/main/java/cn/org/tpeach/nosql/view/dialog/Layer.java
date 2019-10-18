@@ -1,10 +1,13 @@
 package cn.org.tpeach.nosql.view.dialog;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.framework.LarkFrame;
+import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
@@ -72,6 +75,7 @@ public class Layer {
  * @date 2019-10-11 23:30
  * @since 1.0.0
  */
+@Slf4j
 class LoadingDialog extends JDialog {
     //    public static LoadingDialog getInstance() {
 //        Inner.instance.setLocationRelativeTo(LarkFrame.frame);
@@ -151,7 +155,7 @@ class LoadingDialog extends JDialog {
                     //请求超过300毫秒才显示loading
                     LarkFrame.executorService.schedule(() -> {
                         countDownLatch.countDown();
-                    }, 100, TimeUnit.MILLISECONDS);
+                    }, 300, TimeUnit.MILLISECONDS);
                     //超时隐藏loading
                     if (timeout) {
                         LarkFrame.executorService.execute(() -> {
@@ -170,22 +174,23 @@ class LoadingDialog extends JDialog {
                                 });
                                 TimeUnit.SECONDS.sleep(65);
                                 longTime.set(false);
+                                if (atomicBoolean.get()) {
+                                    SwingTools.showMessageErrorDialog(null, "请求超时");
+                                    hiddenLoading(hiddenLister);
+                                }
                             } catch (InterruptedException e) {
 
                             }
-                            if (atomicBoolean.get()) {
-                                SwingTools.showMessageErrorDialog(null, "请求超时");
-                                hiddenLoading(hiddenLister);
-                            }
+
                         });
                     }
-                    try {
-                        needVisible = doInBackground.get();
-                        atomicBoolean.set(false);
-                    } finally {
-                        countDownLatch2.countDown();
-                    }
-                } finally {
+                    needVisible = doInBackground.get();
+                    atomicBoolean.set(false);
+                } catch (Exception e){
+                    log.error("loding异常",e);
+                    SwingTools.showMessageErrorDialog(null,  ServiceProxy.getStackTrace(e));
+                }finally {
+                    countDownLatch2.countDown();
                     hiddenLoading(hiddenLister);
                     if (hidden != null) {
                         hidden.accept(needVisible);
@@ -199,7 +204,7 @@ class LoadingDialog extends JDialog {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (atomicBoolean.get()) {
+            if (atomicBoolean.get() && countDownLatch2.getCount() > 0) {
                 this.setVisible(true);
             }
         } else {
