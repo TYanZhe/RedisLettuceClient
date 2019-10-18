@@ -25,7 +25,7 @@ import cn.org.tpeach.nosql.view.component.EasyJSP;
 import cn.org.tpeach.nosql.view.component.NonRectanglePopupFactory;
 import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
-import cn.org.tpeach.nosql.view.dialog.LoadingDialog;
+import cn.org.tpeach.nosql.view.dialog.Layer;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeModel;
@@ -205,7 +205,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         JPanel jPanel = new JPanel();
         jPanel.setLayout(new BorderLayout());
         jPanel.setBackground(Color.WHITE);
-        jPanel.add( new EasyJSP(LarkFrame.logArea).hiddenHorizontalScrollBar(),BorderLayout.CENTER);
+        jPanel.add( LarkFrame.logArea.getJsp(),BorderLayout.CENTER);
         ((RTabbedPane) logTabbedPane).addTab(LarkFrame.getI18nText(I18nKey.RedisResource.LOG), PublicConstant.Image.logo_16, jPanel, false);
         initTree();
 //        intToolBar();
@@ -222,7 +222,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                 monitorDialog.setSize(new Dimension(width,height));
                 final Point location = RedisMainWindow.this.getLocation();
                 monitorDialog.setLocation(location.x+10,location.y+RedisMainWindow.this.getHeight()-monitorDialog.getHeight()-statePanel.getHeight()-10);
-                LoadingDialog.resizeDialog(source.getWidth(),source.getHeight());
+                Layer.resizeDialog(source.getWidth(),source.getHeight());
             }
 
             @Override

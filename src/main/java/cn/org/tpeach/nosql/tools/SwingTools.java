@@ -209,67 +209,74 @@ public class SwingTools {
         loadingTreeNode.setIcon(PublicConstant.Image.loading01);
         redisTree.expandPath(new TreePath(parentNode.getPath()));
         DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
-		SwingTools.swingWorkerExec( ()->{
+		defaultModel.reload(parentNode);
+		//放到后台 避免空指针异常
+		SwingTools.swingWorkerExec(()->{
+			SwingTools.swingWorkerExec( ()->{
 
-                while (atomicBoolean.get()) {
-                    for(int i=0;i<7;i++) {
-                        switch (i) {
-                            case 0:
-                                loadingTreeNode.setIcon(PublicConstant.Image.loading02);
-                                break;
-                            case 1:
-                                loadingTreeNode.setIcon(PublicConstant.Image.loading03);
-                                break;
-                            case 2:
-                                loadingTreeNode.setIcon(PublicConstant.Image.loading04);
-                                break;
-                            case 3:
-                                loadingTreeNode.setIcon(PublicConstant.Image.loading05);
-                                break;
-                            case 4:
-                                loadingTreeNode.setIcon(PublicConstant.Image.loading06);
-                                break;
-                            case 5:
-                                loadingTreeNode.setIcon(PublicConstant.Image.loading07);
-                                break;
-                            case 6:
-                                loadingTreeNode.setIcon(PublicConstant.Image.loading01);
-                                break;
-                            default:
-                                break;
-                        }
-                        if(atomicBoolean.get() && parentNode.getChildCount() == 1) {
-                            defaultModel.reload(loadingTreeNode);
-                        }
-                        try {
-                            TimeUnit.MILLISECONDS.sleep(300);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                parentNode.removeAllChildren();
-                countDownLatch.countDown();
-		    return "success";
-        },null);
-        try {
-            ResultRes<T> resultRes = request.get();
-//			ResultRes resultRes = new ResultRes(true,new String[]{"db0","db1"},"");
-            atomicBoolean.set(false);
-            try {
-                countDownLatch.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            after.accept(resultRes);
-            redisTree.updateUI();
-        }catch (Exception e){
-            SwingTools.showMessageErrorDialog(null,e.getMessage());
-            redisTree.updateUI();
-            log.error("addLoadingTreeNode异常",e);
-        }finally {
-            atomicBoolean.set(false);
-        }
+					while (atomicBoolean.get()) {
+						for(int i=0;i<7;i++) {
+							switch (i) {
+								case 0:
+									loadingTreeNode.setIcon(PublicConstant.Image.loading02);
+									break;
+								case 1:
+									loadingTreeNode.setIcon(PublicConstant.Image.loading03);
+									break;
+								case 2:
+									loadingTreeNode.setIcon(PublicConstant.Image.loading04);
+									break;
+								case 3:
+									loadingTreeNode.setIcon(PublicConstant.Image.loading05);
+									break;
+								case 4:
+									loadingTreeNode.setIcon(PublicConstant.Image.loading06);
+									break;
+								case 5:
+									loadingTreeNode.setIcon(PublicConstant.Image.loading07);
+									break;
+								case 6:
+									loadingTreeNode.setIcon(PublicConstant.Image.loading01);
+									break;
+								default:
+									break;
+							}
+							if(atomicBoolean.get() && parentNode.getChildCount() == 1) {
+								defaultModel.reload(loadingTreeNode);
+							}
+							try {
+								TimeUnit.MILLISECONDS.sleep(300);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					parentNode.removeAllChildren();
+					countDownLatch.countDown();
+				return "success";
+			},null);
+
+
+			try {
+				ResultRes<T> resultRes = request.get();
+	//			ResultRes resultRes = new ResultRes(true,new String[]{"db0","db1"},"");
+				atomicBoolean.set(false);
+				try {
+					countDownLatch.await();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				after.accept(resultRes);
+				redisTree.updateUI();
+			}catch (Exception e){
+				SwingTools.showMessageErrorDialog(null,e.getMessage());
+				redisTree.updateUI();
+				log.error("addLoadingTreeNode异常",e);
+			}finally {
+				atomicBoolean.set(false);
+			}
+			return false;
+		});
 
 
 	}

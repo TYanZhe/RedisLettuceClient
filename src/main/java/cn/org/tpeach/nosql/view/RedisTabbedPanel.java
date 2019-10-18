@@ -21,7 +21,7 @@ import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.component.*;
 import cn.org.tpeach.nosql.view.dialog.AddRowDialog;
-import cn.org.tpeach.nosql.view.dialog.LoadingDialog;
+import cn.org.tpeach.nosql.view.dialog.Layer;
 import cn.org.tpeach.nosql.view.dialog.MagnifyTextDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
@@ -51,6 +51,8 @@ import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -93,6 +95,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     private PageBean pageBean = new PageBean();
     private int resultTab = 0;
     private OnlyReadArea resultTextArea;
+    private AtomicBoolean updateStatus = new AtomicBoolean(true);
 
     /**
      *
@@ -139,7 +142,11 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         this.tree = tree;
 
         pageBean.setRows(initRow);
-        this.getKeyInfo(resultRes -> SwingTools.showMessageErrorDialog(null, resultRes.getMsg()));
+        this.getKeyInfo(resultRes ->{
+            if(!resultRes.isRet()){
+                SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
+            }
+        } );
         if (redisKeyInfo == null) {
             this.redisKeyInfo = new RedisKeyInfo();
             this.redisKeyInfo.setType(RedisType.STRING);
@@ -208,7 +215,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
 //                    if(StringUtils.isText(redisKeyInfo.getKey())){
-                        renameKey();
+                    renameKey();
 //                    }
                 }
             }
@@ -334,11 +341,11 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             clip.setContents(tText, null);
         });
 //        if(StringUtils.isText(redisKeyInfo.getKey())){
-            JMenuItem renameKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.REMAME, PublicConstant.Image.rename);
-            renameKeyItem.addActionListener(e -> {
-                renameKey();
-            });
-            popMenu.add(renameKeyItem);
+        JMenuItem renameKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.REMAME, PublicConstant.Image.rename);
+        renameKeyItem.addActionListener(e -> {
+            renameKey();
+        });
+        popMenu.add(renameKeyItem);
 //        }
 
 
@@ -353,7 +360,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             return;
         }
         if (StringUtils.isNotBlank(name)) {
-        	byte[] nameByte = StringUtils.strToByte(name);
+            byte[] nameByte = StringUtils.strToByte(name);
             ResultRes<Boolean> resultRes = BaseController.dispatcher(() -> redisConnectService.remamenx(redisKeyInfo.getId(), redisKeyInfo.getDb(), redisKeyInfo.getKey(), nameByte));
 
             if (!resultRes.isRet()) {
@@ -577,7 +584,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 //                    source.setColumnSelectionInterval(column,column);
                     SwingTools.copyMenuByValue(e,redisDataTable,()->{
                         final Object valueAt = redisDataTable.getValueAt(row, column);
-                         return valueAt == null ? null : valueAt.toString();
+                        return valueAt == null ? null : valueAt.toString();
                     },null);
                 }else if (e.getClickCount() == 1) {
                     int column = redisDataTable.getSelectedColumn();
@@ -1235,156 +1242,156 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     }
 
     private void saveKeyInfo(MouseEvent evt) {//TODO
-         LoadingDialog.showLoading(true,()->{
-             int selectRow = ((ValueInfoPanel) valueInfoPanel).getSelectRow();
-             final TableColumnBean keyColumnBean = ((ValueInfoPanel) valueInfoPanel).getKeyColumnBean();
-             final TableColumnBean valueColumnBean = ((ValueInfoPanel) valueInfoPanel).getValueColumnBean();
-             RedisKeyInfo newKeyInfo = new RedisKeyInfo();
-             RedisKeyInfo oldKeyInfo = new RedisKeyInfo();
-             ReflectUtil.copyProperties(this.redisKeyInfo, newKeyInfo);
-             ReflectUtil.copyProperties(this.redisKeyInfo, oldKeyInfo);
-             newKeyInfo.setPageBean(null);
-             newKeyInfo.setValueHash(null);
-             newKeyInfo.setValueList(null);
-             newKeyInfo.setValueZSet(null);
-             oldKeyInfo.setPageBean(null);
-             oldKeyInfo.setValueHash(null);
-             oldKeyInfo.setValueList(null);
-             oldKeyInfo.setValueZSet(null);
-             byte[] oldValue = null;
-             newKeyInfo.setValue(StringUtils.isEmpty(valueArea.getText()) ? null : StringUtils.strToByte(valueArea.getText()));
-             switch (redisKeyInfo.getType()) {
-                 case STRING:
-                 case LIST:
-                     newKeyInfo.setIndex(redisKeyInfo.getPageBean().getStartIndex() + valueColumnBean.getIndex());
-                 case SET:
-                     oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 1)).getValue();
-                     oldKeyInfo.setValue(oldValue);
-                     break;
-                 case HASH:
-                     if (StringUtils.isBlank(fieldArea.getText())) {
-                         SwingTools.showMessageErrorDialog(null, "Field can not be null");
-                         return;
-                     }
-                     oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 2)).getValue();
-                     byte[] oldfield = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 1)).getValue();
-                     oldKeyInfo.setValue(oldValue);
-                     oldKeyInfo.setField(oldfield);
-                     newKeyInfo.setField(StringUtils.strToByte(fieldArea.getText()));
-                     break;
-                 case ZSET:
-                     String score = scoreField.getText();
-                     if (StringUtils.isBlank(score)) {
-                         SwingTools.showMessageErrorDialog(this, "请输入分数");
-                         return;
-                     }
-                     try {
-                         newKeyInfo.setScore(Double.valueOf(score));
-                     } catch (NumberFormatException ez) {
-                         SwingTools.showMessageErrorDialog(this, "请输入正确的分数");
-                         return;
-                     }
-                     oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 2)).getValue();
-                     String oldScore = StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1));
-                     oldKeyInfo.setValue(oldValue);
-                     oldKeyInfo.setScore(Double.valueOf(oldScore));
-                     break;
+        Layer.showLoading(true,()->{
+            int selectRow = ((ValueInfoPanel) valueInfoPanel).getSelectRow();
+            final TableColumnBean keyColumnBean = ((ValueInfoPanel) valueInfoPanel).getKeyColumnBean();
+            final TableColumnBean valueColumnBean = ((ValueInfoPanel) valueInfoPanel).getValueColumnBean();
+            RedisKeyInfo newKeyInfo = new RedisKeyInfo();
+            RedisKeyInfo oldKeyInfo = new RedisKeyInfo();
+            ReflectUtil.copyProperties(this.redisKeyInfo, newKeyInfo);
+            ReflectUtil.copyProperties(this.redisKeyInfo, oldKeyInfo);
+            newKeyInfo.setPageBean(null);
+            newKeyInfo.setValueHash(null);
+            newKeyInfo.setValueList(null);
+            newKeyInfo.setValueZSet(null);
+            oldKeyInfo.setPageBean(null);
+            oldKeyInfo.setValueHash(null);
+            oldKeyInfo.setValueList(null);
+            oldKeyInfo.setValueZSet(null);
+            byte[] oldValue = null;
+            newKeyInfo.setValue(StringUtils.isEmpty(valueArea.getText()) ? null : StringUtils.strToByte(valueArea.getText()));
+            switch (redisKeyInfo.getType()) {
+                case STRING:
+                case LIST:
+                    newKeyInfo.setIndex(redisKeyInfo.getPageBean().getStartIndex() + valueColumnBean.getIndex());
+                case SET:
+                    oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 1)).getValue();
+                    oldKeyInfo.setValue(oldValue);
+                    break;
+                case HASH:
+                    if (StringUtils.isBlank(fieldArea.getText())) {
+                        SwingTools.showMessageErrorDialog(null, "Field can not be null");
+                        return;
+                    }
+                    oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 2)).getValue();
+                    byte[] oldfield = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 1)).getValue();
+                    oldKeyInfo.setValue(oldValue);
+                    oldKeyInfo.setField(oldfield);
+                    newKeyInfo.setField(StringUtils.strToByte(fieldArea.getText()));
+                    break;
+                case ZSET:
+                    String score = scoreField.getText();
+                    if (StringUtils.isBlank(score)) {
+                        SwingTools.showMessageErrorDialog(this, "请输入分数");
+                        return;
+                    }
+                    try {
+                        newKeyInfo.setScore(Double.valueOf(score));
+                    } catch (NumberFormatException ez) {
+                        SwingTools.showMessageErrorDialog(this, "请输入正确的分数");
+                        return;
+                    }
+                    oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 2)).getValue();
+                    String oldScore = StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1));
+                    oldKeyInfo.setValue(oldValue);
+                    oldKeyInfo.setScore(Double.valueOf(oldScore));
+                    break;
 
-                 default:
+                default:
 
-                     break;
+                    break;
 
-             }
-             ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.updateKeyInfo(newKeyInfo, oldKeyInfo));
+            }
+            ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.updateKeyInfo(newKeyInfo, oldKeyInfo));
 
-             final RTableModel model = (RTableModel) redisDataTable.getModel();
-             if (resultRes.isRet()) {
+            final RTableModel model = (RTableModel) redisDataTable.getModel();
+            if (resultRes.isRet()) {
 
-                 valueColumnBean.setValue(newKeyInfo.getValue());
-                 //更新表格值 byte值
-                 switch (redisKeyInfo.getType()) {
-                     case STRING:
-                         redisKeyInfo.setValue(newKeyInfo.getValue());
-                         break;
-                     case LIST:
-                         List<byte[]> list = redisKeyInfo.getValueList();
-                         list.set(valueColumnBean.getIndex(), newKeyInfo.getValue());
-                         break;
-                     case SET:
+                valueColumnBean.setValue(newKeyInfo.getValue());
+                //更新表格值 byte值
+                switch (redisKeyInfo.getType()) {
+                    case STRING:
+                        redisKeyInfo.setValue(newKeyInfo.getValue());
+                        break;
+                    case LIST:
+                        List<byte[]> list = redisKeyInfo.getValueList();
+                        list.set(valueColumnBean.getIndex(), newKeyInfo.getValue());
+                        break;
+                    case SET:
 
 //                    redisDataTable.setValueAt(valueColumnBean, selectRow, 1);
-                         List<byte[]> set = redisKeyInfo.getValueSet();
-                         set.set(valueColumnBean.getIndex(), newKeyInfo.getValue());
-                         for (int i = set.size() - 1; i >= 0; i--) {
-                             if (i != valueColumnBean.getIndex()) {
-                                 if (Arrays.equals(set.get(i), newKeyInfo.getValue())) {
-                                     set.remove(i);
-                                     try {
-                                         int size = Integer.valueOf(keySizeField.getText());
-                                         keySizeField.setText((size - 1) + "");
-                                     } catch (Exception e) {
-                                     }
-                                     break;
-                                 }
+                        List<byte[]> set = redisKeyInfo.getValueSet();
+                        set.set(valueColumnBean.getIndex(), newKeyInfo.getValue());
+                        for (int i = set.size() - 1; i >= 0; i--) {
+                            if (i != valueColumnBean.getIndex()) {
+                                if (Arrays.equals(set.get(i), newKeyInfo.getValue())) {
+                                    set.remove(i);
+                                    try {
+                                        int size = Integer.valueOf(keySizeField.getText());
+                                        keySizeField.setText((size - 1) + "");
+                                    } catch (Exception e) {
+                                    }
+                                    break;
+                                }
 
-                             }
-                         }
+                            }
+                        }
 //                        removeSimpleRow(selectRow, model,1,t->valueArea.getText().equals(t.getValue()));
 
-                         break;
-                     case HASH:
-                         Map<byte[], byte[]> valueHash = redisKeyInfo.getValueHash();
-                         if (!Arrays.equals(oldKeyInfo.getField(), newKeyInfo.getField())) {
-                             if (valueHash.containsKey(newKeyInfo.getField())) {
-                                 try {
-                                     int size = Integer.valueOf(keySizeField.getText());
-                                     keySizeField.setText((size - 1) + "");
-                                 } catch (Exception e) {
-                                 }
-                             }
-                             valueHash.remove(oldKeyInfo.getField());
-                         }
-                         valueHash.put(newKeyInfo.getField(), newKeyInfo.getValue());
+                        break;
+                    case HASH:
+                        Map<byte[], byte[]> valueHash = redisKeyInfo.getValueHash();
+                        if (!Arrays.equals(oldKeyInfo.getField(), newKeyInfo.getField())) {
+                            if (valueHash.containsKey(newKeyInfo.getField())) {
+                                try {
+                                    int size = Integer.valueOf(keySizeField.getText());
+                                    keySizeField.setText((size - 1) + "");
+                                } catch (Exception e) {
+                                }
+                            }
+                            valueHash.remove(oldKeyInfo.getField());
+                        }
+                        valueHash.put(newKeyInfo.getField(), newKeyInfo.getValue());
 //                    keyColumnBean.setValue(fieldArea.getText());
 //                    redisDataTable.setValueAt(valueColumnBean, selectRow, 2);
 //                    redisDataTable.setValueAt(keyColumnBean, selectRow, 1);
 //
 //                    setFieldInfoLabelText(fieldArea.getText().getBytes().length);
 //                    removeSimpleRow(selectRow, model,1,t->fieldArea.getText().equals(t.getValue()));
-                         break;
-                     case ZSET:
-                         List<ScoredValue<byte[]>> valueZSet = redisKeyInfo.getValueZSet();
-                         valueZSet.set(valueColumnBean.getIndex(), ScoredValue.fromNullable(Double.valueOf(scoreField.getText()), newKeyInfo.getValue()));
-                         for (int i = valueZSet.size() - 1; i >= 0; i--) {
-                             if (i != valueColumnBean.getIndex()) {
-                                 if (Arrays.equals(newKeyInfo.getValue(), valueZSet.get(i).getValue())) {
-                                     valueZSet.remove(i);
-                                     try {
-                                         int size = Integer.valueOf(keySizeField.getText());
-                                         keySizeField.setText((size - 1) + "");
-                                     } catch (Exception e) {
-                                     }
-                                     break;
-                                 }
-                             }
-                         }
+                        break;
+                    case ZSET:
+                        List<ScoredValue<byte[]>> valueZSet = redisKeyInfo.getValueZSet();
+                        valueZSet.set(valueColumnBean.getIndex(), ScoredValue.fromNullable(Double.valueOf(scoreField.getText()), newKeyInfo.getValue()));
+                        for (int i = valueZSet.size() - 1; i >= 0; i--) {
+                            if (i != valueColumnBean.getIndex()) {
+                                if (Arrays.equals(newKeyInfo.getValue(), valueZSet.get(i).getValue())) {
+                                    valueZSet.remove(i);
+                                    try {
+                                        int size = Integer.valueOf(keySizeField.getText());
+                                        keySizeField.setText((size - 1) + "");
+                                    } catch (Exception e) {
+                                    }
+                                    break;
+                                }
+                            }
+                        }
 //                    redisDataTable.setValueAt(valueColumnBean, selectRow, 2);
 //                    redisDataTable.setValueAt(scoreField.getText(), selectRow, 1);
 //                    removeSimpleRow(selectRow, model,2,t->valueArea.getText().equals(t.getValue()));
-                         break;
+                        break;
 
-                     default:
+                    default:
 
-                         break;
+                        break;
 
-                 }
-                 setValueInfoLabelText(valueArea.getText().getBytes().length);
-                 updatePageInfo();
-                 refreshTable();
-                 //            updateUI(treeNode, pageBean);
-             } else {
-                 SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
-             }
+                }
+                setValueInfoLabelText(valueArea.getText().getBytes().length);
+                updatePageInfo();
+                refreshTable();
+                //            updateUI(treeNode, pageBean);
+            } else {
+                SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
+            }
         });
     }
 
@@ -1657,7 +1664,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
     }
 
-    private void getKeyInfo(Consumer<ResultRes<RedisKeyInfo>> error) {
+    private void getKeyInfo(Consumer<ResultRes<RedisKeyInfo>> resultResConsumer) {
         if (this.treeNode == null) {
             return;
         }
@@ -1684,54 +1691,96 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             }
         } else {
             searchTextField.setPlaceholder("输入筛选条件");
-            error.accept(resultRes);
         }
-
+        resultResConsumer.accept(resultRes);
     }
 
     private void updateUI(RTreeNode treeNode, PageBean pageBean,boolean loading) {
         this.updateUI(treeNode, this.tree, pageBean, false,loading);
     }
 
-    public void updateUI(RTreeNode treeNode, JTree tree, PageBean pageBean, final boolean isNewNode,boolean loading) {
-        LoadingDialog.showLoading(loading,()->{
-            this.pageBean = pageBean;
-            this.treeNode = treeNode;
-            this.tree = tree;
-            //重新获取key信息
-            if (isNewNode) {
-                this.pageBean.setRows(initRow);
-                selectPageComboBox.setSelectedIndex(0);
-                tableScrollPanel.setViewportView(redisDataTable);
-                resultTab = 0;
-                searchTextField.setText("");
-                tableScrollPanel.getViewport().setViewPosition(new Point(0, 0));
-            }
-            this.getKeyInfo(resultRes -> {
+    public  void updateUI(RTreeNode treeNode, JTree tree, PageBean pageBean, final boolean isNewNode,boolean loading) {
+        //修复修改页数切换key卡死问题 2019-10-18
+        if(!updateStatus.get()){
+            return;
+        }
+        updateStatus.set(false);
+        Layer.showLoading(loading,()->{
+            try {
+                PageBean oldPageBean = this.pageBean;
+                RTreeNode oldTreeNode = this.treeNode;
+                JTree oldTree = this.tree;
+                final int oldRows = oldPageBean.getRows();
+                int tab = this.resultTab;
+                String searchTextFieldText = searchTextField.getText();
+
+                this.pageBean = pageBean;
+                this.treeNode = treeNode;
+                this.tree = tree;
+                final int oldSelectedIndex = selectPageComboBox.getSelectedIndex();
+                //重新获取key信息
                 if (isNewNode) {
-                    SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
-                } else {
-                    JTabbedPane parent = (JTabbedPane) this.getParent();
-                    parent.remove(parent.getSelectedIndex());
-                    this.close();
+                    searchTextField.setText("");
+                    this.pageBean.setRows(initRow);
+                    selectPageComboBox.setSelectedIndex(0);
+                    this.resultTab = 0;
                 }
-            });
+                CountDownLatch countDownLatch = new CountDownLatch(1);
+                AtomicBoolean isSuccess = new AtomicBoolean(true);
+                this.getKeyInfo(resultRes -> {
+                    try {
+                        if (!resultRes.isRet()) {
+                            this.pageBean = oldPageBean;
+                            this.pageBean.setRows(oldRows);
+                            this.treeNode = oldTreeNode;
+                            this.tree = oldTree;
+                            selectPageComboBox.setSelectedIndex(oldSelectedIndex);
+                            searchTextField.setText(searchTextFieldText);
+                            this.resultTab = tab;
+                            isSuccess.set(false);
+                            if (isNewNode) {
+                                SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
+                            } else {
+//                    JTabbedPane parent = (JTabbedPane) this.getParent();
+//                    parent.remove(parent.getSelectedIndex());
+//                    this.close();
+                                SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
+                            }
+                        }
+                    } finally {
+                        countDownLatch.countDown();
+                    }
+                });
+                try {
+                    countDownLatch.await();
+                    if (!isSuccess.get()) {
+                        return;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (isNewNode) {
 
-            updateBasePanel();
-            //更新值显示
-            togglevalueInfo();
-            //刷新表格
-            refreshTable();
-            JTabbedPane parent = (JTabbedPane) this.getParent();
-            RTabbedPane.ButtonClose buttonClose = (RTabbedPane.ButtonClose) parent.getTabComponentAt(parent.getSelectedIndex());
-            if (buttonClose != null) {
-                buttonClose.setInit(false);
-                buttonClose.setText(StringUtils.byteToStr(redisKeyInfo.getKey()));
+                    tableScrollPanel.setViewportView(redisDataTable);
+                    tableScrollPanel.getViewport().setViewPosition(new Point(0, 0));
+                }
+                updateBasePanel();
+                //更新值显示
+                togglevalueInfo();
+                //刷新表格
+                refreshTable();
+                JTabbedPane parent = (JTabbedPane) this.getParent();
+                RTabbedPane.ButtonClose buttonClose = (RTabbedPane.ButtonClose) parent.getTabComponentAt(parent.getSelectedIndex());
+                if (buttonClose != null) {
+                    buttonClose.setInit(false);
+                    buttonClose.setText(StringUtils.byteToStr(redisKeyInfo.getKey()));
+                }
+
+                super.updateUI();
+            }finally {
+                updateStatus.set(true);
             }
-
-            super.updateUI();
         });
-
     }
 
     private void refreshTable(){

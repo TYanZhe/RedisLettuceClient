@@ -47,6 +47,8 @@ public class RedisTest {
             //构建连接信息
             RedisConnectInfo conn = new RedisConnectInfo();
             conn.setId(s);
+//            conn.setStructure(RedisStructure.CLUSTER.getCode());
+//            conn.setHost("127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003,127.0.0.1:7004,127.0.0.1:7005");
             conn.setStructure(RedisStructure.SINGLE.getCode());
             conn.setHost("127.0.0.1");
             conn.setPort(6379);
@@ -99,7 +101,7 @@ public class RedisTest {
     }
     @Test
     public void testBatchString(){
-        int num = 10000 /50;
+        int num = 100000000 /50;
         ExecutorService executorService = Executors.newCachedThreadPool();
         CountDownLatch countDownLatch = new CountDownLatch(50);
         for(int x = 0;x<50;x++){
@@ -113,7 +115,7 @@ public class RedisTest {
 
                         try {
 //				TimeUnit.MICROSECONDS.sleep(100);
-                            SetnxString setnxString = new SetnxString(remove, 7, ("测试" + i).getBytes("UTF-8"), (i + "").getBytes("UTF-8"));
+                            SetnxString setnxString = new SetnxString(remove, 5, ("测试很珍惜" + i).getBytes("UTF-8"), (i + "").getBytes("UTF-8"));
                             setnxString.setPrintLog(false);
                             setnxString.execute();
                         } catch (Exception e) {

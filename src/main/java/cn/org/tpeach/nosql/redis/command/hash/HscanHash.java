@@ -23,7 +23,7 @@ public class HscanHash extends AbstractScanCommand<MapScanCursor<byte[], byte[]>
 
     @Override
     public String sendCommand() {
-        return "hscan "+ byteToStr(key);
+        return "HSCAN "+ byteToStr(key)+" "+scanCursor.getCursor()+" MATCH "+scanArgs.getMatch() +" COUNT "+scanArgs.getCount();
     }
 
     @Override
