@@ -159,16 +159,13 @@ public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
                 break;
  
         }
-        super.submit(okBtn,()->{
-            ResultRes<?> res = BaseController.dispatcher(() -> redisConnectService.addRowKeyInfo(t,isLeftList));
-            if (res.isRet()) {
-                consumer.accept(t);
-                this.dispose();
-            } else {
-                SwingTools.showMessageErrorDialog(this, "未知错误：添加失败");
-            }
-            return !res.isRet();
-        });
+        ResultRes<?> res = BaseController.dispatcher(() -> redisConnectService.addRowKeyInfo(t,isLeftList));
+        if (res.isRet()) {
+            consumer.accept(t);
+            this.dispose();
+        } else {
+            SwingTools.showMessageErrorDialog(this, "未知错误：添加失败");
+        }
     }
 
 
