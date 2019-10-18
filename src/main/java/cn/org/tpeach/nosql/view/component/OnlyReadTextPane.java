@@ -1,5 +1,7 @@
 package cn.org.tpeach.nosql.view.component;
 
+import cn.org.tpeach.nosql.framework.LarkFrame;
+import cn.org.tpeach.nosql.tools.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -11,23 +13,18 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+
 @Slf4j
 public class OnlyReadTextPane extends JTextPane {
     private int rowHeight;
     private SimpleAttributeSet attrSet = new SimpleAttributeSet();
-    private AreaOutputStream out = this.new AreaOutputStream();
-    private final PrintStream printStream = new PrintStream(out);
     private Color defaultFontColor = Color.GREEN.darker().darker().darker();
     /**
      * 是否限制最多显示条数，超过删除，显示最新
      */
-    @Getter
-    @Setter
-    private boolean limit = true;
+//    @Getter
+//    @Setter
+    private final boolean limit = true;
     @Getter
     @Setter
     private Color candy;
@@ -36,11 +33,13 @@ public class OnlyReadTextPane extends JTextPane {
      */
     @Getter
     @Setter
-    protected int maxEntries = 100;
+    protected int maxEntries = 1000;
     /**
      * 已经在显示的条数
      */
     private int entries = 0;
+    @Getter
+    private EasyJSP jsp;
 
     public OnlyReadTextPane() {
         init();
@@ -53,6 +52,7 @@ public class OnlyReadTextPane extends JTextPane {
     }
 
     public void init() {
+        jsp = new EasyJSP(this).hiddenHorizontalScrollBar();
         candy = new Color(230, 230, 255);
         setOpaque(false);
         this.setFont(new Font("黑体",Font.PLAIN,15));
@@ -82,6 +82,13 @@ public class OnlyReadTextPane extends JTextPane {
 
             }
         });
+//        StyleConstants.setFontSize(attrSet,24);
+        clear();
+    }
+
+    @Override
+    public final boolean isEditable() {
+        return false;
     }
     public synchronized void clear(){
         try {
@@ -92,16 +99,10 @@ public class OnlyReadTextPane extends JTextPane {
         }
         this.entries = 0;
     }
-    @Override
-    public final boolean isEditable() {
-        return false;
-    }
-
     public int getLineCount() {
         Element map = getDocument().getDefaultRootElement();
         return map.getElementCount();
     }
-
     public int getLineEndOffset(int line) throws BadLocationException {
         int lineCount = getLineCount();
         if (line < 0) {
@@ -116,105 +117,50 @@ public class OnlyReadTextPane extends JTextPane {
             return ((line == lineCount - 1) ? (endOffset - 1) : endOffset);
         }
     }
+    private synchronized void autoClear() {
 
-    private synchronized StyledDocument autoClear() {
-
-        StyledDocument doc = null;
+        Document doc = null;
         try {
-            doc = this.getStyledDocument();
+            doc = this.getDocument();
             if (limit) {
                 if (entries >= maxEntries) {
-//                    int endOfs = this.get
-                    int endOfs = this.getLineEndOffset(entries - maxEntries);
-                    doc.remove(0, endOfs);
-                    entries = entries - 1;
+//                    int endOfs = this.getLineEndOffset(entries - maxEntries);
+                    for (int i = 0; i < entries - maxEntries; i++) {
+                        String text = this.getText();
+                        doc.remove(0, text.indexOf("\n"));
+                        entries = entries - 1;
+                    }
+
                 }
-                entries = entries + 1;
             }
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
-        return doc;
+
     }
-
-    public synchronized void println(int x, Color fontColor) {
-        if (fontColor != null) {
-            out.setFontColor(fontColor);
+    public synchronized void println(String s, Color fontColor) {
+        if(StringUtils.isBlank(s)){
+            return;
         }
-        this.printStream.println(x);
-    }
 
-    public synchronized void println(char x, Color fontColor) {
-        if (fontColor != null) {
-            out.setFontColor(fontColor);
+        if(!(s.endsWith("\r\n")|| s.endsWith("\n"))){
+            s += "\r\n";
         }
-        Document document = autoClear();
-        this.printStream.println(x);
-        this.setCaretPosition(document.getLength());
-    }
-
-    public synchronized void println(long x, Color fontColor) {
-        if (fontColor != null) {
-            out.setFontColor(fontColor);
+        if(fontColor != null){
+            insert(s, fontColor);
+        }else{
+            insert(s, defaultFontColor);
         }
-        Document document = autoClear();
-        this.printStream.println(x);
-        this.setCaretPosition(document.getLength());
-    }
+        autoClear();
+        try{
+//            this.setCaretPosition(getDocument().getLength());
+            //解决setCaretPosition空指针异常
+            JScrollBar verticalScrollBar = jsp.getVerticalScrollBar();
+            if(verticalScrollBar != null){
+                verticalScrollBar.setValue(verticalScrollBar.getMaximum());
+            }
+        }catch (Exception e){}
 
-    public synchronized void println(float x, Color fontColor) {
-        if (fontColor != null) {
-            out.setFontColor(fontColor);
-        }
-        Document document = autoClear();
-        this.printStream.println(x);
-        this.setCaretPosition(document.getLength());
-    }
-
-    public synchronized void println(double x, Color fontColor) {
-        if (fontColor != null) {
-            out.setFontColor(fontColor);
-        }
-        Document document = autoClear();
-        this.printStream.println(x);
-        this.setCaretPosition(document.getLength());
-    }
-
-    public synchronized void println(char[] x, Color fontColor) {
-        if (fontColor != null) {
-            out.setFontColor(fontColor);
-        }
-        Document document = autoClear();
-        this.printStream.println(x);
-        this.setCaretPosition(document.getLength());
-    }
-
-    public synchronized void println(boolean x, Color fontColor) {
-        if (fontColor != null) {
-            out.setFontColor(fontColor);
-        }
-        Document document = autoClear();
-        this.printStream.println(x);
-        this.setCaretPosition(document.getLength());
-    }
-
-    public synchronized void println(String x, Color fontColor) {
-        if (fontColor != null) {
-            out.setFontColor(fontColor);
-        }
-        Document document = autoClear();
-        this.printStream.println(x);
-        this.setCaretPosition(document.getLength());
-    }
-
-
-    protected int getRowHeight() {
-        if (rowHeight == 0) {
-            Font font = getFont();
-            FontMetrics metrics = getFontMetrics(font);
-            rowHeight = metrics.getHeight();
-        }
-        return rowHeight;
     }
 
     private synchronized void insert(String text) {
@@ -230,13 +176,14 @@ public class OnlyReadTextPane extends JTextPane {
         try { // 插入文本
             if (color != null) {
                 StyleConstants.setForeground(attrSet, color);
-
             }
             if (backColor != null) {
                 StyleConstants.setBackground(attrSet, backColor);
             }
-            length = this.getStyledDocument().getLength();
-            this.getStyledDocument().insertString(this.getStyledDocument().getLength(), text, attrSet);
+            Document docs =  getDocument();//获得文本对象
+            length = docs.getLength();
+            docs.insertString(length, text, attrSet);
+            entries = getLineCount();
         } catch (BadLocationException e) {
             log.error(length+" 插入日志Panel失败:"+text,e);
         }
@@ -267,21 +214,14 @@ public class OnlyReadTextPane extends JTextPane {
         super.paintComponent(g);
     }
 
-    private class AreaOutputStream extends OutputStream {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        @Getter
-        @Setter
-        private Color fontColor;
-
-        @Override
-        public synchronized void write(int b) {
-            out.write(b);
-            if ('\n' == (char) b) {
-                insert(out.toString(), fontColor);
-                out.reset();
-                fontColor = defaultFontColor;
-            }
+    protected int getRowHeight() {
+        if (rowHeight == 0) {
+            Font font = getFont();
+            FontMetrics metrics = getFontMetrics(font);
+            rowHeight = metrics.getHeight();
         }
+        return rowHeight;
     }
+
 
 }

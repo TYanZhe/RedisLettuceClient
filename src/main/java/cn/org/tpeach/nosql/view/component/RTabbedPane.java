@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package cn.org.tpeach.nosql.view.component;
 
@@ -24,19 +24,19 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 	private final static int tabWidth =196;
 	private static class RBasicTabbedPanelUI extends BasicTabbedPaneUI{
 		private RTabbedPane tabbedPane;
-		
-	    public RBasicTabbedPanelUI(RTabbedPane tabbedPane) {
+
+		public RBasicTabbedPanelUI(RTabbedPane tabbedPane) {
 			super();
 			this.tabbedPane = tabbedPane;
 		}
 
 		// 计算tab页签的宽度
-	    @Override
-	    protected int calculateTabWidth(int tabPlacement, int tabIndex, FontMetrics metrics) {
-	        // 可根据placement来做不同的调整
-	    	int width = super.calculateTabWidth(tabPlacement, tabIndex, metrics) ;
-	    	if(width > 213){
-	    		width = 213;
+		@Override
+		protected int calculateTabWidth(int tabPlacement, int tabIndex, FontMetrics metrics) {
+			// 可根据placement来做不同的调整
+			int width = super.calculateTabWidth(tabPlacement, tabIndex, metrics) ;
+			if(width > 213){
+				width = 213;
 			}
 //	    	Component tabComponentAt = this.tabbedPane.getTabComponentAt(tabIndex);
 //	    	if(tabComponentAt != null && tabComponentAt instanceof ButtonClose) {
@@ -52,16 +52,16 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 //	    		}
 //	    	}
 
-	        return width;
-	    }
+			return width;
+		}
 
-	    // 计算tab页签的高度
-	    @Override
-	    protected int calculateTabHeight(int tabPlacement, int tabIndex, int fontHeight) {
-	        // 可根据placement来做不同的调整
-	        return super.calculateTabHeight(tabPlacement, tabIndex, fontHeight);
-	    }
-	    // 绘制tab页签的边框
+		// 计算tab页签的高度
+		@Override
+		protected int calculateTabHeight(int tabPlacement, int tabIndex, int fontHeight) {
+			// 可根据placement来做不同的调整
+			return super.calculateTabHeight(tabPlacement, tabIndex, fontHeight);
+		}
+		// 绘制tab页签的边框
 //	    @Override
 //	    protected void paintTabBorder(Graphics g, int tabPlacement, int tabIndex, int x, int y, int w, int h, boolean isSelected) {
 //	    	Graphics2D g2d = (Graphics2D) g;
@@ -118,8 +118,8 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 		@Getter
 		private JLabel text;
 		/**
-			 * 
-			 */
+		 *
+		 */
 		private static final long serialVersionUID = -2901971173354068527L;
 
 		public ButtonClose(final String title, Icon icon, boolean isCloseIcon, MouseListener e) {
@@ -128,13 +128,13 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 			ic = new JLabel(icon);
 			ic.setSize(20, 20);
 			text = new JLabel();
-			this.setText(title);
+			text.setText(title);
 			text.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
 			this.setMaximumSize(new Dimension(tabWidth,24));
 //			this.setPreferredSize(new Dimension(tabWidth+5,24));
 			JLabel close = new JLabel(PublicConstant.Image.close);
 			close.addMouseListener(e);
-			
+
 			hbox.add(Box.createHorizontalStrut(5));
 			hbox.add(ic);
 			hbox.add(Box.createHorizontalStrut(10));
@@ -144,19 +144,19 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 				hbox.add(close);
 				hbox.add(Box.createHorizontalStrut(5));
 			}
-			this.setToolTipText(title);
 			this.add(hbox,BorderLayout.CENTER);
 			this.setBackground(Color.green);
 			this.setOpaque(false);
 		}
 
 		public void setText(String title){
-//			this.setToolTipText(title); 导致不可点击切换
+//			text.setToolTipText(title); //导致不可点击切换
 			int max = 8;
 			if(title != null && title.length() > max){
 				title = title.substring(0,max)+"...";
 			}
 			text.setText(title);
+
 		}
 
 		public void setIcon(final Icon icon){
@@ -165,7 +165,7 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 
 
 	}
-	
+
 	private static final long serialVersionUID = 6242507161129020217L;
 
 	public RTabbedPane() {
@@ -221,19 +221,19 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 		int index = this.indexOfTab(title);
 		addCloseTag(title,null,index,true,component);
 	}
-	
+
 	public Component add(String title, int index, Icon icon ,Component component) {
-		 Component c = super.add(component,index);
-		 addCloseTag(title, icon,index,true,component);
-		 return c;
-		 
+		Component c = super.add(component,index);
+		addCloseTag(title, icon,index,true,component);
+		return c;
+
 	}
-	
+
 	public Component add(String title, int index,Component component) {
-		 return add(title,index,null,component);
+		return add(title,index,null,component);
 	}
 	public void addCloseTag( String title, Icon icon,int index,boolean isCloseIcon,Component component) {
-		
+
 		MouseListener close = new MouseAdapter() {
 
 			@Override

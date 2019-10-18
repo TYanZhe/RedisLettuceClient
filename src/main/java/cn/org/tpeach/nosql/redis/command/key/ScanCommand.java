@@ -14,7 +14,7 @@ public class ScanCommand extends AbstractScanCommand<KeyScanCursor<byte[]>> {
 
     @Override
     public String sendCommand() {
-        return "SCAN ...";
+        return "SCAN "+scanCursor.getCursor()+" MATCH "+scanArgs.getMatch() +" COUNT "+scanArgs.getCount();
     }
 
     @Override

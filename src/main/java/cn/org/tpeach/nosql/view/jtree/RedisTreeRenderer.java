@@ -122,7 +122,7 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 		}
 
 
-		setComponentOrientation(tree.getComponentOrientation());
+//		setComponentOrientation(tree.getComponentOrientation());
 		selected = sel;
 		if(selected){
 			this.setBackground(new Color(230, 244, 254));

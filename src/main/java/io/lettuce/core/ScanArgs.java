@@ -11,13 +11,15 @@ import cn.org.tpeach.nosql.tools.StringUtils;
 import io.lettuce.core.codec.StringCodec;
 import io.lettuce.core.internal.LettuceAssert;
 import io.lettuce.core.protocol.CommandArgs;
+import lombok.Getter;
 
 /**
  * 解决lettuce只支持UTF-8匹配问题
  */
 public class ScanArgs implements CompositeArgument {
-
+    @Getter
     private Long count;
+    @Getter
     private String match;
 
     public static class Builder {
@@ -51,7 +53,8 @@ public class ScanArgs implements CompositeArgument {
     public <K, V> void build(CommandArgs<K, V> args) {
 
         if (match != null) {
-            args.add(MATCH).add(StringUtils.strToByte(match));
+            args.add(MATCH).add(match.getBytes(StandardCharsets.UTF_8));
+//            args.add(MATCH).add(StringUtils.strToByte(match));
         }
 
         if (count != null) {

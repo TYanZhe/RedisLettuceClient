@@ -153,8 +153,8 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
             pattern = allPattern;
             count = maxCount;
         }
-//        final RedisStructure redisStructure = super.executeJedisCommand(new RedisStructureCommand(id));
-//        if(RedisStructure.SINGLE.equals(redisStructure)){
+        final RedisStructure redisStructure = super.executeJedisCommand(new RedisStructureCommand(id));
+        if(RedisStructure.SINGLE.equals(redisStructure)){
             ScanCursor cursor = ScanCursor.INITIAL;
             ScanCommand command = new ScanCommand(id, db, cursor, maxCount);
             command.match(pattern);
@@ -163,7 +163,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
             if(CollectionUtils.isNotEmpty(collection)){
                 totalPattrenCount+= collection.size();
             }
-            while (!scanResult.isFinished()){
+            while (!scanResult.isFinished() && totalPattren){
                 cursor = ScanCursor.of(scanResult.getCursor());
                 command = new ScanCommand(id, db, cursor, maxCount);
                 command.match(pattern);
@@ -177,24 +177,25 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                         }
 
                     }
-                }else{
-                    if(!totalPattren){
-                        break;
-                    }
                 }
                 if(CollectionUtils.isNotEmpty(scanResult.getKeys())){
                     totalPattrenCount+= scanResult.getKeys().size();
                 }
             }
-//        }else if(RedisStructure.CLUSTER.equals(redisStructure)){
-//            final ScanIteratorCommand command = new ScanIteratorCommand(id, maxCount, pattern);
-//            command.match(pattern);
-//            command.count(count);
-//            final ScanIterator<byte[]> scan = super.executeJedisCommand(command);
-//            final List<byte[]> collect = scan.stream().collect(Collectors.toList());
-//            collection =  collect;
-//        }
+        }else if(RedisStructure.CLUSTER.equals(redisStructure)){
+//            #!/bin/sh
+//            redis-cli -c -p PORT -h IP cluster nodes | awk '{if($3=="master" || $3=="myself,master") print $2}' | awk -v var_pattern="$1" -F[:@] '{system("redis-cli -c -p "$2" -h "$1" keys "var_pattern)}'
+            final ScanIteratorCommand command = new ScanIteratorCommand(id, maxCount, pattern);
+            final ScanIterator<byte[]> scan = super.executeJedisCommand(command);
+            collection = new ArrayList<>(maxCount);
+            for (int i = 0; scan.hasNext(); i++,totalPattrenCount++) {
+                byte[] next = scan.next();
+                if(i < maxCount){
+                    collection.add(next);
+                }
+            }
 
+        }
 
         if(collection != null){
             Collections.sort(collection,(o1,o2)->{
@@ -240,56 +241,81 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     @Override
     public Long deleteKeys(String id, int db, String pattern,Integer totalCount) {
         Long number = 0L;
+        //解决数量太大 loading卡顿问题
+        int maxCount = 2000;
         if(StringUtils.isBlank(pattern)){
             return number;
         }
-        ScanCursor scanCursor = ScanCursor.INITIAL;
-
-        ScanCommand scanCommand = new ScanCommand(id, db, scanCursor, maxCount);
-        scanCommand.match(pattern);
-        KeyScanCursor<byte[]> keyScanCursor = scanCommand.execute();
-        List<byte[]> resultKeys = keyScanCursor.getKeys();
+        final RedisStructure redisStructure = super.executeJedisCommand(new RedisStructureCommand(id));
         byte[][] keys;
-        if(CollectionUtils.isNotEmpty(resultKeys)){
-            keys = new byte[resultKeys.size()][];
-            resultKeys.toArray(keys);
-            resultKeys.clear();
-            number+= this.deleteKeys(id,db,keys);
-        }
-        while (!keyScanCursor.isFinished()){
-            scanCursor = ScanCursor.of(keyScanCursor.getCursor());
-            scanCommand = new ScanCommand(id, db, scanCursor, maxCount);
+        List<byte[]> resultKeys;
+        if(RedisStructure.SINGLE.equals(redisStructure)) {
+            ScanCursor scanCursor = ScanCursor.INITIAL;
+            ScanCommand scanCommand = new ScanCommand(id, db, scanCursor, maxCount);
             scanCommand.match(pattern);
-            keyScanCursor = scanCommand.execute();
+            KeyScanCursor<byte[]> keyScanCursor = scanCommand.execute();
             resultKeys = keyScanCursor.getKeys();
+
+            if (CollectionUtils.isNotEmpty(resultKeys)) {
+                keys = new byte[resultKeys.size()][];
+                resultKeys.toArray(keys);
+                resultKeys.clear();
+                number += this.deleteKeys(id, db, keys);
+            }
+            while (!keyScanCursor.isFinished()) {
+                scanCursor = ScanCursor.of(keyScanCursor.getCursor());
+                scanCommand = new ScanCommand(id, db, scanCursor, maxCount);
+                scanCommand.match(pattern);
+                keyScanCursor = scanCommand.execute();
+                resultKeys = keyScanCursor.getKeys();
+                if (CollectionUtils.isNotEmpty(resultKeys)) {
+                    keys = new byte[resultKeys.size()][];
+                    resultKeys.toArray(keys);
+                    resultKeys.clear();
+                    number += this.deleteKeys(id, db, keys);
+                }
+            }
+            //优化删除不完全
+            if (totalCount != null && number < totalCount) {
+                final DbSizeCommand dbSizeCommand = new DbSizeCommand(id, db);
+                dbSizeCommand.setPrintLog(false);
+                final Long aLong = dbSizeCommand.execute();
+                if (aLong != null) {
+//                    logger.info("尝试删除未扫描到keys:{},当前库key总数:{}", totalCount - number, aLong);
+                    int count = aLong.intValue();
+                    while (count > 0) {
+                        count = count - maxCount;
+                        scanCommand = new ScanCommand(id, db, ScanCursor.INITIAL, maxCount);
+                        scanCommand.match(pattern);
+                        keyScanCursor = scanCommand.execute();
+                        resultKeys = keyScanCursor.getKeys();
+                        if (CollectionUtils.isNotEmpty(resultKeys)) {
+                            keys = new byte[resultKeys.size()][];
+                            resultKeys.toArray(keys);
+                            resultKeys.clear();
+                            number += this.deleteKeys(id, db, keys);
+                        }
+                    }
+                }
+            }
+        }else{
+            final ScanIteratorCommand command = new ScanIteratorCommand(id, maxCount, pattern);
+            final ScanIterator<byte[]> scan = super.executeJedisCommand(command);
+            resultKeys = new ArrayList<>(maxCount);
+            while(scan.hasNext()) {
+                resultKeys.add(scan.next());
+                if(resultKeys.size() >= maxCount){
+                    keys = new byte[resultKeys.size()][];
+                    resultKeys.toArray(keys);
+                    resultKeys.clear();
+                    number += this.deleteKeys(id, db, keys);
+                }
+            }
             if(CollectionUtils.isNotEmpty(resultKeys)){
                 keys = new byte[resultKeys.size()][];
                 resultKeys.toArray(keys);
                 resultKeys.clear();
-                number+= this.deleteKeys(id,db,keys);
-            }
-        }
-        //优化删除不完全
-        if(totalCount != null && number < totalCount){
-            final DbSizeCommand dbSizeCommand = new DbSizeCommand(id, db);
-            dbSizeCommand.setPrintLog(false);
-            final Long aLong = dbSizeCommand.execute();
-            if(aLong != null){
-                logger.info("尝试删除未扫描到keys:{},当前库key总数:{}",totalCount - number,aLong);
-                int count = aLong.intValue();
-                while (count > 0){
-                    count = count - maxCount;
-                    scanCommand = new ScanCommand(id, db, ScanCursor.INITIAL, maxCount);
-                    scanCommand.match(pattern);
-                    keyScanCursor = scanCommand.execute();
-                    resultKeys = keyScanCursor.getKeys();
-                    if(CollectionUtils.isNotEmpty(resultKeys)){
-                        keys = new byte[resultKeys.size()][];
-                        resultKeys.toArray(keys);
-                        resultKeys.clear();
-                        number+= this.deleteKeys(id,db,keys);
-                    }
-                }
+                number += this.deleteKeys(id, db, keys);
             }
         }
         return number;

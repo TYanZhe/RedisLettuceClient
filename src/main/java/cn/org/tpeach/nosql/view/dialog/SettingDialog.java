@@ -47,8 +47,8 @@ public class SettingDialog extends BaseDialog<Object, Object>{
         contextPanel.setLayout(new BorderLayout());
         contextPanel.add(tabbedPane,BorderLayout.CENTER);
 
-        JLabel languageLabel = new JLabel("语言：");
-        JLabel characterEncodingLabel = new JLabel("编码：");
+        JLabel languageLabel = new JLabel("语  言：");
+        JLabel characterEncodingLabel = new JLabel("编  码：");
         languageComboBox = new RComboBox<>(new DicBean[]{
                 new DicBean(I18nKey.RedisResource.SIM_CHINESE.getKey(),LarkFrame.getI18nFirstUpText(I18nKey.RedisResource.SIM_CHINESE)),
                 new DicBean(I18nKey.RedisResource.ENGLISH.getKey(),LarkFrame.getI18nFirstUpText(I18nKey.RedisResource.ENGLISH)+"（部分实现）")
@@ -57,16 +57,12 @@ public class SettingDialog extends BaseDialog<Object, Object>{
                 PublicConstant.CharacterEncoding.ISO_8859_1,
                 PublicConstant.CharacterEncoding.GBK,
                 PublicConstant.CharacterEncoding.UTF_8,
-      /*          PublicConstant.CharacterEncoding.UTF_16,
-                PublicConstant.CharacterEncoding.UTF_16BE,
-                PublicConstant.CharacterEncoding.UTF_16LE,*/
+                /*          PublicConstant.CharacterEncoding.UTF_16,
+                          PublicConstant.CharacterEncoding.UTF_16BE,
+                          PublicConstant.CharacterEncoding.UTF_16LE,*/
         });
 
-        String character = configParser.getString(ConfigConstant.Section.CHARACTER_ENCODING, ConfigConstant.CHARACTER, PublicConstant.CharacterEncoding.UTF_8);
-        String language = configParser.getString(ConfigConstant.Section.LOCAL, ConfigConstant.LANGUAGE, Locale.getDefault().getLanguage());
-        String country = configParser.getString(ConfigConstant.Section.LOCAL, ConfigConstant.COUNTRY,Locale.getDefault().getCountry());
-        languageComboBox.setSelectedItem(findLanguage(language,country));
-        characterEncodingComboBox.setSelectedItem(character);
+
 
         panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
         panel.add(Box.createVerticalStrut(15));
@@ -76,7 +72,15 @@ public class SettingDialog extends BaseDialog<Object, Object>{
         panel.add(Box.createVerticalGlue());
 
     }
-
+    @Override
+    public void after() {
+        super.after();
+        String character = configParser.getString(ConfigConstant.Section.CHARACTER_ENCODING, ConfigConstant.CHARACTER, PublicConstant.CharacterEncoding.UTF_8);
+        String language = configParser.getString(ConfigConstant.Section.LOCAL, ConfigConstant.LANGUAGE, Locale.getDefault().getLanguage());
+        String country = configParser.getString(ConfigConstant.Section.LOCAL, ConfigConstant.COUNTRY,Locale.getDefault().getCountry());
+        languageComboBox.setSelectedItem(findLanguage(language,country));
+        characterEncodingComboBox.setSelectedItem(character);
+    }
 
 
     public JPanel createRow(JComponent parentComponent,JLabel label,JComponent component,int rowHeight,double leftPercent){
@@ -113,6 +117,7 @@ public class SettingDialog extends BaseDialog<Object, Object>{
         });
         return rowPanel;
     }
+
 
 
     @Override

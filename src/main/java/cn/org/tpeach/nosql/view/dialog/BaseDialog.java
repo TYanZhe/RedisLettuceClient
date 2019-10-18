@@ -258,14 +258,6 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 		return panel;
 	}
 
-	// ------get set
-	public int getBtnPanelHeight() {
-		return btnPanelHeight;
-	}
-
-	public void setBtnPanelHeight(int btnPanelHeight) {
-		this.btnPanelHeight = btnPanelHeight;
-	}
 
 	/**
 	 * @param e
@@ -273,8 +265,8 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	protected void submit(ActionEvent e) {
 
 	}
-	public void submit(final JButton okBtn, Supplier<Boolean> request){
-		LoadingDialog.showDialogLoading(this,true,()->{
+	public void submit(final JButton okBtn, Supplier<Boolean> request,boolean timeout){
+		Layer.showDialogLoading(this,true,()->{
 			if(okBtn != null){
 				okBtn.setEnabled(false);
 			}
@@ -286,10 +278,16 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 					okBtn.setEnabled(true);
 				}
 			}
-		});
+		},timeout);
+	}
+	public void submit(final JButton okBtn, Supplier<Boolean> request ){
+		submit(okBtn,request,true);
 	}
 	public void submit(Supplier<Boolean> request){
 		submit(null,request);
+	}
+	public void submit(Supplier<Boolean> request,boolean timeout){
+		submit(null,request,timeout);
 	}
 	/**
 	 * @param e

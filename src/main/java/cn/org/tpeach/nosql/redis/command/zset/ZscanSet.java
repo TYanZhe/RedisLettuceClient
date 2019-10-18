@@ -23,7 +23,7 @@ public class ZscanSet extends AbstractScanCommand<ScoredValueScanCursor<byte[]>>
 
 	@Override
 	public String sendCommand() {
-		return null;
+		return "ZSCAN "+ byteToStr(key)+" "+scanCursor.getCursor()+" MATCH "+scanArgs.getMatch() +" COUNT "+scanArgs.getCount();
 	}
 
 	@Override

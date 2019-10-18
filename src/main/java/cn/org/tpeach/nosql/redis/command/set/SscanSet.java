@@ -25,7 +25,7 @@ public class SscanSet extends AbstractScanCommand<ValueScanCursor<byte[]>> {
 
     @Override
     public String sendCommand() {
-        return null;
+        return "SSCAN "+ byteToStr(key)+" "+scanCursor.getCursor()+" MATCH "+scanArgs.getMatch() +" COUNT "+scanArgs.getCount();
     }
 
     @Override
