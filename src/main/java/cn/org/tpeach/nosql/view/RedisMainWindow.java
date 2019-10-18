@@ -276,7 +276,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 
         JPopupMenu connectPopMenu = menuManager.getConnectPopMenu(redisTree);
         JPopupMenu serverTreePopMenu = menuManager.getServerTreePopMenu(redisTree,(RTabbedPane) redisDataTabbedPane, (StatePanel) statePanel);
-        JPopupMenu dbTreePopMenu = menuManager.getDBTreePopMenu(redisTree,keyFilterField);
+        JPopupMenu dbTreePopMenu = menuManager.getDBTreePopMenu(redisTree,(RTabbedPane) redisDataTabbedPane,keyFilterField);
         JPopupMenu keyTreePopMenu = menuManager.getKeyTreePopMenu(redisTree, (RTabbedPane) redisDataTabbedPane);
         JPopupMenu keyNameSpaceTreePopMenu = menuManager.getKeyNameSpaceTreePopMenu(redisTree);
         // JTree上没有任何项被选中

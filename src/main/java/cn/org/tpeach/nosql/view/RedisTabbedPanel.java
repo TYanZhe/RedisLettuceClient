@@ -19,6 +19,7 @@ import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.*;
+import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.*;
 import cn.org.tpeach.nosql.view.dialog.AddRowDialog;
 import cn.org.tpeach.nosql.view.dialog.Layer;
@@ -354,37 +355,23 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     }
 
     private void renameKey() {
-        String name = SwingTools.showInputDialog(null, "NEW NAME:", "Rename key", keyNameField.getText());
-        //取消
-        if (name == null) {
-            return;
-        }
-        if (StringUtils.isNotBlank(name)) {
-            byte[] nameByte = StringUtils.strToByte(name);
-            ResultRes<Boolean> resultRes = BaseController.dispatcher(() -> redisConnectService.remamenx(redisKeyInfo.getId(), redisKeyInfo.getDb(), redisKeyInfo.getKey(), nameByte));
+        ServiceManager.getInstance().renameKey(tree,treeNode, name->{
+            resetKeyName(name);
+        });
+    }
 
-            if (!resultRes.isRet()) {
-                SwingTools.showMessageErrorDialog(null, "重命名失败:" + resultRes.getMsg());
-            } else if (!resultRes.getData()) {
-                SwingTools.showMessageErrorDialog(null, "Cant't rename name: Key with new name already exist in database or original key was removed");
-            } else {
-                redisKeyInfo.setKey(nameByte);
-                keyNameField.setText(name);
-                RedisTreeItem redisTreeItem = (RedisTreeItem) treeNode.getUserObject();
-                redisTreeItem.updateKeyName(nameByte,name);
-                JTabbedPane parent = (JTabbedPane) this.getParent();
-                RTabbedPane.ButtonClose buttonClose = (RTabbedPane.ButtonClose) parent.getTabComponentAt(parent.getSelectedIndex());
-                if (buttonClose != null) {
-                    buttonClose.setText(name);
-                }
-                tree.updateUI();
+    public void resetKeyName(String name){
+        byte[] nameByte = StringUtils.strToByte(name);
+        redisKeyInfo.setKey(nameByte);
+        keyNameField.setText(name);
+        JTabbedPane parent = (JTabbedPane) this.getParent();
+        int index = ServiceManager.getInstance().findComponentIndexByTabbedPanel(this, parent);
+        if(index != -1){
+            RTabbedPane.ButtonClose buttonClose = (RTabbedPane.ButtonClose) parent.getTabComponentAt(index);
+            if (buttonClose != null) {
+                buttonClose.setText(name);
             }
-        }else{
-            SwingTools.showMessageErrorDialog(null, "重命名失败:名称不能为空" );
-            this.renameKey();
         }
-
-
     }
 
     private void ttlBtnMousePressed(java.awt.event.MouseEvent evt) {

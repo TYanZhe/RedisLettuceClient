@@ -5,6 +5,7 @@ package cn.org.tpeach.nosql.view.common;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.controller.BaseController;
+import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
@@ -14,14 +15,18 @@ import cn.org.tpeach.nosql.tools.ArraysUtil;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.view.RedisTabbedPanel;
 import cn.org.tpeach.nosql.view.StatePanel;
+import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
 　 * <p>Title: ServiceManager.java</p> 
@@ -176,6 +181,66 @@ public class ServiceManager {
 				});
 
 	}
+
+	public void renameKey(JTree tree, RTreeNode treeNode, Consumer<String> success){
+		RedisTreeItem redisTreeItem = (RedisTreeItem) treeNode.getUserObject();
+		String name = SwingTools.showInputDialog(null, "NEW NAME:", "Rename key", StringUtils.showHexStringValue( redisTreeItem.getKey()));
+		//取消
+		if (name == null) {
+			return;
+		}
+		if (StringUtils.isNotBlank(name)) {
+			byte[] nameByte = StringUtils.strToByte(name);
+			ResultRes<Boolean> resultRes = BaseController.dispatcher(() -> redisConnectService.remamenx(redisTreeItem.getId(), redisTreeItem.getDb(), redisTreeItem.getKey(), nameByte));
+
+			if (!resultRes.isRet()) {
+				SwingTools.showMessageErrorDialog(null, "重命名失败:" + resultRes.getMsg());
+			} else if (!resultRes.getData()) {
+				SwingTools.showMessageErrorDialog(null, "Cant't rename name: Key with new name already exist in database or original key was removed");
+			}else{
+				redisTreeItem.updateKeyName(nameByte,name);
+				tree.updateUI();
+				if(success != null){
+					success.accept(name);
+				}
+			}
+		}else{
+			SwingTools.showMessageErrorDialog(null, "重命名失败:名称不能为空" );
+			this.renameKey(tree,treeNode,success);
+		}
+	}
+
+	public void removeNodeForRedisTabbedPanel(RTreeNode node, RTabbedPane topTabbedPane) {
+		findNodeByRedisTabbedPanel(true,node,topTabbedPane,index->topTabbedPane.remove(index));
+	}
+
+
+	public void findNodeByRedisTabbedPanel(boolean mult,RTreeNode node, JTabbedPane topTabbedPane,Consumer<Integer> tabIndex){
+		int tabCount = topTabbedPane.getTabCount();
+		for (int i = tabCount - 1; i >= 0; i--) {
+			Component component = topTabbedPane.getComponentAt(i);
+			if (component instanceof RedisTabbedPanel) {
+				RedisTabbedPanel tabPanel = (RedisTabbedPanel) component;
+				if (tabPanel.getTreeNode() == node) {
+					tabIndex.accept(i);
+					if(!mult){
+						break;
+					}
+				}
+			}
+		}
+	}
+	public int findComponentIndexByTabbedPanel(Component component, JTabbedPane topTabbedPane ){
+		int tabCount = topTabbedPane.getTabCount();
+		for (int i = tabCount - 1; i >= 0; i--) {
+			Component c = topTabbedPane.getComponentAt(i);
+			if (c instanceof RedisTabbedPanel && c == component) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 
 
 
