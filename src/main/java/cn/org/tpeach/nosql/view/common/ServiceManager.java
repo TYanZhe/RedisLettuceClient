@@ -7,6 +7,7 @@ import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
+import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
@@ -15,6 +16,7 @@ import cn.org.tpeach.nosql.tools.ArraysUtil;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.view.RedisMainWindow;
 import cn.org.tpeach.nosql.view.RedisTabbedPanel;
 import cn.org.tpeach.nosql.view.StatePanel;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
@@ -22,6 +24,7 @@ import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.ArrayList;
@@ -241,6 +244,13 @@ public class ServiceManager {
 		return -1;
 	}
 
+
+	public RTreeNode findoOriginalRedisTreeNode(JTree tree,RTreeNode node){
+		if(((RedisMainWindow)LarkFrame.frame).root != tree.getModel().getRoot()){
+
+		}
+		return null;
+	}
 
 
 
