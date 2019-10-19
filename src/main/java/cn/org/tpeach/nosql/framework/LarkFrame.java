@@ -8,6 +8,7 @@ import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.component.OnlyReadTextPane;
+import cn.org.tpeach.nosql.view.dialog.Layer;
 import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +35,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author tyz
@@ -58,7 +62,8 @@ public class LarkFrame {
 	public static JFrame frame;
 	public static FontMetrics fm = FontDesignMetrics.getMetrics(new Font("Dialog", Font.PLAIN,16));
 	public static Properties APPLICATION_VALUE;
-
+	private static AtomicBoolean startInit = new AtomicBoolean(false);
+	private static CountDownLatch countDownLatch = new CountDownLatch(1);
 	static {
 		try {
 			APPLICATION_VALUE = PropertiesUtils.getProperties("application.properties");
@@ -113,6 +118,17 @@ public class LarkFrame {
 		reloadPlatformResource(ConfigParser.getInstance().getString(ConfigConstant.Section.LOCAL, ConfigConstant.LANGUAGE, ConfigConstant.Local.zh), 
 				ConfigParser.getInstance().getString(ConfigConstant.Section.LOCAL, ConfigConstant.COUNTRY, ConfigConstant.Local.CN));
 		//启动主窗口
+		SwingTools.swingWorkerExec(()->{
+			Layer.showLoading(true,()->{
+				try {
+					countDownLatch.await();
+					countDownLatch = null;
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			},false);
+			return null;
+		});
 		final JFrameMain swingMain = (JFrameMain) AnnotationUtil.getClassAnnotation(primarySource,JFrameMain.class);
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -254,5 +270,12 @@ public class LarkFrame {
 		platformResource =  ResourceBundle.getBundle(PublicConstant.RESOURCE_CLASSNAME,new Locale(LANGUAGE, COUNTRY));
 	}
 
+	public static void hiddenStartLoading(){
+		if(startInit.get()){
+			return;
+		}
+		startInit.set(true);
+		countDownLatch.countDown();
+	}
 
 }

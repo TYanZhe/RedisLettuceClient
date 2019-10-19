@@ -109,7 +109,7 @@
                         <Property name="alignmentX" type="float" value="0.8"/>
                         <Property name="alignmentY" type="float" value="0.8"/>
                         <Property name="cellRenderer" type="javax.swing.tree.TreeCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                          <Connection code="new RedisTreeRenderer()" type="code"/>
+                          <Connection code="redisTreeRenderer" type="code"/>
                         </Property>
                         <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
                           <Color id="&#x9ed8;&#x8ba4;&#x5149;&#x6807;"/>

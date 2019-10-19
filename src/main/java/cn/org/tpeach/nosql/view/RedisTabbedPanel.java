@@ -1336,7 +1336,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                     case HASH:
                         Map<byte[], byte[]> valueHash = redisKeyInfo.getValueHash();
                         if (!Arrays.equals(oldKeyInfo.getField(), newKeyInfo.getField())) {
-                            int size = 1;
+                            int size = 0;
                             for (Iterator<Map.Entry<byte[],byte[]>> iterator = valueHash.entrySet().iterator(); iterator.hasNext();){
                                 Map.Entry<byte[], byte[]> entry = iterator.next();
                                 if(Arrays.equals(newKeyInfo.getField(),entry.getKey())){
@@ -1345,12 +1345,15 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                                 }
                             }
                             valueHash.remove(oldKeyInfo.getField());
+                            valueHash.put(newKeyInfo.getField(),newKeyInfo.getValue());
                             try {
                                 keySizeField.setText((Integer.valueOf(keySizeField.getText()) - size) + "");
                             } catch (Exception e) {
                             }
+                        }else{
+                            valueHash.remove(oldKeyInfo.getField());
+                            valueHash.put(newKeyInfo.getField(),newKeyInfo.getValue());
                         }
-                        valueHash.put(newKeyInfo.getField(), newKeyInfo.getValue());
 //                    keyColumnBean.setValue(fieldArea.getText());
 //                    redisDataTable.setValueAt(valueColumnBean, selectRow, 2);
 //                    redisDataTable.setValueAt(keyColumnBean, selectRow, 1);
