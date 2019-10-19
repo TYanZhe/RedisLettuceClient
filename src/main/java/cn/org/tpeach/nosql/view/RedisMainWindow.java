@@ -75,7 +75,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //    final double dataBgDividerLocation = 0.8;
     private double treeDataDividerLocation = 0.2;
 
-    final RTreeNode root = new RTreeNode("Root");
+    public final RTreeNode root = new RTreeNode("Root");
 
 
 
@@ -168,7 +168,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
             @Override
             public void keyTyped(KeyEvent ke) {
                 super.keyTyped(ke);
-                filterTree(keyFilterField.getText() + ke.getKeyChar());
+//                filterTree(keyFilterField.getText() + ke.getKeyChar());
             }
         });
         //去掉树线条
@@ -269,6 +269,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         for (int i = 0; i < redisTree.getRowCount(); i++) {
             redisTree.expandRow(i);
         }
+
         redisTree.updateUI();
     }
     private RTreeNode copyNode(RTreeNode orig) {
