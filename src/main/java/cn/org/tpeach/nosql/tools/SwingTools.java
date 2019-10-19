@@ -9,6 +9,7 @@ import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.view.StatePanel;
 import cn.org.tpeach.nosql.view.component.EasyGBC;
+import cn.org.tpeach.nosql.view.component.ROptionPane;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
@@ -332,28 +333,26 @@ public class SwingTools {
 
 	public static void showMessageErrorDialog(Component parentComponent, Object message, String title) {
 		swingWorkerExec(()->{
-			JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.ERROR_MESSAGE);
+			ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.ERROR_MESSAGE);
 			return null;
 		});
 	}
 
 	public static void showMessageErrorDialog(Component parentComponent, Object message) {
-		swingWorkerExec(()->{
-			JOptionPane.showMessageDialog(parentComponent, message, "错误提示", JOptionPane.ERROR_MESSAGE);
-			return null;
-		});
+		showMessageErrorDialog(parentComponent,message,"error");
+
 	}
 
 	public static void showMessageMessageDialog(Component parentComponent, Object message, String title) {
 		swingWorkerExec(()->{
-			JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.WARNING_MESSAGE);
+			ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.WARNING_MESSAGE);
 			return null;
 		});
 	}
 
 	public static void showMessageInfoDialog(Component parentComponent, Object message, String title) {
 		swingWorkerExec(()->{
-			JOptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE);
+			ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return null;
 		});
 

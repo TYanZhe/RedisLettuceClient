@@ -19,6 +19,7 @@ import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.ConfigParser;
+import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.EasyJSP;
@@ -30,12 +31,14 @@ import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeModel;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeRenderer;
+import cn.org.tpeach.nosql.view.jtree.TreeNodeBuilder;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 import cn.org.tpeach.nosql.view.ui.RScrollBarUI;
 import sun.font.FontDesignMetrics;
 
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -72,7 +75,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //    final double dataBgDividerLocation = 0.8;
     private double treeDataDividerLocation = 0.2;
 
-
+    final RTreeNode root = new RTreeNode("Root");
 
 
 
@@ -161,7 +164,13 @@ public class RedisMainWindow extends javax.swing.JFrame {
         initComponents();
         ((PlaceholderTextField) keyFilterField).setPlaceholder("请输入检索键的表达式");
         keyFilterField.setText("*");
-        redisTreeRenderer.setKeyFilterField(keyFilterField);
+        keyFilterField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent ke) {
+                super.keyTyped(ke);
+                filterTree(keyFilterField.getText() + ke.getKeyChar());
+            }
+        });
         //去掉树线条
         redisTree.putClientProperty("JTree.lineStyle", "None");
 
@@ -215,6 +224,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
+                LarkFrame.hiddenStartLoading();
                 final JFrame source = (JFrame) e.getSource();
                 int width =  (int) (source.getWidth()*0.8);
                 int height =width * monitorDialog.getInitHeight() /  monitorDialog.getInitWidth();
@@ -231,6 +241,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
                 final Point location = RedisMainWindow.this.getLocation();
                 monitorDialog.setLocation(location.x+10,location.y+RedisMainWindow.this.getHeight()-monitorDialog.getHeight()-statePanel.getHeight()-10);
             }
+            
         });
     }
 
@@ -243,6 +254,34 @@ public class RedisMainWindow extends javax.swing.JFrame {
     //------------------------------------------------------toolbar end-------------------------------------------
 
     //------------------------------------------------------tree start-------------------------------------------
+    private void filterTree(String text) {
+        RTreeNode filteredRoot = copyNode(root);
+        RedisTreeModel model = (RedisTreeModel) redisTree.getModel();
+        if(StringUtils.isBlank(text)){
+            model.setRoot(root);
+        }else{
+            TreeNodeBuilder b = new TreeNodeBuilder(text);
+            filteredRoot = b.prune((RTreeNode) filteredRoot.getRoot());
+            model.setRoot(filteredRoot);
+        }
+        redisTree.setModel(model);
+
+        for (int i = 0; i < redisTree.getRowCount(); i++) {
+            redisTree.expandRow(i);
+        }
+        redisTree.updateUI();
+    }
+    private RTreeNode copyNode(RTreeNode orig) {
+
+        RTreeNode newOne = new RTreeNode();
+        newOne.setUserObject(orig.getUserObject());
+        Enumeration enm = orig.children();
+        while(enm.hasMoreElements()){
+            RTreeNode child = (RTreeNode) enm.nextElement();
+            newOne.add(copyNode(child));
+        }
+        return newOne;
+    }
     private void initTree() {
 //               //鼠标点击事件
 //        SwingTools.addMouseClickedListener(redisTree, (e) -> {
@@ -251,7 +290,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
     }
 
     private TreeModel getTreeModel() {
-        final RTreeNode root = new RTreeNode("Root");
+
         //加载配置
         ResultRes<List<RedisConnectInfo>> resultRes = BaseController.dispatcher(() -> redisConfigService.getRedisConfigAllList());
         if (resultRes.isRet()) {
@@ -531,7 +570,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         redisTree.setToolTipText("");
         redisTree.setAlignmentX(0.8F);
         redisTree.setAlignmentY(0.8F);
-        redisTree.setCellRenderer(new RedisTreeRenderer());
+        redisTree.setCellRenderer(redisTreeRenderer);
         redisTree.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         redisTree.setRootVisible(false);
         redisTree.setRowHeight(28);
@@ -634,7 +673,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 
     private void keyFilterFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyFilterFieldActionPerformed
         // TODO add your handling code here:
-        String keyPattern = keyFilterField.getText();
+//        String keyPattern = keyFilterField.getText();
 //        if (StringUtils.isNotBlank(keyPattern)) {
 //            redisTree.updateUI();
 //        }
