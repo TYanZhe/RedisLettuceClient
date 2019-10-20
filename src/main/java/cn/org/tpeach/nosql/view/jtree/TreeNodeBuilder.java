@@ -5,6 +5,7 @@ import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.tools.StringUtils;
 
 import java.util.LinkedList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.regex.Pattern.compile;
@@ -15,9 +16,27 @@ public class TreeNodeBuilder {
     private Pattern pattern;
 
     public TreeNodeBuilder(String textToMatch) {
+        // (    [     {    /    ^    -    $     ¦    }    ]    )    ?    *    +
         this.textToMatch = textToMatch;
         if(StringUtils.isNotBlank(textToMatch)){
-            pattern = compile(".*" + textToMatch.trim().replaceAll("\\*", ".*") + ".*");
+            try {
+                String s = ".*" + textToMatch.trim()
+                        .replaceAll("\\$", Matcher.quoteReplacement("\\$"))
+                        .replaceAll("\\^", Matcher.quoteReplacement("\\^"))
+                        .replaceAll("\\(", Matcher.quoteReplacement("\\("))
+                        .replaceAll("\\)", Matcher.quoteReplacement("\\)"))
+                        .replaceAll("\\+", Matcher.quoteReplacement("\\+"))
+                        .replaceAll("\\.", Matcher.quoteReplacement("\\."))
+                        .replaceAll("\\[", Matcher.quoteReplacement("\\["))
+                        .replaceAll("\\?", Matcher.quoteReplacement("\\?"))
+                        .replaceAll("\\{", Matcher.quoteReplacement("\\{"))
+                        .replaceAll("\\|", Matcher.quoteReplacement("\\|"))
+                        .replaceAll("\\*", ".*")
+                        + ".*";
+                pattern = compile(s);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
 
     }

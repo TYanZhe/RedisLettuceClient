@@ -442,6 +442,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                     }
                 }
                 redisKeyInfo.setValueSet(values);
+                Collections.sort(values,(o1,o2)->StringUtils.compareToLength(StringUtils.byteToStr(o1), StringUtils.byteToStr(o2)));
                 redisKeyInfo.setCursor(new ScanCursor(sscanResult.getCursor(),sscanResult.isFinished()));
                 break;
             case HASH:
@@ -524,6 +525,9 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                         zscanResultValues.remove(i);
                     }
                 }
+                if(CollectionUtils.isNotEmpty(zscanResultValues)){
+                    Collections.sort(zscanResultValues,(o1,o2)->StringUtils.compareToLength(StringUtils.byteToStr(o1.getValue()), StringUtils.byteToStr(o2.getValue())));
+                }
                 redisKeyInfo.setCursor(new ScanCursor(zscanResult.getCursor(),zscanResult.isFinished()));
                 redisKeyInfo.setValueZSet(zscanResultValues);
                 break;
@@ -537,6 +541,8 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         redisKeyInfo.setPageBean(pageBean);
         return redisKeyInfo;
     }
+
+
 
     /* (non-Javadoc)
      * @see cn.org.tpeach.nosql.redis.service.IRedisConnectService#flushDb(java.lang.String, int)
