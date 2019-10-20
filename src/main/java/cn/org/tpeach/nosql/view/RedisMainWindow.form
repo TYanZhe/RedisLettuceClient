@@ -253,6 +253,9 @@
                         <Container class="javax.swing.JTabbedPane" name="logTabbedPane">
                           <Properties>
                             <Property name="tabPlacement" type="int" value="3"/>
+                            <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
+                              <Color id="&#x9ed8;&#x8ba4;&#x5149;&#x6807;"/>
+                            </Property>
                           </Properties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new RTabbedPane()"/>

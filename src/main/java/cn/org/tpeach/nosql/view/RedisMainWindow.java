@@ -75,7 +75,9 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //    final double dataBgDividerLocation = 0.8;
     private double treeDataDividerLocation = 0.2;
 
-    public final RTreeNode root = new RTreeNode("Root");
+    public final RTreeNode root = new RTreeNode(new RedisTreeItem(
+            StringUtils.getUUID(),null,null,null,"Root","Root",null,"","Root"
+            ));
 
 
 
@@ -168,7 +170,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
             @Override
             public void keyTyped(KeyEvent ke) {
                 super.keyTyped(ke);
-//                filterTree(keyFilterField.getText() + ke.getKeyChar());
+                filterTree(keyFilterField.getText() + ke.getKeyChar());
             }
         });
         //去掉树线条
@@ -255,11 +257,12 @@ public class RedisMainWindow extends javax.swing.JFrame {
 
     //------------------------------------------------------tree start-------------------------------------------
     private void filterTree(String text) {
-        RTreeNode filteredRoot = copyNode(root);
+
         RedisTreeModel model = (RedisTreeModel) redisTree.getModel();
         if(StringUtils.isBlank(text)){
             model.setRoot(root);
         }else{
+            RTreeNode filteredRoot = copyNode(root);
             TreeNodeBuilder b = new TreeNodeBuilder(text);
             filteredRoot = b.prune((RTreeNode) filteredRoot.getRoot());
             model.setRoot(filteredRoot);
@@ -273,9 +276,15 @@ public class RedisMainWindow extends javax.swing.JFrame {
         redisTree.updateUI();
     }
     private RTreeNode copyNode(RTreeNode orig) {
-
-        RTreeNode newOne = new RTreeNode();
-        newOne.setUserObject(orig.getUserObject());
+        RTreeNode newOne;
+        if(orig.isRoot()){
+            newOne = new RTreeNode(new RedisTreeItem(
+                    StringUtils.getUUID(),null,null,null,"Root1","Root1",null,"","Root1"
+            ));
+//            newOne.setUserObject(orig.getUserObject());
+        }else{
+            newOne = RTreeNode.copyNode(orig);
+        }
         Enumeration enm = orig.children();
         while(enm.hasMoreElements()){
             RTreeNode child = (RTreeNode) enm.nextElement();
@@ -639,6 +648,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         logPanel.setLayout(new java.awt.BorderLayout());
 
         logTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+        logTabbedPane.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         logPanel.add(logTabbedPane, java.awt.BorderLayout.CENTER);
 
         dataBgSplitPane.setRightComponent(logPanel);
