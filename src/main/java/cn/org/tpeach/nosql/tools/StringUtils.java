@@ -362,4 +362,16 @@ public class StringUtils {
         }
         return null;
     }
+
+	public static int compareToLength(String s1, String s2) {
+		if (s1 != null && s2 != null) {
+			int len1 = s1.length();
+			int len2 = s2.length();
+			if (len1 != len2) {
+				return len1 - len2;
+			}
+			return s1.compareTo(s2);
+		}
+		return 0;
+	}
 }

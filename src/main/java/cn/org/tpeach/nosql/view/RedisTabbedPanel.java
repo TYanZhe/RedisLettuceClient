@@ -1341,18 +1341,19 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                                 Map.Entry<byte[], byte[]> entry = iterator.next();
                                 if(Arrays.equals(newKeyInfo.getField(),entry.getKey())){
                                     size++;
-                                    iterator.remove();
+                                    valueHash.put(entry.getKey(),newKeyInfo.getValue());
+                                    break;
                                 }
                             }
                             valueHash.remove(oldKeyInfo.getField());
-                            valueHash.put(newKeyInfo.getField(),newKeyInfo.getValue());
+
                             try {
                                 keySizeField.setText((Integer.valueOf(keySizeField.getText()) - size) + "");
                             } catch (Exception e) {
                             }
                         }else{
-                            valueHash.remove(oldKeyInfo.getField());
-                            valueHash.put(newKeyInfo.getField(),newKeyInfo.getValue());
+//                            valueHash.remove(oldKeyInfo.getField());
+                            valueHash.put(oldKeyInfo.getField(),newKeyInfo.getValue());
                         }
 //                    keyColumnBean.setValue(fieldArea.getText());
 //                    redisDataTable.setValueAt(valueColumnBean, selectRow, 2);
