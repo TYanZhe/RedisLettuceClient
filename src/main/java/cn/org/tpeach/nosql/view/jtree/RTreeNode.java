@@ -5,6 +5,7 @@
  */
 package cn.org.tpeach.nosql.view.jtree;
 
+import cn.org.tpeach.nosql.tools.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
+import java.util.Objects;
 
 /**
  *
@@ -22,6 +24,8 @@ import java.awt.*;
 public class RTreeNode extends DefaultMutableTreeNode {
 
 	private static final long serialVersionUID = 2813177397472285476L;
+	@Getter
+	private String id;
 	private boolean isSelected = false;
 	private boolean enabled = true;
 	private boolean isVisible = true;
@@ -44,15 +48,25 @@ public class RTreeNode extends DefaultMutableTreeNode {
 
 	public RTreeNode() {
 		super();
+		this.id = StringUtils.getUUID();
 	}
-
+	public static RTreeNode copyNode(RTreeNode node){
+		RTreeNode rTreeNode = new RTreeNode(node.getUserObject());
+		rTreeNode.id = node.getId();
+		rTreeNode.isSelected = node.isSelected;
+		rTreeNode.isVisible = node.isVisible;
+		rTreeNode.enabled = node.isEnabled();
+		return rTreeNode;
+	}
 	public RTreeNode(Object userObject) {
 		super(userObject);
+		this.id = StringUtils.getUUID();
 	}
 
 	public RTreeNode(Object userObject, ImageIcon icon) {
 		super(userObject);
 		this.icon = icon;
+		this.id = StringUtils.getUUID();
 	}
 
 	/**
@@ -192,6 +206,16 @@ public class RTreeNode extends DefaultMutableTreeNode {
 
 	}
 
-	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		RTreeNode rTreeNode = (RTreeNode) o;
+		return id.equals(rTreeNode.id);
+	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
 }

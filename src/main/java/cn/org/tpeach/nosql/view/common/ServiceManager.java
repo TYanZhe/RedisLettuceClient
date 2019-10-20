@@ -28,6 +28,8 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -70,7 +72,14 @@ public class ServiceManager {
 	 * @param redisTreeItem
 	 * @param keys
 	 */
-	public void drawRedisKeyTree(RTreeNode treeNode, final RedisTreeItem redisTreeItem, final List<byte[]> keys) {
+	public void drawRedisKeyTree(JTree jTree,RTreeNode treeNode, final RedisTreeItem redisTreeItem, final List<byte[]> keys,boolean findOriginalNode) {
+		if(findOriginalNode){
+			RTreeNode rTreeNode = findoOriginalRedisTreeNode(jTree, treeNode);
+			if(rTreeNode != null){
+				this.drawRedisKeyTree(jTree,rTreeNode,redisTreeItem,keys,false);
+			}
+		}
+		treeNode.removeAllChildren();
 		RedisTreeItem treeItem = (RedisTreeItem) treeNode.getUserObject();
 		boolean isReload = RedisType.KEY_NAMESPACE.equals(treeItem.getType());
 		if (CollectionUtils.isNotEmpty(keys)) {
@@ -151,6 +160,10 @@ public class ServiceManager {
 					statePanel.doUpdateStatus(redisTreeItem);
 					if (res.isRet()) {
 						ArraysUtil.each(res.getData(), (index, item) -> SwingTools.addDatabaseTreeNode(treeNode,redisTreeItem, item, index, redisTreeItem.getPath() + "/" + item));
+						RTreeNode rTreeNode = findoOriginalRedisTreeNode(redisTree, treeNode);
+						if(rTreeNode != null){
+							ArraysUtil.each(res.getData(), (index, item) -> SwingTools.addDatabaseTreeNode(rTreeNode,redisTreeItem, item, index, redisTreeItem.getPath() + "/" + item));
+						}
 						redisTree.expandPath(new TreePath(treeNode.getPath()));
 					} else {
 						SwingTools.showMessageErrorDialog(null, res.getMsg(), "连接数据库异常");
@@ -166,9 +179,7 @@ public class ServiceManager {
 				resDatabase ->{
 					if (resDatabase.isRet()) {
 						final List<byte[]> keys = resDatabase.getData().getKeys();
-						treeNode.removeAllChildren();
-						this.drawRedisKeyTree(treeNode, redisTreeItem, keys);
-
+						this.drawRedisKeyTree(redisTree,treeNode, redisTreeItem, keys,true);
 						DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
 						if(reload){
 							String name = redisTreeItem.getName();
@@ -224,7 +235,7 @@ public class ServiceManager {
 			Component component = topTabbedPane.getComponentAt(i);
 			if (component instanceof RedisTabbedPanel) {
 				RedisTabbedPanel tabPanel = (RedisTabbedPanel) component;
-				if (tabPanel.getTreeNode() == node) {
+				if (tabPanel.getTreeNode().equals( node )) {
 					tabIndex.accept(i);
 					if(!mult){
 						break;
@@ -246,12 +257,40 @@ public class ServiceManager {
 
 
 	public RTreeNode findoOriginalRedisTreeNode(JTree tree,RTreeNode node){
-		if(((RedisMainWindow)LarkFrame.frame).root != tree.getModel().getRoot()){
-
+		RTreeNode root = ((RedisMainWindow) LarkFrame.frame).root;
+		if(root != tree.getModel().getRoot()){
+			Enumeration enumeration = root.children();
+			LinkedList<RTreeNode> list = new LinkedList<>();
+			while (enumeration.hasMoreElements()){
+				RTreeNode child = getTreeNode(node, enumeration, list);
+				if (child != null) {
+					return child;
+				}
+			}
+			while (!list.isEmpty()){
+				RTreeNode rTreeNode = list.removeFirst();
+				enumeration = rTreeNode.children();
+				while (enumeration.hasMoreElements()){
+					RTreeNode child = getTreeNode(node, enumeration, list);
+					if (child != null) {
+						return child;
+					}
+				}
+			}
 		}
 		return null;
 	}
 
+	private RTreeNode getTreeNode(RTreeNode node, Enumeration enumeration, LinkedList<RTreeNode> list) {
+		RTreeNode child = (RTreeNode) enumeration.nextElement();
+		if (child.equals(node)) {
+			return child;
+		}
+		if (child.getChildCount() != 0) {
+			list.add(child);
+		}
+		return null;
+	}
 
 
 }
