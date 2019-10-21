@@ -12,6 +12,7 @@ import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.EasyGBC;
+import cn.org.tpeach.nosql.view.component.PlaceHolderPasswordField;
 import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RButton;
 import cn.org.tpeach.nosql.view.ui.ServerTabbedPaneUI;
@@ -41,9 +42,10 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
     private boolean isCluster = false;
     //组件
     private JPanel panel;
-    JCheckBox structurecheckBox;
+    private JCheckBox structurecheckBox,showPassCheckBox;
     private JLabel structureLable,nameLable,hostLable,authLable;
-    private PlaceholderTextField nameField,hostField,portField,authField;
+    private PlaceholderTextField nameField,hostField,portField;
+    private PlaceHolderPasswordField authField;
     private RedisConnectInfo connectInfo;
 
     IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
@@ -104,15 +106,16 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
         portField = new PlaceholderTextField("6379",4);
         portField.resetHeightSize(LarkFrame.fm.getHeight()-5);
         portField.setPlaceholder("连接端口");
-        authField = new PlaceholderTextField(20);
+        authField = new PlaceHolderPasswordField(20);
         authField.setPlaceholder("连接密码");
         authField.resetHeightSize(LarkFrame.fm.getHeight()-5);
 
+        showPassCheckBox = new JCheckBox("show password");
 
         panel.add(SwingTools.createTextRow(structureLable,structurecheckBox,0.2,0.8,this.getWidth(),rowHeight,getPanelBgColor(),new Insets(10, 10, 0, 0),new Insets(10, 10, 0, 30)));
         panel.add(SwingTools.createTextRow(nameLable,nameField,this.getWidth(),rowHeight,getPanelBgColor()));
         panel.add(createHostTextRow(hostLable,hostField,portField,isCluster));
-        panel.add(SwingTools.createTextRow(authLable,authField,this.getWidth(),rowHeight,getPanelBgColor()));
+        panel.add(createPassWordRow(authLable,authField,showPassCheckBox));
 //
 
 //        panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1,2,2,2,Color.GRAY),BorderFactory.createEmptyBorder(5,5,5,5)));
@@ -129,8 +132,18 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
         }
         //监听事件
         structurecheckBox.addItemListener(e->judgCluster((JCheckBox) e.getSource()));
+        showPassCheckBox.addItemListener(e->{
+            final boolean selected =showPassCheckBox.isSelected();
+            if(selected){
+                authField.setEchoChar('\0');
+            }else{
+                authField.setEchoChar( '•');
+            }
+
+        });
     }
-   
+
+
 
     /**
      * 是否是集群
@@ -150,7 +163,26 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
 
 
     }
+    private JComponent createPassWordRow(JLabel jLabel,JTextField field,JCheckBox checkBox){
+        JPanel panel = getPannelPreferredSize(this.getWidth(), rowHeight);
+        panel.setLayout(new GridBagLayout());
+        panel.setBackground(getPanelBgColor());
+        checkBox.setBackground(getPanelBgColor());
+        checkBox.setPreferredSize(new Dimension(28, rowHeight) );
+        checkBox.setMaximumSize(new Dimension(28, rowHeight) );
+        checkBox.setMinimumSize(new Dimension(28, rowHeight) );
+        jLabel.setBackground(Color.RED);
+//        field.setColumns(50);
+        panel.add(jLabel,
+                EasyGBC.build(0, 0, 1, 1).setFill(EasyGBC.HORIZONTAL).setWeight(0.18, 1.0).resetInsets(10, 10, 0, 0).setAnchor(EasyGBC.EAST));
 
+        panel.add(field,
+                EasyGBC.build(1, 0, 4, 1).setFill(EasyGBC.HORIZONTAL).setWeight(0.68, 1.0).resetInsets(10, 10, 0, 0).setAnchor(EasyGBC.WEST));
+        panel.add(checkBox,
+                EasyGBC.build(5, 0, 1, 1).setFill(EasyGBC.HORIZONTAL).setWeight(0.26, 1.0).resetInsets(10, 10, 0, 30).setAnchor(EasyGBC.WEST));
+
+        return panel;
+    }
     private JComponent createHostTextRow(JLabel hostLable,PlaceholderTextField hostField,PlaceholderTextField portField,boolean isCluster){
         JComponent hostPannel = null;
         if(isCluster){

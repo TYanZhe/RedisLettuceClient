@@ -8,8 +8,11 @@ import cn.org.tpeach.nosql.constant.PublicConstant;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.text.Document;
+import javax.swing.undo.UndoManager;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 /**
  * <p>
@@ -18,6 +21,7 @@ import java.awt.event.FocusListener;
  * @author taoyz @date 2019年8月26日 @version 1.0
  */
 public class RTextArea extends JTextArea {
+	private EasyJSP easyJsp;
 
 	/**
 	 * 
@@ -55,25 +59,52 @@ public class RTextArea extends JTextArea {
 	}
 
 	private void init() {
-
-	}
-	
-	public JScrollPane getJScrollPane() {
-		EasyJSP easyJsp = new EasyJSP(this).hiddenHorizontalScrollBar();
-		Border border = BorderFactory.createLineBorder(PublicConstant.RColor.defalutInputColor);
-		easyJsp.setBorder(border);
-		this.addFocusListener(new FocusListener() {
+		UndoManager undoManager = new UndoManager();
+		this.getDocument().addUndoableEditListener(undoManager);
+		this.addKeyListener(new KeyListener() {
 
 			@Override
-			public void focusLost(FocusEvent e) {
-				easyJsp.setBorder(BorderFactory.createLineBorder(PublicConstant.RColor.defalutInputColor));
+			public void keyReleased(KeyEvent arg0) {
 			}
 
 			@Override
-			public void focusGained(FocusEvent e) {
-				easyJsp.setBorder(BorderFactory.createLineBorder(PublicConstant.RColor.selectInputColor));
+			public void keyPressed(KeyEvent evt) {
+				if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_Z) {
+					if (undoManager.canUndo()) {
+						undoManager.undo();
+					}
+				}
+				if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_Y) {
+					if (undoManager.canRedo()) {
+						undoManager.redo();
+					}
+				}
+			}
+
+			@Override
+			public void keyTyped(KeyEvent arg0) {
 			}
 		});
+	}
+	
+	public synchronized JScrollPane getJScrollPane() {
+		if(easyJsp == null){
+			easyJsp = new EasyJSP(this).hiddenHorizontalScrollBar();
+			Border border = BorderFactory.createLineBorder(PublicConstant.RColor.defalutInputColor);
+			easyJsp.setBorder(border);
+			this.addFocusListener(new FocusListener() {
+
+				@Override
+				public void focusLost(FocusEvent e) {
+					easyJsp.setBorder(BorderFactory.createLineBorder(PublicConstant.RColor.defalutInputColor));
+				}
+
+				@Override
+				public void focusGained(FocusEvent e) {
+					easyJsp.setBorder(BorderFactory.createLineBorder(PublicConstant.RColor.selectInputColor));
+				}
+			});
+		}
 		return  easyJsp;
 	}
 }

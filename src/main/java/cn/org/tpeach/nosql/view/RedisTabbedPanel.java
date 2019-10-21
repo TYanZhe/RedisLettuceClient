@@ -36,14 +36,12 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -797,7 +795,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                     DicBean dicBean = (DicBean) selectValueViewComn.getSelectedItem();
                     TableColumnBean tableColumnBean = ((ValueInfoPanel) valueInfoPanel).getValueColumnBean();
                     String valueAreaText = getSelectDicText(dicBean, tableColumnBean, valueArea);
-                    valueArea.setText(valueAreaText);
+//                    valueArea.setText(valueAreaText);
+                    setTextLoading(valueArea,valueAreaText,true);
                     setValueInfoLabelText(valueAreaText.getBytes().length);
                 }else if(e.getStateChange() == ItemEvent.DESELECTED){
 
@@ -835,10 +834,10 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                     if(StringUtils.isBlank(valueArea.getText())||selectValueViewComn.getSelectedIndex() != 0){
                         magnifyTextDialog.setEditable(false);
                     }
-
-                    magnifyTextDialog.setText(valueArea.getText());
-                    magnifyTextDialog.open(s->valueArea.setText(s));
-
+                    Layer.showLoading(true,()->{
+                        magnifyTextDialog.setText(valueArea.getText());
+                        magnifyTextDialog.open(s->setTextLoading(valueArea,s,true));
+                    });
                 }
             }
         });
@@ -987,7 +986,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         }else{
             selectValueViewComn.setSelectedItem(hexPlainDic);
         }
-        valueArea.setText(valueAreaText);
+//        valueArea.setText(valueAreaText);
+        setTextLoading(valueArea,valueAreaText,true);
         setValueInfoLabelText(tableColumnBean.getValue().length);
         if (!RedisType.STRING.equals(this.redisKeyInfo.getType())) {
             if (redisDataTable.getSelectedRowCount() > 0) {
@@ -997,6 +997,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             }
         }
     }
+
 
     private void setValueInfoLabelText(int length) {
         valueInfoLabel.setText("<html><p style='font-size:8px;color:black' >&nbsp;Value: <span style='color:#A0A0B1'>Size: " + length + " bytes</span></p></html>");
@@ -1033,6 +1034,50 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         hBox2.setVisible(flag);
         createVerticalStrut1.setVisible(flag);
         createVerticalStrut2.setVisible(flag);
+    }
+
+    private void setTextLoading(RTextArea rTextArea,String text,boolean load){
+//        if(StringUtils.isNotBlank(text) && text.getBytes().length > 150*1024) {
+//            Layer.showLoading(load,()->{
+//                CountDownLatch c = new CountDownLatch(1);
+//                JScrollPane jScrollPane = rTextArea.getJScrollPane();
+//                BoundedRangeModel model = jScrollPane.getVerticalScrollBar().getModel();
+//                rTextArea.setText(null);
+//                model.setValue(model.getMinimum());
+//                model.addChangeListener(new ChangeListener() {
+//                    @Override
+//                    public void stateChanged(ChangeEvent e) {
+//                        if(!model.getValueIsAdjusting()) {
+//                            c.countDown();
+//                            System.out.println("Changed: "+model.getValue());
+//                            model.removeChangeListener(this);
+//                        }
+//                        System.out.println("进入");
+//                    }
+//                });
+//                SwingTools.swingWorkerExec(()->{
+//                    try {
+//                        TimeUnit.MILLISECONDS.sleep(50);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    rTextArea.setText(text);
+//                    model.setValue(model.getMaximum());
+//                    return true;
+//                });
+//                try {
+//                    c.await();
+//                    System.out.println("完成");
+//                } catch ( Exception e) {
+//                    e.printStackTrace();
+//                }
+//            },false,true,true,300);
+//        }else{
+//
+//
+//        }
+            rTextArea.setText(text);
+
     }
 
     //---------------------------------------------------right value panl end---------------------------------------------------------------------
@@ -1143,15 +1188,19 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 case STRING:
                 case LIST:
                 case SET:
-                    valueArea.setText(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1)));
+//                    valueArea.setText(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1)));
+                    setTextLoading(valueArea,StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1)),true);
                     break;
                 case HASH:
-                    fieldArea.setText(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1)));
-                    valueArea.setText(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 2)));
+                    setTextLoading(fieldArea,StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1)),true);
+                    setTextLoading(valueArea,StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 2)),true);
+//                    fieldArea.setText(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1)));
+//                    valueArea.setText(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 2)));
                     break;
                 case ZSET:
                     scoreField.setText(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1)));
-                    valueArea.setText(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 2)));
+//                    valueArea.setText(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 2)));
+                    setTextLoading(valueArea,StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 2)),true);
                     break;
 
                 default:

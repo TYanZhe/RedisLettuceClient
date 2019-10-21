@@ -12,12 +12,12 @@ import static java.util.regex.Pattern.compile;
 
 public class TreeNodeBuilder {
 
-    private String textToMatch;
+//    private String textToMatch;
     private Pattern pattern;
 
     public TreeNodeBuilder(String textToMatch) {
         // (    [     {    /    ^    -    $     ¦    }    ]    )    ?    *    +
-        this.textToMatch = textToMatch;
+//        this.textToMatch = textToMatch;
         if(StringUtils.isNotBlank(textToMatch)){
             try {
                 String s = ".*" + textToMatch.trim()
