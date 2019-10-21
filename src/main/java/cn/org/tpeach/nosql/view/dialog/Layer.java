@@ -32,17 +32,25 @@ public class Layer {
     }
 
     public static void showLoading(boolean isload, Runnable doInBackground, boolean timeout) {
-        showLoading(isload, () -> {
-            doInBackground.run();
-            return true;
-        }, null, timeout);
+        showLoading(isload, doInBackground, timeout,false);
     }
 
     public static void showLoading(boolean isload, Runnable doInBackground) {
         showLoading(isload, doInBackground, true);
     }
-
-    public static void showLoading(boolean isload, Supplier<Boolean> doInBackground, Consumer<Boolean> hidden, boolean timeout) {
+    public static void showLoading(boolean isload, Runnable doInBackground,boolean timeout,boolean rightNow) {
+        showLoading(isload, doInBackground, timeout,rightNow,false,0);
+    }
+    public static void showLoading(boolean isload, Runnable doInBackground,boolean timeout,boolean rightNow,boolean delayHidden,int delayMils) {
+        showLoading(isload,  () -> {
+            doInBackground.run();
+            return true;
+        }, null,  timeout,rightNow,delayHidden,delayMils);
+    }
+    public static void showLoading(boolean isload, Supplier<Boolean> doInBackground, Consumer<Boolean> hidden, boolean timeout){
+        showLoading(isload,  doInBackground, hidden,  timeout,false,false,0);
+    }
+    public static void showLoading(boolean isload, Supplier<Boolean> doInBackground, Consumer<Boolean> hidden, boolean timeout,boolean rightNow,boolean delayHidden,int delayMils) {
 //        System.out.println("loadingDeque>>>>>>>>>>>>>>>>:" + loadingDeque.size());
         while (loadingDeque.size() > 10) {
             loadingDeque.pop();
@@ -53,10 +61,12 @@ public class Layer {
         }catch (Exception e){}
         if (loadingDialog == null) {
             loadingDialog = LoadingDialog.newLoadingDialog();
+        }else{
+            loadingDialog.setSize(LoadingDialog.getFrameWidth(), LoadingDialog.getFrameHeight());
         }
         loadingDialog.setLocationRelativeTo(LarkFrame.frame);
         LoadingDialog finalLoadingDialog = loadingDialog;
-        loadingDialog.showLoading(isload, doInBackground, hidden, timeout, () -> {
+        loadingDialog.showLoading(isload, doInBackground, hidden, timeout,rightNow,delayHidden,delayMils, () -> {
             loadingDeque.add(finalLoadingDialog);
         });
     }
@@ -95,9 +105,14 @@ class LoadingDialog extends JDialog {
     private JPanel contextPanel = new JPanel();
 
     private static int frameWidth = 300;
-    @Getter
-    private static int frameHeight = 200;
 
+    private static int frameHeight = 200;
+    public static int getFrameWidth(){
+        return frameWidth;
+    }
+    public static int getFrameHeight(){
+        return frameHeight;
+    }
     protected static LoadingDialog newLoadingDialog() {
         LoadingDialog loadingDialog = new LoadingDialog();
         loadingDialog.setSize(frameWidth, frameHeight);
@@ -128,8 +143,9 @@ class LoadingDialog extends JDialog {
         container.setMaximumSize(new Dimension(initWidth, initHeight));
         container.setMinimumSize(new Dimension(initWidth, initHeight));
         contextPanel.setLayout(new BorderLayout());
-
-        JLabel loadingLabel = new JLabel(PublicConstant.Image.loading_g);
+        ImageIcon imageIcon = new ImageIcon();
+        imageIcon.setImage(PublicConstant.Image.loading_g.getImage());
+        JLabel loadingLabel = new JLabel(imageIcon);
         contextPanel.add(loadingLabel);
         //透明
         this.setUndecorated(true);
@@ -143,19 +159,25 @@ class LoadingDialog extends JDialog {
     }
 
 
-    void showLoading(boolean isload, Supplier<Boolean> doInBackground, Consumer<Boolean> hidden, boolean timeout, Runnable hiddenLister) {
+    void showLoading(boolean isload, Supplier<Boolean> doInBackground, Consumer<Boolean> hidden, boolean timeout,boolean rightNow, boolean delayHidden,int delayMiils,Runnable hiddenLister) {
         if (isload) {
             String uuid = null;
             CountDownLatch countDownLatch = new CountDownLatch(1);
             CountDownLatch countDownLatch2 = new CountDownLatch(1);
             AtomicBoolean atomicBoolean = new AtomicBoolean(true);
+
             SwingTools.swingWorkerExec(() -> {
                 Boolean needVisible = true;
                 try {
                     //请求超过300毫秒才显示loading
-                    LarkFrame.executorService.schedule(() -> {
+                    if(rightNow){
                         countDownLatch.countDown();
-                    }, 300, TimeUnit.MILLISECONDS);
+                    }else{
+                        LarkFrame.executorService.schedule(() -> {
+                            countDownLatch.countDown();
+                        }, 300, TimeUnit.MILLISECONDS);
+                    }
+
                     //超时隐藏loading
                     if (timeout) {
                         LarkFrame.executorService.execute(() -> {
@@ -191,10 +213,18 @@ class LoadingDialog extends JDialog {
                     SwingTools.showMessageErrorDialog(null,  ServiceProxy.getStackTrace(e));
                 }finally {
                     countDownLatch2.countDown();
-                    hiddenLoading(hiddenLister);
                     if (hidden != null) {
                         hidden.accept(needVisible);
                     }
+                    if(delayHidden){
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(delayMiils);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    hiddenLoading(hiddenLister);
+
 
                 }
                 return null;

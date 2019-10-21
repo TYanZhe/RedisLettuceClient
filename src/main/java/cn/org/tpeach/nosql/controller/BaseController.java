@@ -42,10 +42,19 @@ public abstract class BaseController {
 //            logger.debug("请求返回："+t);
             return new ResultRes<T>(true, t, null);
         } catch (Exception e) {
-            if(e instanceof ServiceException || e instanceof RedisException){
+            if(e instanceof ServiceException){
                 log.error("业务接口异常",e);
                 return new ResultRes<T>(false, null,  e.getMessage());
-            }else {
+            }else if(e instanceof RedisException){
+                log.error("业务接口异常",e);
+                String msg = e.getMessage();
+                Throwable ex = e;
+                while (ex.getCause() != null){
+                    ex = ex.getCause();
+                    msg = ex.getMessage();
+                }
+                return new ResultRes<T>(false, null, msg);
+            } else {
                 log.error("服务接口异常",e);
 //                if(e instanceof  JedisException){
 //                    return new ResultRes<T>(false, null,  e.getMessage());

@@ -22,6 +22,7 @@ import java.awt.event.FocusListener;
  */
 
 public class PlaceholderTextField extends JTextField {
+    PlaceholderCommon placeholderCommon = PlaceholderCommon.getInstance();
     /**
 	 * 
 	 */
@@ -33,57 +34,30 @@ public class PlaceholderTextField extends JTextField {
 
     public PlaceholderTextField(final Document pDoc, final String pText, final int pColumns) {
         super(pDoc, pText, pColumns);
-        init();
+        placeholderCommon.init(this);
     }
 
     public PlaceholderTextField(final int pColumns) {
         super(pColumns);
-        init();
+        placeholderCommon.init(this);
     }
 
     public PlaceholderTextField(final String pText) {
         super(pText);
-        init();
+        placeholderCommon.init(this);
     }
 
     public PlaceholderTextField(final String pText, final int pColumns) {
         super(pText, pColumns);
-        init();
+        placeholderCommon.init(this);
     }
-    
-    public void init() {
-    	this.setMinimumSize(new Dimension(0,25));
-    	this.setPreferredSize(new Dimension(0,25));
-        this.setSelectionColor(new Color(0,120,215));
-        this.setSelectedTextColor(Color.WHITE);
-        this.setBorder(PublicConstant.RColor.defalutInputColor);
-		this.addFocusListener(new FocusListener() {
-			
-			@Override
-			public void focusLost(FocusEvent e) {
-			    setBorder(PublicConstant.RColor.defalutInputColor);
-			}
-			
-			@Override
-			public void focusGained(FocusEvent e) {
-                setBorder(PublicConstant.RColor.selectInputColor);
-			}
-		}); 
 
-    }
     
     public void resetHeightSize(int height) {
-    	if(height < 25) {
-    		return ;
-    	}
-    	this.setMinimumSize(new Dimension(0,height));
-    	this.setPreferredSize(new Dimension(0,height));
+    	placeholderCommon.resetHeightSize(this,height);
     }
 
-    private void setBorder(Color color){
-        this.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(PublicConstant.RColor.defalutInputColor),BorderFactory.createEmptyBorder(0,5,0,5)));
 
-    }
     @Override
     public Color getDisabledTextColor() {
         return Color.GRAY;
@@ -92,24 +66,7 @@ public class PlaceholderTextField extends JTextField {
     @Override
     protected void paintComponent(final Graphics pG) {
         super.paintComponent(pG);
-        if (StringUtils.isBlank(placeholder) || StringUtils.isNotBlank(getText())) {
-            return;
-        }
-//        //绘制提示语
-
-        final Graphics2D g = (Graphics2D) pG;
-        Font font = this.getFont();
-        g.setFont(font);
-        g.setColor(getDisabledTextColor());
-//        //消除文字锯齿
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-//        //消除画图锯齿
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setColor(getDisabledTextColor());
-        int maxAscent = FontDesignMetrics.getMetrics(font).getHeight();
-//        int y = ( this.getHeight() - maxAscent)/2 + maxAscent + getInsets().top;
-        int y =   maxAscent + getInsets().top;
-        g.drawString(placeholder, getInsets().left+2, y);
+        placeholderCommon.paintComponent(this,pG,placeholder);
     }
 
 
