@@ -259,6 +259,8 @@ public class SwingTools {
 
 
 			try {
+				//加上打印 打包后树 key才能加载出来？？？
+				System.out.println("");
 				ResultRes<T> resultRes = request.get();
 	//			ResultRes resultRes = new ResultRes(true,new String[]{"db0","db1"},"");
 				atomicBoolean.set(false);
