@@ -148,7 +148,6 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 		try {
 			setMinimumSize();
 			if (isError) {
-//			new Thread(() -> this.dispose()).start();
 				close();
 				return;
 			}

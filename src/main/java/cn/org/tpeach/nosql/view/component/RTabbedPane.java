@@ -128,7 +128,7 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 			ic = new JLabel(icon);
 			ic.setSize(20, 20);
 			text = new JLabel();
-			text.setText(title);
+			this.setText(title);
 			text.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
 			this.setMaximumSize(new Dimension(tabWidth,24));
 //			this.setPreferredSize(new Dimension(tabWidth+5,24));

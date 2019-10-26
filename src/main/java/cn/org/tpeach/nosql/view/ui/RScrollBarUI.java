@@ -222,6 +222,8 @@ public class RScrollBarUI extends javax.swing.plaf.metal.MetalScrollBarUI {
                         }
                         arrowImg = PublicConstant.Image.arrow_left_scroll.getImage();
                         break;
+                    default:
+                        break;
                 }
 
                 g2.setPaint(gp);

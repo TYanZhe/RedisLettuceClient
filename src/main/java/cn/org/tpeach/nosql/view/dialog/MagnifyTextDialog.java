@@ -45,7 +45,6 @@ public class MagnifyTextDialog extends BaseDialog<String,String>{
         this.setMinWidth(width);
         onlyReadArea = new RTextArea( );
         onlyReadArea.setLineWrap(true);
-//        onlyReadArea.setEditable(false);
         SwingTools.addTextCopyMenu(onlyReadArea);
     }
 

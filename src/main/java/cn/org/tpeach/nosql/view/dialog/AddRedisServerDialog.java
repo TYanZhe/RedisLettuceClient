@@ -11,7 +11,6 @@ import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
-import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.component.PlaceHolderPasswordField;
 import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RButton;
@@ -30,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2019-07-05 21:11
  * @since 1.0.0
  */
-public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConnectInfo>{
+public class AddRedisServerDialog extends AbstractRowDialog<RedisConnectInfo,RedisConnectInfo>{
     /**
 	 * 
 	 */
@@ -69,14 +68,16 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
         if(connectInfo != null){
             if(StringUtils.isBlank(connectInfo.getId())){
                 this.isError = true;
-               SwingTools.showMessageErrorDialog(this,"未知异常");
+               SwingTools.showMessageErrorDialog(this,LarkFrame.getI18nFirstUpText(I18nKey.RedisResource.UN_KNOW,I18nKey.RedisResource.EXCEPTION));
             }
             this.isCluster = connectInfo.getStructure() == 0 ? false : true;
         }
         this.connectInfo = connectInfo;
         this.isEdit = connectInfo == null ? false : true;
-        this.setTitle(this.isEdit?"编辑连接":"新增连接");
+        this.setTitle(this.isEdit?LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.MENU_EDIT,I18nKey.RedisResource.CONNECT):LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.ADD,I18nKey.RedisResource.CONNECT) );
+        this.setRowHeight(28);
     }
+
 
     
     
@@ -91,33 +92,41 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
         tabbedPane.setUI(new ServerTabbedPaneUI("#FFFFFF","#000000"));
         panel = new JPanel();
         panel.setBackground(getPanelBgColor());
-        structureLable = new JLabel("集群:",JLabel.RIGHT);
-        nameLable = new JLabel("连接名称:",JLabel.RIGHT);
-        hostLable = new JLabel("连接地址:",JLabel.RIGHT);
-        authLable = new JLabel("连接密码:",JLabel.RIGHT);
+        structureLable = new JLabel(LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.CLUSTER)+" :",JLabel.RIGHT);
+        nameLable = new JLabel(LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.CONNECT,I18nKey.RedisResource.NAME)+" :",JLabel.RIGHT);
+        hostLable = new JLabel(LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.CONNECT,I18nKey.RedisResource.ADDRESS)+" :",JLabel.RIGHT);
+        authLable = new JLabel(LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.CONNECT,I18nKey.RedisResource.PASSWORD)+" :",JLabel.RIGHT);
         
-        structurecheckBox=new JCheckBox("启用",isCluster);
+        structurecheckBox=new JCheckBox(LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.ENABLED),isCluster);
         structurecheckBox.setBackground(getPanelBgColor());
         nameField = new PlaceholderTextField(20);
-        nameField.setPlaceholder("连接名称");
+        nameField.setPlaceholder(LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.CONNECT,I18nKey.RedisResource.NAME));
         nameField.resetHeightSize(LarkFrame.fm.getHeight()-5);
         hostField = new PlaceholderTextField(null);
         hostField.resetHeightSize(LarkFrame.fm.getHeight()-5);
         portField = new PlaceholderTextField("6379",4);
         portField.resetHeightSize(LarkFrame.fm.getHeight()-5);
-        portField.setPlaceholder("连接端口");
+        portField.setPlaceholder(LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.CONNECT,I18nKey.RedisResource.PORT));
         authField = new PlaceHolderPasswordField(20);
-        authField.setPlaceholder("连接密码");
+        authField.setPlaceholder(LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.CONNECT,I18nKey.RedisResource.PASSWORD));
         authField.resetHeightSize(LarkFrame.fm.getHeight()-5);
 
         showPassCheckBox = new JCheckBox("show password");
+        showPassCheckBox.setBackground(getPanelBgColor());
+        showPassCheckBox.setPreferredSize(new Dimension(28, rowHeight) );
+        showPassCheckBox.setMaximumSize(new Dimension(28, rowHeight) );
+        showPassCheckBox.setMinimumSize(new Dimension(28, rowHeight) );
 
-        panel.add(SwingTools.createTextRow(structureLable,structurecheckBox,0.2,0.8,this.getWidth(),rowHeight,getPanelBgColor(),new Insets(10, 10, 0, 0),new Insets(10, 10, 0, 30)));
-        panel.add(SwingTools.createTextRow(nameLable,nameField,this.getWidth(),rowHeight,getPanelBgColor()));
-        panel.add(createHostTextRow(hostLable,hostField,portField,isCluster));
-        panel.add(createPassWordRow(authLable,authField,showPassCheckBox));
-//
 
+        panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(createRow(panel,structureLable,structurecheckBox,rowHeight,0.25));
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(createRow(panel,nameLable,nameField,rowHeight,0.25));
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(createRow(panel,hostLable,createCompoundRow(hostField,portField,0.9),rowHeight,0.25));
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(createRow(panel,authLable,createCompoundRow(authField,showPassCheckBox,0.25),rowHeight,0.25));
 //        panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1,2,2,2,Color.GRAY),BorderFactory.createEmptyBorder(5,5,5,5)));
 //        tabbedPane.addTab("Server", null, panel, false);
         tabbedPane.addTab("Server",panel);
@@ -131,6 +140,7 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
 
         }
         //监听事件
+        judgCluster(structurecheckBox);
         structurecheckBox.addItemListener(e->judgCluster((JCheckBox) e.getSource()));
         showPassCheckBox.addItemListener(e->{
             final boolean selected =showPassCheckBox.isSelected();
@@ -153,60 +163,18 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
         final boolean selected =chectBox.isSelected();
         //集群
         if(selected){
-            panel.remove(hostIndex);
-            panel.add(createHostTextRow(hostLable,hostField,portField,true),hostIndex);
+            portField.setVisible(false);
+            hostField.setPlaceholder("ip1:port1,ip2:port2,ip3:port3...");
         }else{
-            panel.remove(hostIndex);
-            panel.add(createHostTextRow(hostLable,hostField,portField,false),hostIndex);
+            portField.setVisible(true);
+            hostField.setPlaceholder(LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.CONNECT,I18nKey.RedisResource.ADDRESS));
         }
         panel.updateUI();
 
 
     }
-    private JComponent createPassWordRow(JLabel jLabel,JTextField field,JCheckBox checkBox){
-        JPanel panel = getPannelPreferredSize(this.getWidth(), rowHeight);
-        panel.setLayout(new GridBagLayout());
-        panel.setBackground(getPanelBgColor());
-        checkBox.setBackground(getPanelBgColor());
-        checkBox.setPreferredSize(new Dimension(28, rowHeight) );
-        checkBox.setMaximumSize(new Dimension(28, rowHeight) );
-        checkBox.setMinimumSize(new Dimension(28, rowHeight) );
-        jLabel.setBackground(Color.RED);
-//        field.setColumns(50);
-        panel.add(jLabel,
-                EasyGBC.build(0, 0, 1, 1).setFill(EasyGBC.HORIZONTAL).setWeight(0.18, 1.0).resetInsets(10, 10, 0, 0).setAnchor(EasyGBC.EAST));
 
-        panel.add(field,
-                EasyGBC.build(1, 0, 4, 1).setFill(EasyGBC.HORIZONTAL).setWeight(0.68, 1.0).resetInsets(10, 10, 0, 0).setAnchor(EasyGBC.WEST));
-        panel.add(checkBox,
-                EasyGBC.build(5, 0, 1, 1).setFill(EasyGBC.HORIZONTAL).setWeight(0.26, 1.0).resetInsets(10, 10, 0, 30).setAnchor(EasyGBC.WEST));
 
-        return panel;
-    }
-    private JComponent createHostTextRow(JLabel hostLable,PlaceholderTextField hostField,PlaceholderTextField portField,boolean isCluster){
-        JComponent hostPannel = null;
-        if(isCluster){
-            hostField.setColumns(20);
-            hostField.setPlaceholder("ip1:port1,ip2:port2,ip3:port3...");
-            hostPannel = SwingTools.createTextRow(hostLable,hostField,this.getWidth(),rowHeight);
-        }else{
-            hostField.setColumns(14);
-            hostField.setPlaceholder("连接地址");
-            hostPannel = getPannelPreferredSize(this.getWidth(),rowHeight);
-            hostPannel.setLayout(new GridBagLayout());
-            hostPannel.add(hostLable,
-    				EasyGBC.build(0, 0, 1, 1).setFill(EasyGBC.HORIZONTAL).setWeight(0.3, 1.0).resetInsets(topMargin, 10, 0,0).setAnchor(EasyGBC.EAST));
-
-            hostPannel.add(hostField,
-    				EasyGBC.build(1, 0, 3, 1).setFill(EasyGBC.HORIZONTAL).setWeight(0.55, 1.0).resetInsets(topMargin, 10, 0,0).setAnchor(EasyGBC.WEST));
-            hostPannel.add(portField,
-    				EasyGBC.build(4, 0, 1, 1).setFill(EasyGBC.HORIZONTAL).setWeight(0.15, 1.0).resetInsets(topMargin, 13, 0, 30).setAnchor(EasyGBC.WEST));
-    		
-        }
-        hostPannel.setBackground(getPanelBgColor());
-        return hostPannel;
-
-    }
 
     @Override
     public Box addBtnToBtnPanel(JPanel btnPanel) {
@@ -259,7 +227,7 @@ public class AddRedisServerDialog extends BaseDialog<RedisConnectInfo,RedisConne
 //        private PlaceholderTextField nameField,hostField,portField,authField;
         final boolean selected = structurecheckBox.isSelected();
         String host = hostField.getText();
-        String auth = authField.getText();
+        String auth = new String(authField.getPassword());
         String name = nameField.getText();
         //校验
         if(StringUtils.isBlank(name)){

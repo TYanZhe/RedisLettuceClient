@@ -56,7 +56,7 @@ public class ROptionPane extends JOptionPane {
 //        JDialog dialog = pane.createDialog(parentComponent, title, style);
 
         pane.selectInitialValue();
-        dialog.show();
+        dialog.setVisible(true);
         dialog.dispose();
 
         Object        selectedValue = pane.getValue();

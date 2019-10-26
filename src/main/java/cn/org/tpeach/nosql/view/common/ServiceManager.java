@@ -9,6 +9,7 @@ import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
+import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
@@ -27,10 +28,9 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /**
@@ -79,7 +79,10 @@ public class ServiceManager {
 				this.drawRedisKeyTree(jTree,rTreeNode,redisTreeItem,keys,false);
 			}
 		}
-		treeNode.removeAllChildren();
+		if(treeNode.getChildCount() > 0){
+			treeNode.removeAllChildren();
+		}
+
 		RedisTreeItem treeItem = (RedisTreeItem) treeNode.getUserObject();
 		boolean isReload = RedisType.KEY_NAMESPACE.equals(treeItem.getType());
 		if (CollectionUtils.isNotEmpty(keys)) {
@@ -154,22 +157,25 @@ public class ServiceManager {
 	}
 	
 	public void openConnectRedisTree(StatePanel statePanel,RTreeNode treeNode, RedisTreeItem redisTreeItem, JTree redisTree ) {
+		String connectId = StringUtils.getUUID();
+		RedisLarkPool.connectMap.put(treeNode,connectId);
 		SwingTools.addLoadingTreeNode(redisTree,treeNode,redisTreeItem,
 				()->BaseController.dispatcher(() -> redisConnectService.getDbAmountAndSize(redisTreeItem.getId())),
 				res ->{
-					statePanel.doUpdateStatus(redisTreeItem);
-					if (res.isRet()) {
-						ArraysUtil.each(res.getData(), (index, item) -> SwingTools.addDatabaseTreeNode(treeNode,redisTreeItem, item, index, redisTreeItem.getPath() + "/" + item));
-						RTreeNode rTreeNode = findoOriginalRedisTreeNode(redisTree, treeNode);
-						if(rTreeNode != null){
-							ArraysUtil.each(res.getData(), (index, item) -> SwingTools.addDatabaseTreeNode(rTreeNode,redisTreeItem, item, index, redisTreeItem.getPath() + "/" + item));
+					if(RedisLarkPool.connectMap.get(treeNode) != null && connectId.equals(RedisLarkPool.connectMap.get(treeNode))){
+						RedisLarkPool.connectMap.remove(treeNode);
+						statePanel.doUpdateStatus(redisTreeItem);
+						if (res.isRet()) {
+							ArraysUtil.each(res.getData(), (index, item) -> SwingTools.addDatabaseTreeNode(treeNode,redisTreeItem, item, index, redisTreeItem.getPath() + "/" + item));
+							RTreeNode rTreeNode = findoOriginalRedisTreeNode(redisTree, treeNode);
+							if(rTreeNode != null){
+								ArraysUtil.each(res.getData(), (index, item) -> SwingTools.addDatabaseTreeNode(rTreeNode,redisTreeItem, item, index, redisTreeItem.getPath() + "/" + item));
+							}
+							redisTree.expandPath(new TreePath(treeNode.getPath()));
+						} else {
+							SwingTools.showMessageErrorDialog(null, res.getMsg(), "连接数据库异常");
 						}
-						redisTree.expandPath(new TreePath(treeNode.getPath()));
-					} else {
-						SwingTools.showMessageErrorDialog(null, res.getMsg(), "连接数据库异常");
 					}
-
-
 				});
 	}
 	

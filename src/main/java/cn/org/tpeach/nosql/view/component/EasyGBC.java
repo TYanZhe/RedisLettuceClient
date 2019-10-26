@@ -69,7 +69,7 @@ public class EasyGBC extends GridBagConstraints {
 	 * @return
 	 */
 	public EasyGBC setFill() {
-		this.fill = this.BOTH;
+		this.fill = EasyGBC.BOTH;
 		return this;
 	}
 	/**
@@ -100,7 +100,7 @@ public class EasyGBC extends GridBagConstraints {
 	/**
 	 * 组件的外部填充(可看做是组件的外边距，也可以看做是显示区域的内边距)<br/>
 	 * 外部填充，设置组件之间彼此的间距。它有四个参数，分别是上，左，下，右，默认为（0，0，0，0）；
-	 * @param distance
+	 * @param
 	 * @return
 	 */
 	public EasyGBC resetInsets(int top, int left, int bottom, int right) {
@@ -110,7 +110,7 @@ public class EasyGBC extends GridBagConstraints {
 	/**
 	 * 组件的外部填充(可看做是组件的外边距，也可以看做是显示区域的内边距)<br/>
 	 * 外部填充，设置组件之间彼此的间距。它有四个参数，分别是上，左，下，右，默认为（0，0，0，0）；
-	 * @param distance
+	 * @param
 	 * @return
 	 */
 	public EasyGBC resetInsets(Insets insets) {

@@ -51,7 +51,6 @@ public class Layer {
         showLoading(isload,  doInBackground, hidden,  timeout,false,false,0);
     }
     public static void showLoading(boolean isload, Supplier<Boolean> doInBackground, Consumer<Boolean> hidden, boolean timeout,boolean rightNow,boolean delayHidden,int delayMils) {
-//        System.out.println("loadingDeque>>>>>>>>>>>>>>>>:" + loadingDeque.size());
         while (loadingDeque.size() > 10) {
             loadingDeque.pop();
         }

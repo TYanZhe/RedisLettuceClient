@@ -56,6 +56,7 @@ public class RTreeNode extends DefaultMutableTreeNode {
 		rTreeNode.isSelected = node.isSelected;
 		rTreeNode.isVisible = node.isVisible;
 		rTreeNode.enabled = node.isEnabled();
+		rTreeNode.setAllowsChildren(node.getAllowsChildren());
 		return rTreeNode;
 	}
 	public RTreeNode(Object userObject) {

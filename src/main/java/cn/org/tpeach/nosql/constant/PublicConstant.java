@@ -111,6 +111,8 @@ public class PublicConstant {
         public static ImageIcon data_reset = IOUtil.getImageIcon("image/menu/data_reset.png");
         public static ImageIcon cmd_console = IOUtil.getImageIcon("image/menu/cmd_console.png", 14, 14);
         public static ImageIcon object_add = IOUtil.getImageIcon("image/menu/add_key.png");
+        public static ImageIcon active_data = IOUtil.getImageIcon("image/menu/active_data.png");
+
 
         //详情页面
         //https://www.iconfont.cn/collections/detail?spm=a313x.7781069.0.da5a778a4&cid=12191

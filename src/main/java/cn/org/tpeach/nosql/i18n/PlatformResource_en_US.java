@@ -1,11 +1,11 @@
 package cn.org.tpeach.nosql.i18n;
 
-import java.util.ListResourceBundle;
-
 import cn.org.tpeach.nosql.constant.I18nKey;
 
+import java.util.ListResourceBundle;
+
 public class PlatformResource_en_US extends ListResourceBundle {
-    static final Object[][] contents = new String[][]
+    static final Object[][] CONTENTS = new String[][]
             {
                     {I18nKey.RedisResource.FRAME_TITLE.getKey(), "Redis-Connect"},
 
@@ -55,11 +55,21 @@ public class PlatformResource_en_US extends ListResourceBundle {
                     {I18nKey.RedisResource.SERVERINFO.getKey(), "Server Info"},
                     {I18nKey.RedisResource.SIM_CHINESE.getKey(), "Chinese(simplified)"},
                     {I18nKey.RedisResource.ENGLISH.getKey(), "English"},
+                    {I18nKey.RedisResource.ENABLED.getKey(), "Enabled"},
+                    {I18nKey.RedisResource.DISABLED.getKey(), "Disabled"},
+                    {I18nKey.RedisResource.NAME.getKey(), "Name"},
+                    {I18nKey.RedisResource.ADDRESS.getKey(), "Address"},
+                    {I18nKey.RedisResource.PORT.getKey(), "Port"},
+                    {I18nKey.RedisResource.PASSWORD.getKey(), "Password"},
+                    {I18nKey.RedisResource.CLUSTER.getKey(), "Cluster"},
+                    {I18nKey.RedisResource.UN_KNOW.getKey(), "Unknow"},
+                    {I18nKey.RedisResource.EXCEPTION.getKey(), "Exception"},
+                    {I18nKey.RedisResource.ACTIVATE.getKey(), "Activate"},
             };
 
     @Override
     protected Object[][] getContents() {
-        return contents;
+        return CONTENTS;
     }
 
 }

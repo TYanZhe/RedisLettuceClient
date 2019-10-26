@@ -56,7 +56,6 @@ public class OnlyReadTextPane extends JTextPane {
         candy = new Color(230, 230, 255);
         setOpaque(false);
         this.setFont(new Font("黑体",Font.PLAIN,15));
-//        this.setFont(new Font("宋体", Font.PLAIN, 14));
         setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         setForeground(Color.GREEN.darker().darker().darker());
         this.addMouseListener(new MouseAdapter() {

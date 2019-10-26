@@ -22,7 +22,6 @@ public abstract class BaseController {
     public static <T, R> ResultRes<R> dispatcher(T params, Function<T, R> function) {
         try {
             //成功返回
-//            log.debug("请求参数"+params);
             return new ResultRes<R>(true, function.apply(params), null);
         } catch (Exception e) {
             if(e instanceof ServiceException || e instanceof RedisException){
@@ -39,7 +38,6 @@ public abstract class BaseController {
         try {
             //成功返回
             T t = function.get();
-//            logger.debug("请求返回："+t);
             return new ResultRes<T>(true, t, null);
         } catch (Exception e) {
             if(e instanceof ServiceException){
@@ -56,9 +54,6 @@ public abstract class BaseController {
                 return new ResultRes<T>(false, null, msg);
             } else {
                 log.error("服务接口异常",e);
-//                if(e instanceof  JedisException){
-//                    return new ResultRes<T>(false, null,  e.getMessage());
-//                }
                 return new ResultRes<T>(false, null,  ServiceProxy.getStackTrace(e));
             }
 
