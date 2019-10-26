@@ -82,7 +82,7 @@ public class ServerTabbedPaneUI extends BasicTabbedPaneUI {
     @Override
     protected void paintTabArea(Graphics g, int tabPlacement, int selectedIndex) {
         if (runCount > 1) {
-            int lines[] = new int[runCount];
+            int[] lines = new int[runCount];
             for (int i = 0; i < runCount; i++) {
                 lines[i] = rects[tabRuns[i]].y
                         + (tabPlacement == TOP ? maxTabHeight : 0);

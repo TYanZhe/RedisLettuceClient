@@ -13,7 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
-import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.StringUtils;
@@ -22,7 +21,6 @@ import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RTextArea;
 
 import java.awt.event.ActionEvent;
-import java.util.concurrent.CountDownLatch;
 
 import lombok.Setter;
 
@@ -34,7 +32,7 @@ import lombok.Setter;
  * @date 2019年9月4日
  * @version 1.0
  */
-public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
+public class AddRowDialog extends AbstractRowDialog<RedisKeyInfo, RedisKeyInfo> {
 
     /**
      *
@@ -157,7 +155,8 @@ public class AddRowDialog extends KeyDialog<RedisKeyInfo, RedisKeyInfo> {
                 t.setField(StringUtils.strToByte(hashKeyArea.getText()));
                 t.setValue(StringUtils.strToByte(valueHashArea.getText()));
                 break;
- 
+            default:
+                break;
         }
         ResultRes<?> res = BaseController.dispatcher(() -> redisConnectService.addRowKeyInfo(t,isLeftList));
         if (res.isRet()) {

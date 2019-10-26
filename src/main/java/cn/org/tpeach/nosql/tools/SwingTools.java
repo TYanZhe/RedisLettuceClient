@@ -211,7 +211,6 @@ public class SwingTools {
         redisTree.expandPath(new TreePath(parentNode.getPath()));
         DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
 		defaultModel.reload(parentNode);
-		//放到后台 避免空指针异常
 		SwingTools.swingWorkerExec(()->{
 			SwingTools.swingWorkerExec( ()->{
 
@@ -259,8 +258,6 @@ public class SwingTools {
 
 
 			try {
-				//加上打印 打包后树 key才能加载出来？？？
-				System.out.println("");
 				ResultRes<T> resultRes = request.get();
 	//			ResultRes resultRes = new ResultRes(true,new String[]{"db0","db1"},"");
 				atomicBoolean.set(false);

@@ -38,7 +38,6 @@ import sun.font.FontDesignMetrics;
 
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -370,7 +369,12 @@ public class RedisMainWindow extends javax.swing.JFrame {
                         //断开连接
                         serverTreePopMenu.getComponent(1).setEnabled(true);
                          //设为活动节点
-                        serverTreePopMenu.getComponent(2).setEnabled(true);
+                        if(((StatePanel)statePanel).getCurrentRedisItem() != null && item.getId().equals(((StatePanel)statePanel).getCurrentRedisItem().getId()) ){
+                            serverTreePopMenu.getComponent(2).setEnabled(false);
+                        }else{
+                            serverTreePopMenu.getComponent(2).setEnabled(true);
+                        }
+
                         //服务信息
                         serverTreePopMenu.getComponent(3).setEnabled(true);
                         //重新加载

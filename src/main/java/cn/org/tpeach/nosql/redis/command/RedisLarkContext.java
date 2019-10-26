@@ -137,7 +137,7 @@ public class RedisLarkContext<K,V> {
      * @param scanCursor
      * @param scanArgs
      */
-    public KeyScanCursor<K>  scan(ScanCursor scanCursor, ScanArgs scanArgs){
+    public KeyScanCursor<K> scan(ScanCursor scanCursor, ScanArgs scanArgs){
         if(scanArgs == null){
             return redisLark.scan(scanCursor);
         }

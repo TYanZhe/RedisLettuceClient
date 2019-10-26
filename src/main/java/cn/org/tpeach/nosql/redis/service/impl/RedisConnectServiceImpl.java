@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
@@ -399,6 +398,16 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         redisKeyInfo.setKey(key);
         redisKeyInfo.setDb(db);
         redisKeyInfo.setCursor(ScanCursor.INITIAL);
+        int size = getSizeAndQueryKeyInfo(id, db, key, cursor, pattern, pageBean, type, redisKeyInfo);
+        redisKeyInfo.setSize(size);
+        pageBean.setTotal(size);
+        Long idleTime = super.executeJedisCommand(new ObjectIdletime(id, db, key));
+        redisKeyInfo.setIdleTime(idleTime);
+        redisKeyInfo.setPageBean(pageBean);
+        return redisKeyInfo;
+    }
+
+    private int getSizeAndQueryKeyInfo(String id, int db, byte[] key, ScanCursor cursor, String pattern, PageBean pageBean, RedisType type, RedisKeyInfo redisKeyInfo) {
         //获取值
         int size = 0;
         switch (type) {
@@ -442,7 +451,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                     }
                 }
                 redisKeyInfo.setValueSet(values);
-                Collections.sort(values,(o1,o2)->StringUtils.compareToLength(StringUtils.byteToStr(o1), StringUtils.byteToStr(o2)));
+                Collections.sort(values,(o1, o2)->StringUtils.compareToLength(StringUtils.byteToStr(o1), StringUtils.byteToStr(o2)));
                 redisKeyInfo.setCursor(new ScanCursor(sscanResult.getCursor(),sscanResult.isFinished()));
                 break;
             case HASH:
@@ -534,14 +543,8 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
             default:
                 break;
         }
-        redisKeyInfo.setSize(size);
-        pageBean.setTotal(size);
-        Long idleTime = super.executeJedisCommand(new ObjectIdletime(id, db, key));
-        redisKeyInfo.setIdleTime(idleTime);
-        redisKeyInfo.setPageBean(pageBean);
-        return redisKeyInfo;
+        return size;
     }
-
 
 
     /* (non-Javadoc)

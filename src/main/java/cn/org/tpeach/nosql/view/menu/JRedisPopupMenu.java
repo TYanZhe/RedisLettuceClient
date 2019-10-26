@@ -16,15 +16,15 @@ import java.awt.*;
 public class JRedisPopupMenu extends JPopupMenu {
 	private Color backgroundColor = new Color(242, 242, 242);
 	private static final long serialVersionUID = -5507226240512355991L;
-	private final static int width = 272;
+	private final static int WIDTH = 272;
 
-	private final static int rowHeight = 28;
+	private final static int ROW_HEIGHT = 28;
 	private int menuItemCount = 0;;
 
 	public JRedisPopupMenu() {
 		super();
 		this.setBackground(backgroundColor);
-		this.setMinimumSize(new Dimension(width, 0));
+		this.setMinimumSize(new Dimension(WIDTH, 0));
 		this.setBorder(BorderFactory.createLineBorder(new Color(216,216,216)));
 	}
 
@@ -36,14 +36,13 @@ public class JRedisPopupMenu extends JPopupMenu {
 	public JMenuItem add(JMenuItem menuItem) {
 		JMenuItem item = super.add(menuItem);
 		menuItemCount++;
-		this.setPopupSize(width, menuItemCount * rowHeight);
+		this.setPopupSize(WIDTH, menuItemCount * ROW_HEIGHT);
 		return item;
 	}
 
 	@Override
 	public void addSeparator() {
 		JRedisPopupMenu.Separator separator = new JRedisPopupMenu.Separator();
-
 		// separator.getComponentAt(90, separator.getY());
 		this.add(separator);
 		separator.setBackground(new Color(242, 242, 242));
@@ -66,6 +65,7 @@ public class JRedisPopupMenu extends JPopupMenu {
 		 * @see JComponent#getUIClassID
 		 * @see UIDefaults#getUI
 		 */
+		@Override
 		public String getUIClassID() {
 			return "PopupMenuSeparatorUI";
 

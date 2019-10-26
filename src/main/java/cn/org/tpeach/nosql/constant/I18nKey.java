@@ -69,6 +69,16 @@ public class I18nKey {
 		SERVERINFO,
 		SIM_CHINESE,
 		ENGLISH,
+		ENABLED,
+		DISABLED,
+		NAME,
+		ADDRESS,
+		PORT,
+		PASSWORD,
+		CLUSTER,
+		UN_KNOW,
+		EXCEPTION,
+		ACTIVATE,
 		/**不支持的版本异常*/
 		VERSION_NOTSUPPORT;
 

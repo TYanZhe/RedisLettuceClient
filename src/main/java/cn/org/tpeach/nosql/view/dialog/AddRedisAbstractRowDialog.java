@@ -8,7 +8,6 @@ import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
-import cn.org.tpeach.nosql.redis.command.JedisCommand;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.StringUtils;
@@ -28,7 +27,7 @@ import java.awt.event.ActionEvent;
  *
  * @author taoyz @date 2019年8月24日 @version 1.0
  */
-public class AddRedisKeyDialog extends KeyDialog<RedisTreeItem, RedisKeyInfo> {
+public class AddRedisAbstractRowDialog extends AbstractRowDialog<RedisTreeItem, RedisKeyInfo> {
 
     /**
      *
@@ -48,11 +47,11 @@ public class AddRedisKeyDialog extends KeyDialog<RedisTreeItem, RedisKeyInfo> {
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService",
             IRedisConnectService.class);
 
-    public AddRedisKeyDialog(JFrame parent, Image icon, RedisTreeItem t) {
+    public AddRedisAbstractRowDialog(JFrame parent, Image icon, RedisTreeItem t) {
         super(parent, icon, t);
     }
 
-    public AddRedisKeyDialog(JFrame parent, RedisTreeItem t) {
+    public AddRedisAbstractRowDialog(JFrame parent, RedisTreeItem t) {
         super(parent, t);
     }
 

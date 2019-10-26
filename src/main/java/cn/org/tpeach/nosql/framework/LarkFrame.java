@@ -38,8 +38,8 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 /**
  * @author tyz
@@ -227,41 +227,61 @@ public class LarkFrame {
 		}
 	}
 	public static String getI18nText(I18nKey.RedisResource platformResourceEnum) {
-		if(platformResource == null) {
-			reloadPlatformResource(LANGUAGE, COUNTRY);
-		}
-		return platformResource.getString(platformResourceEnum.getKey());
+		return getI18nText(null,null,platformResourceEnum);
 		
 	}
 
-	public static String getI18nUpText(I18nKey.RedisResource platformResourceEnum){
-		String text = getI18nText(platformResourceEnum);
-		if(StringUtils.isNotBlank(text)){
-			text = text.toUpperCase();
+	public static String getI18nText(Function<String,String> firstWordGet,Function<String,String> otherWordGet,I18nKey.RedisResource... platformResourceEnum) {
+		if(platformResource == null) {
+			reloadPlatformResource(LANGUAGE, COUNTRY);
+		}
+		String text ="";
+		boolean flag = false;
+		for (I18nKey.RedisResource redisResource : platformResourceEnum) {
+			String s = platformResource.getString(redisResource.getKey());
+			if(StringUtils.isNotBlank(s)){
+				if(!COUNTRY.equals(ConfigConstant.Local.CN)){
+					if(flag){
+						if(otherWordGet == null){
+							text+=" "+s;
+						}else{
+							text+=" "+otherWordGet.apply(s);
+						}
+
+					}else{
+						flag = true;
+						if(otherWordGet == null){
+							text+= s;
+						}else{
+							text += firstWordGet.apply(s);
+						}
+					}
+				}else{
+					text+=s;
+				}
+			}
 		}
 		return text;
+
+	}
+
+	public static String getI18nUpText(I18nKey.RedisResource... platformResourceEnum){
+
+		return getI18nText(s->s.toUpperCase(),s->s.toUpperCase(),platformResourceEnum);
 	}
 	public static String getI18nLowText(I18nKey.RedisResource platformResourceEnum){
-		String text = getI18nText(platformResourceEnum);
-		if(StringUtils.isNotBlank(text)){
-			text = text.toLowerCase();
-		}
-		return text;
+		return getI18nText(s->s.toLowerCase(),s->s.toLowerCase(),platformResourceEnum);
 	}
-	public static String getI18nFirstUpText(I18nKey.RedisResource platformResourceEnum){
-		String text = getI18nText(platformResourceEnum);
-		if(StringUtils.isNotBlank(text)){
-			text = text.substring(0,1).toUpperCase() + text.substring(1);
-		}
-		return text;
+
+
+	public static String getI18nFirstUpText(I18nKey.RedisResource... platformResourceEnum){
+		return getI18nText(s->s.substring(0,1).toUpperCase() + s.substring(1),s->s.substring(0,1).toLowerCase() + s.substring(1),platformResourceEnum);
 	}
-	public static String getI18nFirstLowText(I18nKey.RedisResource platformResourceEnum){
-		String text = getI18nText(platformResourceEnum);
-		if(StringUtils.isNotBlank(text)){
-			text = text.substring(0,1).toLowerCase() + text.substring(1);
-		}
-		return text;
+	public static String getI18nFirstUpAllText(I18nKey.RedisResource... platformResourceEnum){
+		return getI18nText(s->s.substring(0,1).toUpperCase() + s.substring(1),s->s.substring(0,1).toUpperCase() + s.substring(1),platformResourceEnum);
 	}
+
+
 
 	//TODO 重新加载配置文件
 	public static void reloadPlatformResource(String language, String country) {

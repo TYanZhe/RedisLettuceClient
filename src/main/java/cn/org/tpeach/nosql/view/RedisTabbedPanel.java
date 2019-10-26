@@ -13,6 +13,7 @@ import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
+import cn.org.tpeach.nosql.exception.ServiceException;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
@@ -36,12 +37,14 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -299,6 +302,11 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         keyTypeLabel.setText("Key:");
         keyNameField.setText(StringUtils.showHexStringValue(redisKeyInfo.getKey()));
         keyTTLField.setText(redisKeyInfo.getTtl() + "");
+        if(redisKeyInfo.getTtl() > 0){
+            keyTTLField.setToolTipText(DateUtils.getDatePoor(redisKeyInfo.getTtl()*1000));
+        }else{
+            keyTTLField.setToolTipText(redisKeyInfo.getTtl() + "");
+        }
         keySizeField.setText(redisKeyInfo.getSize() + "");
         keyIdleTimeField.setText("" + redisKeyInfo.getIdleTime());
         searchButton.setText( String.format(TYPEHTML, redisKeyInfo.getType()));
@@ -403,8 +411,15 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 }
                 ResultRes<Boolean> resultRes = BaseController.dispatcher(() -> redisConnectService.expireKey(redisKeyInfo.getId(), redisKeyInfo.getDb(), redisKeyInfo.getKey(), newTTL));
                 if (resultRes.isRet() && resultRes.getData()) {
-                    redisKeyInfo.setTtl(Long.valueOf(newTTL));
+                    Long ttlValue = Long.valueOf(newTTL);
+                    redisKeyInfo.setTtl(ttlValue);
                     keyTTLField.setText(newTTL + "");
+                    if(newTTL > 0){
+                        keyTTLField.setToolTipText(DateUtils.getDatePoor(ttlValue*1000));
+                    }else{
+                        keyTTLField.setToolTipText(newTTL + "");
+                    }
+
                 } else if (!resultRes.isRet()) {
                     SwingTools.showMessageErrorDialog(null, "设置TTL失败:" + resultRes.getMsg());
 
@@ -772,12 +787,18 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         selectKeyViewComn.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                if(evt.getActionCommand().equals("comboBoxChanged")){
+                if("comboBoxChanged".equals(evt.getActionCommand())){
                     DicBean dicBean = (DicBean) selectKeyViewComn.getSelectedItem();
                     TableColumnBean tableColumnBean = ((ValueInfoPanel) valueInfoPanel).getKeyColumnBean();
-                    String keyAreaText =  getSelectDicText(dicBean, tableColumnBean,fieldArea);
-                    fieldArea.setText(keyAreaText);
-                    setFieldInfoLabelText(keyAreaText.getBytes().length);
+                    try{
+                        String keyAreaText =  getSelectDicText(dicBean, tableColumnBean,fieldArea);
+                        fieldArea.setText(keyAreaText);
+                        setFieldInfoLabelText(keyAreaText.getBytes().length);
+                    }catch (Exception ex){
+                        SwingTools.showMessageErrorDialog(null,ex.getMessage());
+                    }
+
+
                 }
             }
         });
@@ -794,10 +815,15 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 if(e.getStateChange() == ItemEvent.SELECTED){
                     DicBean dicBean = (DicBean) selectValueViewComn.getSelectedItem();
                     TableColumnBean tableColumnBean = ((ValueInfoPanel) valueInfoPanel).getValueColumnBean();
-                    String valueAreaText = getSelectDicText(dicBean, tableColumnBean, valueArea);
+                    try{
+                        String valueAreaText = getSelectDicText(dicBean, tableColumnBean, valueArea);
 //                    valueArea.setText(valueAreaText);
-                    setTextLoading(valueArea,valueAreaText,true);
-                    setValueInfoLabelText(valueAreaText.getBytes().length);
+                        setTextLoading(valueArea,valueAreaText,true);
+                        setValueInfoLabelText(valueAreaText.getBytes().length);
+                    }catch (Exception ex){
+                        SwingTools.showMessageErrorDialog(null,ex.getMessage());
+                    }
+
                 }else if(e.getStateChange() == ItemEvent.DESELECTED){
 
                 }
@@ -962,6 +988,9 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             } else if ("2".equals(dicBean.getCode())) {
                 if(StringUtils.isNotEmpty(tableColumnBean.getShowValue())){
                     text = GsonUtil.toPrettyFormat(tableColumnBean.getShowValue());
+                    if(text.equals(tableColumnBean.getShowValue())){
+                        throw new ServiceException("Format Json Fail!");
+                    }
                 }
             } else if ("3".equals(dicBean.getCode())) {
                 text = tableColumnBean.getShowValue();
@@ -1000,13 +1029,26 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
 
     private void setValueInfoLabelText(int length) {
-        valueInfoLabel.setText("<html><p style='font-size:8px;color:black' >&nbsp;Value: <span style='color:#A0A0B1'>Size: " + length + " bytes</span></p></html>");
+        valueInfoLabel.setText("<html><p style='font-size:8px;color:black' >&nbsp;Value: <span style='color:"+getLengthColor(length)+"'>Size: " + getLengthHumman(length) + "</span></p></html>");
 
     }
 
     private void setFieldInfoLabelText(int length) {
-        fieldInfoLabel.setText("<html><p style='font-size:8px;color:black' >&nbsp;Field: <span style='color:#A0A0B1'>Size: " + length + " bytes</span></p></html>");
+        fieldInfoLabel.setText("<html><p style='font-size:8px;color:black' >&nbsp;Field: <span style='color:"+getLengthColor(length)+"'>Size: " + getLengthHumman(length) + "</span></p></html>");
 
+    }
+
+    private String getLengthColor(int length){
+        if(length> 150*1024){
+            return "red";
+        }
+        return "#A0A0B1";
+    }
+    private String getLengthHumman(int length){
+        if(length> 150*1024){
+            return MathUtils.divide(2,length+"", "1024")+"kB";
+        }
+        return length+" bytes";
     }
 
     private void togglevalueInfo() {

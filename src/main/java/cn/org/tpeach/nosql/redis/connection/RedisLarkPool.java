@@ -4,9 +4,11 @@ import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author tyz
@@ -18,8 +20,8 @@ import java.util.Map;
  */
 public class RedisLarkPool {
 	private static Map<String, RedisLarkContext> pool = new HashMap<>();
-	private static Map<String, RedisConnectInfo> redisConnectInfo = new HashMap<>();
-
+	private static Map<String, RedisConnectInfo> redisConnectInfo = new ConcurrentHashMap<>();
+	public static Map<RTreeNode,String> connectMap = new ConcurrentHashMap<>();
 	public static RedisLarkContext getRedisLarkContext(String id) {
 		return pool.get(id);
 	}

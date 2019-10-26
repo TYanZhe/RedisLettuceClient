@@ -4,7 +4,6 @@ import cn.org.tpeach.nosql.bean.DicBean;
 import cn.org.tpeach.nosql.constant.ConfigConstant;
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
-import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.tools.ConfigMapper;
 import cn.org.tpeach.nosql.tools.ConfigParser;
@@ -16,14 +15,12 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 
 
-public class SettingDialog extends BaseDialog<Object, Object>{
+public class SettingDialog extends AbstractRowDialog<Object, Object>{
     private JPanel panel;
     private JComboBox<DicBean> languageComboBox;
     private JComboBox<String>  characterEncodingComboBox;
@@ -83,40 +80,7 @@ public class SettingDialog extends BaseDialog<Object, Object>{
     }
 
 
-    public JPanel createRow(JComponent parentComponent,JLabel label,JComponent component,int rowHeight,double leftPercent){
-        JPanel rowPanel = new JPanel();
-        rowPanel.setPreferredSize(new Dimension(rowPanel.getPreferredSize().width,rowHeight));
-        rowPanel.setMaximumSize(new Dimension(rowPanel.getPreferredSize().width,rowHeight));
-        rowPanel.setMinimumSize(new Dimension(rowPanel.getPreferredSize().width,rowHeight));
-        SwingTools.fillWidthPanel(parentComponent,rowPanel);
-        rowPanel.setLayout(new BorderLayout());
-        JPanel labelPanel = new JPanel();
-        JPanel fieldPanel = new JPanel();
-        labelPanel.setLayout(new BoxLayout(labelPanel,BoxLayout.X_AXIS));
-        fieldPanel.setLayout(new BoxLayout(fieldPanel,BoxLayout.X_AXIS));
-        rowPanel.add(labelPanel,BorderLayout.WEST);
-        rowPanel.add(fieldPanel,BorderLayout.CENTER);
-        labelPanel.add(Box.createHorizontalGlue());
-        labelPanel.add(label);
-        labelPanel.add(Box.createHorizontalStrut(15));
-        fieldPanel.add(component);
-        fieldPanel.add(Box.createHorizontalStrut(15));
-        rowPanel.setBackground(getPanelBgColor());
-        labelPanel.setBackground(getPanelBgColor());
-        fieldPanel.setBackground(getPanelBgColor());
-        rowPanel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                int width = (int) (rowPanel.getWidth()*leftPercent);
-                Dimension preferredSize = labelPanel.getPreferredSize();
-                labelPanel.setPreferredSize(new Dimension(width,preferredSize.height));
-                labelPanel.setMinimumSize(new Dimension(width,preferredSize.height));
-                labelPanel.setMaximumSize(new Dimension(width,preferredSize.height));
-                labelPanel.updateUI();
-            }
-        });
-        return rowPanel;
-    }
+
 
 
 

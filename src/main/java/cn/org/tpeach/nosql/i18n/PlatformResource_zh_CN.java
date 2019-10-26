@@ -1,11 +1,11 @@
 package cn.org.tpeach.nosql.i18n;
 
-import java.util.ListResourceBundle;
-
 import cn.org.tpeach.nosql.constant.I18nKey;
 
+import java.util.ListResourceBundle;
+
 public class PlatformResource_zh_CN extends ListResourceBundle {
-    static final Object[][] contents = new String[][]
+    static final Object[][] CONTENTS = new String[][]
             {
                     {I18nKey.RedisResource.FRAME_TITLE.getKey(), "Redis连接工具"},
 
@@ -55,11 +55,21 @@ public class PlatformResource_zh_CN extends ListResourceBundle {
                     {I18nKey.RedisResource.SERVERINFO.getKey(), "服务信息"},
                     {I18nKey.RedisResource.SIM_CHINESE.getKey(), "简体中文"},
                     {I18nKey.RedisResource.ENGLISH.getKey(), "英文"},
+                    {I18nKey.RedisResource.ENABLED.getKey(), "启用"},
+                    {I18nKey.RedisResource.DISABLED.getKey(), "禁用"},
+                    {I18nKey.RedisResource.NAME.getKey(), "名称"},
+                    {I18nKey.RedisResource.ADDRESS.getKey(), "地址"},
+                    {I18nKey.RedisResource.PORT.getKey(), "端口"},
+                    {I18nKey.RedisResource.PASSWORD.getKey(), "密码"},
+                    {I18nKey.RedisResource.CLUSTER.getKey(), "集群"},
+                    {I18nKey.RedisResource.UN_KNOW.getKey(), "未知"},
+                    {I18nKey.RedisResource.EXCEPTION.getKey(), "异常"},
+                    {I18nKey.RedisResource.ACTIVATE.getKey(), "设为活动对象"},
             };
 
     @Override
     protected Object[][] getContents() {
-        return contents;
+        return CONTENTS;
     }
 
 }

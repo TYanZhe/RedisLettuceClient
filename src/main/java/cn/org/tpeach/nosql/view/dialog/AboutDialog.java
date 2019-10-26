@@ -62,7 +62,6 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 		Box box = Box.createHorizontalBox();
 
 		JLabel label = new JLabel("RedisLark");
-//		label.setPreferredSize(new Dimension(100,50));
 		label.setFont(boldFont);
 		box.add(label);
 		leftPanel.add(box);
@@ -149,7 +148,6 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 				donateImageBox.setVisible(true);
 				verticalStrut.setVisible(true);
 				verticalStrut2.setVisible(false);
-//				donateLabel.setText("赞赏");
 			}
 		});
 		donateBox.add(btnLabel);
