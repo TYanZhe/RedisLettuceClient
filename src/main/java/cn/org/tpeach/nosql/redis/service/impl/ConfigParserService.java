@@ -5,10 +5,12 @@ package cn.org.tpeach.nosql.redis.service.impl;
 
 import cn.org.tpeach.nosql.annotation.Component;
 import cn.org.tpeach.nosql.constant.ConfigConstant;
+import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.tools.*;
+import io.lettuce.core.RedisURI;
 
 import java.io.IOException;
 import java.util.*;
@@ -62,6 +64,9 @@ public class ConfigParserService implements IRedisConfigService {
 		redisConnectInfo.setName(configParser.getString(configMapper, ConfigConstant.Section.SERVER, "name", null));
 		redisConnectInfo.setPort(configParser.getInt(configMapper, ConfigConstant.Section.SERVER, "port", 0));
 		redisConnectInfo.setStructure(configParser.getInt(configMapper, ConfigConstant.Section.SERVER, "structure", 0));
+		redisConnectInfo.setTimeout(configParser.getLong(configMapper, ConfigConstant.Section.SERVER, "timeout",  RedisURI.DEFAULT_TIMEOUT));
+		redisConnectInfo.setDbAmount(configParser.getInt(configMapper, ConfigConstant.Section.SERVER, "dbAmount", RedisConnectInfo.DEFAULT_DBAMOUNT));
+		redisConnectInfo.setNameSpaceSepartor(configParser.getString(configMapper, ConfigConstant.Section.SERVER, "nameSpaceSepartor", PublicConstant.NAMESPACE_SPLIT));
 		return redisConnectInfo;
 	}
 	
@@ -79,6 +84,9 @@ public class ConfigParserService implements IRedisConfigService {
 		connConfig.put("host", ConfigMapper.builder().value(StringUtils.defaultEmptyToString(conn.getHost())).build());
 		connConfig.put("port", ConfigMapper.builder().value(StringUtils.defaultEmptyToString(conn.getPort())).build());
 		connConfig.put("structure", ConfigMapper.builder().value(StringUtils.defaultEmptyToString(conn.getStructure())).build());
+		connConfig.put("timeout", ConfigMapper.builder().value(StringUtils.defaultEmptyToString(conn.getTimeout())).build());
+		connConfig.put("dbAmount", ConfigMapper.builder().value(StringUtils.defaultEmptyToString(conn.getDbAmount())).build());
+		connConfig.put("nameSpaceSepartor", ConfigMapper.builder().value(StringUtils.defaultEmptyToString(conn.getNameSpaceSepartor())).build());
 		return connConfig;
 	}
 
@@ -160,13 +168,16 @@ public class ConfigParserService implements IRedisConfigService {
 					Map<String, ConfigMapper> value = entry.getValue();
 					String configId = configParser.getString(value, ConfigConstant.Section.SERVER, "id", "");
 					if(configId.equals(conn.getId())) {
-						value.get("id").setValue(conn.getId());
-						value.get("name").setValue(StringUtils.defaultEmptyToString(conn.getName()));
-						value.get("auth").setValue(AESUtil.encrypt(StringUtils.defaultEmptyToString(conn.getAuth())));
-						value.get("connType").setValue(StringUtils.defaultEmptyToString(conn.getConnType()));
-						value.get("host").setValue(StringUtils.defaultEmptyToString(conn.getHost()));
-						value.get("port").setValue(StringUtils.defaultEmptyToString(conn.getPort()));
-						value.get("structure").setValue(StringUtils.defaultEmptyToString(conn.getStructure()));
+						 setValue(value,"id",conn.getId());
+						 setValue(value,"name",StringUtils.defaultEmptyToString(conn.getName()));
+						 setValue(value,"auth",AESUtil.encrypt(StringUtils.defaultEmptyToString(conn.getAuth())));
+						 setValue(value,"connType",StringUtils.defaultEmptyToString(conn.getConnType()));
+						 setValue(value,"host",StringUtils.defaultEmptyToString(conn.getHost()));
+						 setValue(value,"port",StringUtils.defaultEmptyToString(conn.getPort()));
+						 setValue(value,"structure",StringUtils.defaultEmptyToString(conn.getStructure()));
+						 setValue(value,"timeout",StringUtils.defaultEmptyToString(conn.getTimeout()));
+						 setValue(value,"dbAmount",StringUtils.defaultEmptyToString(conn.getDbAmount()));
+						 setValue(value,"nameSpaceSepartor",StringUtils.defaultEmptyToString(conn.getNameSpaceSepartor()));
 						try {
 							configParser.writhConfigFile();
 						} catch (IOException e) {
@@ -191,6 +202,15 @@ public class ConfigParserService implements IRedisConfigService {
 			e.printStackTrace();
 		}
 
+	}
+
+	private void setValue(Map<String, ConfigMapper> value,String key,String context){
+		ConfigMapper configMapper = value.get("key");
+		if(configMapper == null){
+			configMapper = ConfigMapper.builder().build();
+		}
+		configMapper.setValue(context);
+		value.put(key,configMapper);
 	}
 
 }

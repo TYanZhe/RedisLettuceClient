@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 
 /**
@@ -33,6 +32,7 @@ public class RedisLarkFactory {
 	public <K, V> RedisLarkContext  connectRedis(String id) {
 		RedisStructure redisStructure = null;
 		RedisConnectInfo conn = null;
+		LocalDateTime now = null;
 		try{
 			// 获取连接信息
 			conn = RedisLarkPool.getConnectInfo(id);
@@ -54,9 +54,11 @@ public class RedisLarkFactory {
 
 				// 根据RedisStructure 配置和RedisConnectInfo 构造方法动态生成RedisLark
 				Class<?> clz = Class.forName(redisStructure.getService());
-				Constructor<?> constructor = clz.getConstructor(redisStructure.getParameterTypes());
-				LocalDateTime now = LocalDateTime.now();
-				redisLark = (RedisLark) constructor.newInstance(redisStructure.getInitargs(conn));
+//				Constructor<?> constructor = clz.getConstructor(redisStructure.getParameterTypes());
+				Constructor<?> constructor = clz.getConstructor(new Class<?>[]{conn.getClass()} );
+				 now = LocalDateTime.now();
+//				redisLark = (RedisLark) constructor.newInstance(redisStructure.getInitargs(conn));
+				redisLark = (RedisLark) constructor.newInstance(new Object[]{conn});
 				if(redisLarkContext == null) {
 					redisLarkContext = new RedisLarkContext<K,V>(redisLark,conn);
 					try {
@@ -78,6 +80,7 @@ public class RedisLarkFactory {
 				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			Throwable ex = e.getCause();
 			if(conn !=null){
+				LarkFrame.larkLog.sendInfo(now == null? LocalDateTime.now():now,conn.getName(),"AUTH");
 				LarkFrame.larkLog.receivedError(conn.getName(),"connect fail",ex);
 			}
 			if(ex instanceof RedisConnectionException){

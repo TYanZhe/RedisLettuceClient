@@ -51,6 +51,10 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
 import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -630,6 +634,59 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                         default:
                             break;
                     }
+                }
+            }
+        });
+        addToolTipText();
+    }
+
+    private void addToolTipText(){
+        redisDataTable.addMouseMotionListener(new MouseAdapter(){
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int row=redisDataTable.rowAtPoint(e.getPoint());
+                int column=redisDataTable.columnAtPoint(e.getPoint());
+                if (row >= actRow) {
+                    redisDataTable.setToolTipText(null);
+                    return;
+                }
+                boolean flag = false;
+                switch (redisKeyInfo.getType()) {
+                    case STRING:
+                    case LIST:
+                    case SET:
+                        if (column == 1) {
+                            flag = true;
+                        }
+                        break;
+                    case HASH:
+                    case ZSET:
+                        if (column == 1 || column == 2) {
+                            flag = true;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                if(flag){
+                    TableColumnBean tableColumnBean = (TableColumnBean) redisDataTable.getValueAt(row, column);
+                    if(tableColumnBean != null){
+                        String value = tableColumnBean.getShowValue();
+                        if(StringUtils.isNotBlank(value) && value.length() == 13 && Pattern.matches("-?\\d+",value)){
+                            try{
+                                DateTimeFormatter ftf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                                redisDataTable.setToolTipText(ftf.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(value)), ZoneId.systemDefault())));
+                            }catch(Exception ex){
+                                redisDataTable.setToolTipText(value);
+                            }
+                        }else{
+                            redisDataTable.setToolTipText(value);
+                        }
+                    }else{
+                        redisDataTable.setToolTipText(null);
+                    }
+                }else{
+                    redisDataTable.setToolTipText(null);
                 }
             }
         });

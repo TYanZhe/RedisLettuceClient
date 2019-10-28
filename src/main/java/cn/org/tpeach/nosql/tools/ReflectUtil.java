@@ -258,6 +258,64 @@ public class ReflectUtil {
 
         return map;
     }
+    /**
+     * 循环向上转型, 获取对象的 DeclaredMethod
+     *
+     * @param object
+     *            : 子类对象
+     * @param methodName
+     *            : 父类中的方法名
+     * @param parameterTypes
+     *            : 父类中的方法参数类型
+     * @return 父类中的方法对象
+     */
+
+    public static Method getDeclaredMethod(Object object, String methodName, Class<?>... parameterTypes) {
+        Method method = null;
+
+        for (Class<?> clazz = object.getClass(); clazz != Object.class; clazz = clazz.getSuperclass()) {
+            try {
+                method = clazz.getDeclaredMethod(methodName, parameterTypes);
+                return method;
+            } catch (Exception e) {
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 直接调用对象方法, 而忽略修饰符(private, protected, default)
+     *
+     * @param object
+     *            : 子类对象
+     * @param methodName
+     *            : 父类中的方法名
+     * @param parameterTypes
+     *            : 父类中的方法参数类型
+     * @param parameters
+     *            : 父类中的方法参数
+     * @return 父类中方法的执行结果
+     */
+
+    public static Object invokeMethod(Object object, String methodName, Class<?>[] parameterTypes,
+                                      Object[] parameters) {
+        Method method = getDeclaredMethod(object, methodName, parameterTypes);
+        method.setAccessible(true);
+        try {
+            if (null != method) {
+                return method.invoke(object, parameters);
+            }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 
     public static void main(String[] args) {
         RedisConnectInfo source = new RedisConnectInfo();

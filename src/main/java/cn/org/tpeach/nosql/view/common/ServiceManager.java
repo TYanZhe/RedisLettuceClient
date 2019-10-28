@@ -8,6 +8,7 @@ import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.framework.LarkFrame;
+import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
@@ -25,12 +26,12 @@ import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /**
@@ -94,8 +95,12 @@ public class ServiceManager {
 			List<byte[]> sortKeys = keys;
 			List<RTreeNode> lastRedisNodeList = new ArrayList<>();
 			String lastKeys = null;
+			RedisConnectInfo connectInfo = redisConfigService.getRedisConfigById(redisTreeItem.getId());
+			String pattern = connectInfo.getNameSpaceSepartor();
+			if(StringUtils.isBlank(pattern)){
+				pattern = PublicConstant.NAMESPACE_SPLIT;
+			}
 			for (byte[] keySrc : sortKeys) {
-				String pattern = PublicConstant.NAMESPACE_SPLIT;
 				String key = StringUtils.byteToStr(keySrc);
 				if (key != null && key.contains(pattern)) {
 					String[] keySpace = key.split(pattern);

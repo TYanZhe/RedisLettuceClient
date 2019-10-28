@@ -53,8 +53,8 @@ public class ScanArgs implements CompositeArgument {
     public <K, V> void build(CommandArgs<K, V> args) {
 
         if (match != null) {
-            args.add(MATCH).add(match.getBytes(StandardCharsets.UTF_8));
-//            args.add(MATCH).add(StringUtils.strToByte(match));
+//            args.add(MATCH).add(match.getBytes(StandardCharsets.UTF_8));
+            args.add(MATCH).add(StringUtils.strToByte(match));
         }
 
         if (count != null) {

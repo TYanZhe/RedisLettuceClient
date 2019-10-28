@@ -1,16 +1,10 @@
 package cn.org.tpeach.nosql.redis.connection.impl;
 
 import cn.org.tpeach.nosql.exception.ServiceException;
-import io.lettuce.core.*;
-import io.lettuce.core.api.sync.RedisCommands;
+import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import io.lettuce.core.codec.ByteArrayCodec;
-import io.lettuce.core.output.*;
-import io.lettuce.core.protocol.CommandArgs;
-import io.lettuce.core.protocol.CommandType;
-import io.lettuce.core.protocol.ProtocolKeyword;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.Arrays;
 
 /**
  * @author tyz
@@ -21,6 +15,10 @@ import java.util.function.Consumer;
  * @since 1.0.0
  */
 public class RedisLarkLettuceByte extends AbstractRedisLark<byte[], byte[]> {
+
+    public RedisLarkLettuceByte(RedisConnectInfo connectInfo ) {
+        super(connectInfo, ByteArrayCodec.INSTANCE);
+    }
 
     public RedisLarkLettuceByte(String id, String host, int port, String auth) {
         super(id, host, port, auth, ByteArrayCodec.INSTANCE);

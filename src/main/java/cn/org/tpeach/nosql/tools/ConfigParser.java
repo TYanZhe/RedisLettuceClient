@@ -349,7 +349,12 @@ public enum ConfigParser {
 		}
 		return Integer.parseInt(kv.get(key).getValue());
 	}
-	
+	public long getLong(Map<String, ConfigMapper> kv,String section, String key, long defaultvalue) {
+		if (kv == null || kv.get(key) == null ||StringUtils.isBlank(kv.get(key).getValue())  ) {
+			return defaultvalue;
+		}
+		return Long.parseLong(kv.get(key).getValue());
+	}
 
 
 

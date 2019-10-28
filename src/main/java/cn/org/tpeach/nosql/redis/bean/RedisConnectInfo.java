@@ -1,6 +1,8 @@
 package cn.org.tpeach.nosql.redis.bean;
 
+import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.tools.StringUtils;
+import io.lettuce.core.RedisURI;
 import lombok.*;
 
 import java.io.Serializable;
@@ -18,6 +20,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class RedisConnectInfo implements Serializable,Cloneable {
     private static final long serialVersionUID = -8218404487749784420L;
+    public static final int DEFAULT_DBAMOUNT = 20;
     //连接类型 0默认
     // 考虑后期支持 1 ssh 2 ssl
     @Getter
@@ -47,7 +50,16 @@ public class RedisConnectInfo implements Serializable,Cloneable {
     @Getter
     @Setter
     private String auth;
+    @Getter
+    @Setter
+    private Long timeout = RedisURI.DEFAULT_TIMEOUT;
 
+    @Getter
+    @Setter
+    private int dbAmount = DEFAULT_DBAMOUNT;
+    @Getter
+    @Setter
+    private String nameSpaceSepartor = PublicConstant.NAMESPACE_SPLIT;
 
     @Override
     public boolean equals(Object o) {

@@ -3,6 +3,7 @@
  */
 package cn.org.tpeach.nosql.view.dialog;
 
+import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.tools.IOUtil;
@@ -37,7 +38,7 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 
 	@Override
 	public void initDialog(Object t) {
-		this.setTitle("About");
+		this.setTitle(LarkFrame.getI18nFirstUpText(I18nKey.RedisResource.ABOUT));
 
 	}
 	@Override

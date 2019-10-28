@@ -5,6 +5,7 @@ import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.exception.ServiceException;
+import cn.org.tpeach.nosql.framework.BeanContext;
 import cn.org.tpeach.nosql.redis.bean.RedisClientBo;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
@@ -29,6 +30,7 @@ import cn.org.tpeach.nosql.redis.command.zset.ZremSet;
 import cn.org.tpeach.nosql.redis.command.zset.ZscanSet;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.redis.service.BaseRedisService;
+import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.tools.*;
 import io.lettuce.core.*;
@@ -51,6 +53,7 @@ import java.util.stream.IntStream;
 public class RedisConnectServiceImpl extends BaseRedisService implements IRedisConnectService {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisConnectServiceImpl.class);
+    private IRedisConfigService redisConfigService = BeanContext.getBean("redisConfigService",IRedisConfigService.class);
     private final int maxCount = 10000;
     @Override
     public boolean connectTest(RedisConnectInfo connectInfo) {
@@ -91,7 +94,8 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
 
 
         SelectCommand selectCommand = new SelectCommand(id, 0);
-        int dbAmount = 100;
+        RedisConnectInfo connectInfo = redisConfigService.getRedisConfigById(id);
+        int dbAmount = connectInfo.getDbAmount();
         for (int i = 0; i < dbAmount; i++) {
             try {
                 selectCommand.setDb(i);

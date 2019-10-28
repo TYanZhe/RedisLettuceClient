@@ -1,57 +1,28 @@
 package cn.org.tpeach.nosql.redis.connection.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.exception.ServiceException;
+import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.connection.RedisLark;
 import cn.org.tpeach.nosql.tools.StringUtils;
-import io.lettuce.core.BitFieldArgs;
-import io.lettuce.core.KeyScanCursor;
-import io.lettuce.core.KeyValue;
-import io.lettuce.core.KillArgs;
-import io.lettuce.core.Limit;
-import io.lettuce.core.MapScanCursor;
-import io.lettuce.core.MigrateArgs;
-import io.lettuce.core.Range;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisURI;
-import io.lettuce.core.RestoreArgs;
-import io.lettuce.core.ScanArgs;
-import io.lettuce.core.ScanCursor;
-import io.lettuce.core.ScanIterator;
-import io.lettuce.core.ScoredValue;
-import io.lettuce.core.ScoredValueScanCursor;
-import io.lettuce.core.SetArgs;
-import io.lettuce.core.SortArgs;
-import io.lettuce.core.StreamScanCursor;
-import io.lettuce.core.TransactionResult;
-import io.lettuce.core.UnblockType;
-import io.lettuce.core.ValueScanCursor;
-import io.lettuce.core.ZAddArgs;
-import io.lettuce.core.ZStoreArgs;
+import io.lettuce.core.*;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import io.lettuce.core.codec.RedisCodec;
-import io.lettuce.core.output.CommandOutput;
-import io.lettuce.core.output.KeyStreamingChannel;
-import io.lettuce.core.output.KeyValueStreamingChannel;
-import io.lettuce.core.output.ScoredValueStreamingChannel;
-import io.lettuce.core.output.ValueStreamingChannel;
+import io.lettuce.core.output.*;
 import io.lettuce.core.protocol.CommandArgs;
 import io.lettuce.core.protocol.CommandType;
 import io.lettuce.core.protocol.ProtocolKeyword;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.Duration;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author tyz
@@ -73,6 +44,50 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
 
     protected RedisCodec<K, V> redisCodec;
 
+    public AbstractRedisLark(RedisConnectInfo connectInfo, RedisCodec<K, V> redisCodec) {
+        this.redisCodec = redisCodec;
+        this.id = connectInfo.getId();
+        String auth;
+        RedisStructure redisStructure = RedisStructure.getRedisStructure(connectInfo.getStructure());
+        if (redisStructure == RedisStructure.SINGLE) {
+            if (StringUtils.isBlank(connectInfo.getAuth())) {
+                auth = "";
+            } else{
+                auth = connectInfo.getAuth();
+            }
+            RedisURI.Builder builder = RedisURI.Builder.redis(connectInfo.getHost(), connectInfo.getPort()).withPassword(auth).withDatabase(0);
+            final RedisURI redisURI = builder.build();
+            if(connectInfo.getTimeout() != null){
+                redisURI.setTimeout(Duration.ofSeconds(connectInfo.getTimeout()));
+            }
+            this.client = RedisClient.create(redisURI);
+            this.clentConnection = client.connect(redisCodec);
+        }else if(redisStructure == RedisStructure.CLUSTER) {
+            auth = connectInfo.getAuth();
+            if (StringUtils.isBlank(auth)) {
+                auth = "";
+            } else {
+                auth = auth + "@";
+            }
+            ArrayList<RedisURI> list = new ArrayList<>();
+            String[] hosts = connectInfo.getHost().split(",");
+            for (String hostport : hosts) {
+                String[] ipport = hostport.replaceAll(";", ",").split(":");
+                String ip = ipport[0];
+                int port = Integer.parseInt(ipport[1]);
+                RedisURI redisURI = RedisURI.create(String.format(redisUrlFormat, auth, ip, port));
+                if(connectInfo.getTimeout() != null){
+                    redisURI.setTimeout(Duration.ofSeconds(connectInfo.getTimeout()));
+                }
+                list.add(redisURI);
+            }
+            this.cluster = RedisClusterClient.create(list);
+            this.clusterConnection = cluster.connect(redisCodec);
+        }else{
+            throw new ServiceException("配置文件出错,不支持的RedisStructure");
+        }
+
+    }
     /**
      * 单机
      * @param id
@@ -1249,11 +1264,13 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
     }
 
     @Override
+    @Deprecated
     public List<ScoredValue<V>> zrevrangebyscoreWithScores(K key, double max, double min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(key, max, min, offset, count), u -> u.zrevrangebyscoreWithScores(key, max, min, offset, count));
     }
 
     @Override
+    @Deprecated
     public List<ScoredValue<V>> zrevrangebyscoreWithScores(K key, String max, String min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(key, max, max, offset, count), u -> u.zrevrangebyscoreWithScores(key, max, min, offset, count));
     }
@@ -1264,26 +1281,32 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
     }
 
     @Override
+    @Deprecated
     public Long zrevrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, double max, double min) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(channel, key, max, min), u -> u.zrevrangebyscoreWithScores(channel, key, max, min));
     }
 
     @Override
+    @Deprecated
     public Long zrevrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, String max, String min) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(channel, key, max, min), u -> u.zrevrangebyscoreWithScores(channel, key, max, min));
     }
 
     @Override
+    @Deprecated
     public Long zrevrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, Range<? extends Number> range) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(channel, key, range), u -> u.zrevrangebyscoreWithScores(channel, key, range));
     }
 
     @Override
+    @Deprecated
     public Long zrevrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, double max, double min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(channel,key, max, min, offset, count), u -> u.zrevrangebyscoreWithScores(channel,key, max, min, offset, count));
     }
 
+
     @Override
+    @Deprecated
     public Long zrevrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, String max, String min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(channel,key, max, min, offset, count), u -> u.zrevrangebyscoreWithScores(channel,key, max, min, offset, count));
     }
