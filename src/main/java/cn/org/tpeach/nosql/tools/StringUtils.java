@@ -1,16 +1,15 @@
 package cn.org.tpeach.nosql.tools;
 
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import cn.org.tpeach.nosql.constant.ConfigConstant;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import lombok.extern.slf4j.Slf4j;
 
-import static java.util.regex.Pattern.compile;
-
 import java.io.UnsupportedEncodingException;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static java.util.regex.Pattern.compile;
 
 /**
  * 提取org.apache.commons.lang.StringUtils常用方法
@@ -374,4 +373,72 @@ public class StringUtils {
 		}
 		return 0;
 	}
+
+	/**
+	 * unicode转成中文
+	 * @param unicode
+	 * @return
+	 */
+	public static String unicodeToCn(String unicode) {
+		/** 以 \ u 分割，因为java注释也能识别unicode，因此中间加了一个空格*/
+		String[] strs = unicode.split("\\\\u");
+		StringBuilder returnStr = new StringBuilder();
+		// 由于unicode字符串以 \ u 开头，因此分割出的第一个字符是""。
+		for (int i = 1; i < strs.length; i++) {
+			returnStr.append((char) Integer.valueOf(strs[i], 16).intValue()) ;
+		}
+		return returnStr.toString();
+	}
+
+	/**
+	 * 	中文转成unicode
+	 * @param cn
+	 * @return
+	 */
+
+	public static String cnToUnicode(String cn) {
+		char[] chars = cn.toCharArray();
+		StringBuilder returnStr = new StringBuilder();
+		for (int i = 0; i < chars.length; i++) {
+			returnStr.append("\\u" + Integer.toString(chars[i], 16));
+		}
+		return returnStr.toString();
+	}
+
+	/*
+	 * unicode编码转中文
+	 */
+	public static String decodeUnicode(final String dataStr) {
+		try{
+			if(StringUtils.isBlank(dataStr) && !dataStr.contains("\\u")){
+				return dataStr;
+			}
+			final StringBuffer buffer = new StringBuffer();
+			int start = 0;
+			int end = 0;
+			while (start > -1) {
+				end = dataStr.indexOf("\\u", start );
+				if(end == -1 ){
+					buffer.append(dataStr.substring(start,dataStr.length()));
+					start = -1;
+				}else{
+					if(end != start){
+						buffer.append(dataStr.substring(start,end));
+					}
+					try{
+						buffer.append(unicodeToCn(dataStr.substring(end,end+6)));
+						start = end+6;
+					}catch (Exception e){
+						buffer.append("\\u");
+						start = end+2;
+					}
+				}
+			}
+			return buffer.toString();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+		return dataStr;
+	}
+
 }

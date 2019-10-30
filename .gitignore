@@ -51,3 +51,4 @@ target
 .classpath
 .project
 .buildpath
+dependency-reduced-pom.xml

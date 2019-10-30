@@ -10,6 +10,7 @@ import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
+import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
@@ -45,6 +46,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * https://docs.oracle.com/javase/7/docs/api/javax/swing/plaf/basic/package-summary.html
@@ -216,7 +218,17 @@ public class RedisMainWindow extends javax.swing.JFrame {
         jPanel.setLayout(new BorderLayout());
         jPanel.setBackground(Color.WHITE);
         jPanel.add( LarkFrame.logArea.getJsp(),BorderLayout.CENTER);
+        ((RTabbedPane) logTabbedPane).setMouseWheelMoved(false);
         ((RTabbedPane) logTabbedPane).addTab(LarkFrame.getI18nText(I18nKey.RedisResource.LOG), PublicConstant.Image.logo_16, jPanel, false);
+        ((RTabbedPane) logTabbedPane).addRemoveLister(new Consumer<Object>() {
+            @Override
+            public void accept(Object o) {
+                if(o != null && o instanceof ConsolePanel){
+                    ConsolePanel consolePanel = (ConsolePanel) o;
+                    consolePanel.close();
+                }
+            }
+        });
         initTree();
 //        intToolBar();
         jSplitPane.setDividerLocation(treePanelWidth);
@@ -244,6 +256,8 @@ public class RedisMainWindow extends javax.swing.JFrame {
             }
             
         });
+
+
     }
 
     //------------------------------------------------------toolbar start-------------------------------------------
@@ -323,7 +337,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //	    TreePath path = redisTree.getPathForRow(row);
 
         JPopupMenu connectPopMenu = menuManager.getConnectPopMenu(redisTree);
-        JPopupMenu serverTreePopMenu = menuManager.getServerTreePopMenu(redisTree,(RTabbedPane) redisDataTabbedPane, (StatePanel) statePanel);
+        JPopupMenu serverTreePopMenu = menuManager.getServerTreePopMenu(redisTree,(RTabbedPane) redisDataTabbedPane, (StatePanel) statePanel,(RTabbedPane) logTabbedPane);
         JPopupMenu dbTreePopMenu = menuManager.getDBTreePopMenu(redisTree,(RTabbedPane) redisDataTabbedPane,keyFilterField);
         JPopupMenu keyTreePopMenu = menuManager.getKeyTreePopMenu(redisTree, (RTabbedPane) redisDataTabbedPane);
         JPopupMenu keyNameSpaceTreePopMenu = menuManager.getKeyNameSpaceTreePopMenu(redisTree);
@@ -388,6 +402,15 @@ public class RedisMainWindow extends javax.swing.JFrame {
                     serverTreePopMenu.getComponent(3).setEnabled(false);
                     serverTreePopMenu.getComponent(5).setEnabled(false);
                 }
+                //控制台
+                RedisConnectInfo connectInfo = redisConfigService.getRedisConfigById(item.getId());
+                if(RedisStructure.SINGLE.equals(RedisStructure.getRedisStructure(connectInfo.getStructure()))){
+                    serverTreePopMenu.getComponent(6).setEnabled(true);
+                }else{
+                    serverTreePopMenu.getComponent(6).setEnabled(false);
+                }
+
+
 
             } else if (path.length == 3) {
                 dbTreePopMenu.show(redisTree, x, y);

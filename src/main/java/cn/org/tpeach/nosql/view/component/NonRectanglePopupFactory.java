@@ -44,13 +44,21 @@ public class NonRectanglePopupFactory extends PopupFactory {
 			tipText = tipText.replaceAll("\\n", " ");
 			char[] chars = tipText.toCharArray();
 			StringBuffer sb = new StringBuffer("<html>");
-			int i = 1;
-			for (char aChar : chars) {
-				sb.append(aChar);
-				if(i%280 ==0){
-					sb.append("<br>");
-				}
+			int row = 0;
+			int i = 0;
+			for (int j = 0; j <chars.length ; j++) {
 				i++;
+				char aChar = chars[j];
+				sb.append(aChar);
+				if(i%280 == 0){
+					sb.append("<br>");
+					row++;
+				}
+				if(row == 10 && j != chars.length - 1){
+					sb.append("...");
+					break;
+				}
+
 			}
 			sb.append("</html>");
 			toolTip.setTipText(sb.toString());

@@ -8,6 +8,7 @@ import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
+import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
@@ -18,10 +19,7 @@ import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
-import cn.org.tpeach.nosql.view.RedisMainWindow;
-import cn.org.tpeach.nosql.view.RedisTabbedPanel;
-import cn.org.tpeach.nosql.view.ServiceInfoPanel;
-import cn.org.tpeach.nosql.view.StatePanel;
+import cn.org.tpeach.nosql.view.*;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.AddRedisAbstractRowDialog;
@@ -101,7 +99,7 @@ public enum MenuManager {
         d.open();
     }
 
-    public JPopupMenu getServerTreePopMenu(JComponent componet, RTabbedPane topTabbedPane, StatePanel statePanel) {
+    public JPopupMenu getServerTreePopMenu(JComponent componet, RTabbedPane topTabbedPane, StatePanel statePanel,RTabbedPane logTabbedPane) {
         JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
         if (componet instanceof JTree) {
             JTree tree = (JTree) componet;
@@ -198,8 +196,18 @@ public enum MenuManager {
                     }
                 }
             });
+            consoleItem.addActionListener(e -> {
+                RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent();
+                RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
+                RedisConnectInfo connectInfo = redisConfigService.getRedisConfigById(redisTreeItem.getId());
+                if(RedisStructure.getRedisStructure(connectInfo.getStructure()).equals(RedisStructure.SINGLE)){
+                    ConsolePanel consolePanel = new ConsolePanel(connectInfo,logTabbedPane);
+                    logTabbedPane.add(connectInfo.getName(), logTabbedPane.getTabCount(), PublicConstant.Image.command, consolePanel);
+                    SwingTools.swingWorkerExec(()->{consolePanel.start();return null;});
+                }
+            });
             totalItem.setEnabled(false);
-            consoleItem.setEnabled(false);
+
             //添加菜单需要修改cn.org.tpeach.nosql.view.RedisMainWindow.redisTreeMouseClicked 下标
             putPopMenuItem(popMenu,openItem,disConnectItem,activeItem,serverInfoItem,editItem,reloadItem,consoleItem,totalItem,delItem,copyItem);
         }

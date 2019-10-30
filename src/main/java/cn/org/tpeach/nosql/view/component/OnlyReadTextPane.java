@@ -1,6 +1,5 @@
 package cn.org.tpeach.nosql.view.component;
 
-import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,7 +38,7 @@ public class OnlyReadTextPane extends JTextPane {
      */
     private int entries = 0;
     @Getter
-    private EasyJSP jsp;
+    protected EasyJSP jsp;
 
     public OnlyReadTextPane() {
         init();
@@ -86,7 +85,7 @@ public class OnlyReadTextPane extends JTextPane {
     }
 
     @Override
-    public final boolean isEditable() {
+    public  boolean isEditable() {
         return false;
     }
     public synchronized void clear(){
@@ -116,7 +115,7 @@ public class OnlyReadTextPane extends JTextPane {
             return ((line == lineCount - 1) ? (endOffset - 1) : endOffset);
         }
     }
-    private synchronized void autoClear() {
+    protected synchronized void autoClear() {
 
         Document doc = null;
         try {
@@ -136,6 +135,12 @@ public class OnlyReadTextPane extends JTextPane {
             e.printStackTrace();
         }
 
+    }
+    public synchronized void println(String s) {
+        println(s,null);
+    }
+    public synchronized void print(String s) {
+        print(s,null);
     }
     public synchronized void println(String s, Color fontColor) {
         if(StringUtils.isBlank(s)){
@@ -161,16 +166,35 @@ public class OnlyReadTextPane extends JTextPane {
         }catch (Exception e){}
 
     }
+    public synchronized void print(String s, Color fontColor) {
+        if(StringUtils.isBlank(s)){
+            return;
+        }
+        if(fontColor != null){
+            insert(s, fontColor);
+        }else{
+            insert(s, defaultFontColor);
+        }
+        autoClear();
+        try{
+//            this.setCaretPosition(getDocument().getLength());
+            //解决setCaretPosition空指针异常
+            JScrollBar verticalScrollBar = jsp.getVerticalScrollBar();
+            if(verticalScrollBar != null){
+                verticalScrollBar.setValue(verticalScrollBar.getMaximum());
+            }
+        }catch (Exception e){}
 
-    private synchronized void insert(String text) {
+    }
+    protected synchronized void insert(String text) {
         insert(text, defaultFontColor, null);
     }
 
-    private synchronized void insert(String text, Color color) {
+    protected synchronized void insert(String text, Color color) {
         insert(text, color,null);
     }
 
-    private  synchronized void insert(String text, Color color, Color backColor) {
+    protected  synchronized void insert(String text, Color color, Color backColor) {
         Integer length = null;
         try { // 插入文本
             if (color != null) {
@@ -184,7 +208,7 @@ public class OnlyReadTextPane extends JTextPane {
             docs.insertString(length, text, attrSet);
             entries = getLineCount();
         } catch (BadLocationException e) {
-            log.error(length+" 插入日志Panel失败:"+text,e);
+            log.error(length+" 插入OnlyReadTextPane失败:"+text,e);
         }
     }
 

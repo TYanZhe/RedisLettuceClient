@@ -316,8 +316,31 @@ public class ReflectUtil {
 
         return null;
     }
+    public static Object getSuperField(Object paramClass, String paramString) {
+        Field field = null;
+        Object object = null;
+        try {
+            field = paramClass.getClass().getSuperclass().getDeclaredField(paramString);
+            field.setAccessible(true);
+            object = field.get(paramClass);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return object;
+    }
 
-    public static void main(String[] args) {
+    public static void setSuperField(Object paramClass, String paramString, Object newClass) {
+        Field field = null;
+        try {
+            field = paramClass.getClass().getSuperclass().getDeclaredField(paramString);
+            field.setAccessible(true);
+            field.set(paramClass, newClass);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return;
+    }
+        public static void main(String[] args) {
         RedisConnectInfo source = new RedisConnectInfo();
 
         source.setHost("1213,m24324");

@@ -4,6 +4,7 @@
 package cn.org.tpeach.nosql.view.component;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.tools.SwingTools;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,8 +12,9 @@ import javax.swing.*;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.*;
-
-
+import java.util.List;
+import java.util.Vector;
+import java.util.function.Consumer;
 
 /**
  * <p>
@@ -22,6 +24,13 @@ import java.awt.event.*;
  */
 public class RTabbedPane extends javax.swing.JTabbedPane {
 	private final static int tabWidth =196;
+	private List<Consumer<Object>> removeList = new Vector<>();
+	public void addRemoveLister(Consumer<Object> consumer){
+		removeList.add(consumer);
+	}
+	@Getter
+	@Setter
+	private boolean mouseWheelMoved = true;
 	private static class RBasicTabbedPanelUI extends BasicTabbedPaneUI{
 		private RTabbedPane tabbedPane;
 
@@ -117,6 +126,7 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 		private JLabel ic;
 		@Getter
 		private JLabel text;
+
 		/**
 		 *
 		 */
@@ -151,7 +161,7 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 
 		public void setText(String title){
 //			text.setToolTipText(title); //导致不可点击切换
-			int max = 8;
+			int max = 10;
 			if(title != null && title.length() > max){
 				title = title.substring(0,max)+"...";
 			}
@@ -176,19 +186,23 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 		this.addMouseWheelListener(new MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
-				JTabbedPane pane = (JTabbedPane) e.getSource();
-				int units = e.getWheelRotation();
-				int oldIndex = pane.getSelectedIndex();
-				int newIndex = oldIndex + units;
-				if (newIndex < 0)
-					pane.setSelectedIndex(0);
-				else if (newIndex >= pane.getTabCount())
-					pane.setSelectedIndex(pane.getTabCount() - 1);
-				else
-					pane.setSelectedIndex(newIndex);
+				if(mouseWheelMoved){
+					JTabbedPane pane = (JTabbedPane) e.getSource();
+					int units = e.getWheelRotation();
+					int oldIndex = pane.getSelectedIndex();
+					int newIndex = oldIndex + units;
+					if (newIndex < 0) {
+						pane.setSelectedIndex(0);
+					}else if (newIndex >= pane.getTabCount()) {
+						pane.setSelectedIndex(pane.getTabCount() - 1);
+					}else {
+						pane.setSelectedIndex(newIndex);
+					}
+				}
 			}
 		});
 	}
+
 
 	public RTabbedPane(int tabPlacement, int tabLayoutPolicy) {
 		super(tabPlacement, tabLayoutPolicy);
@@ -262,6 +276,8 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 					}
 
 				}
+				SwingTools.swingWorkerExec(()->{ removeList.forEach(o->{try{o.accept(component);}catch (Exception ex){}});return  null;});
+
 
 			}
 

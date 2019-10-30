@@ -20,6 +20,16 @@
 		<gson.version>2.3</gson.version>
 		<dom4j.version>1.6.1</dom4j.version>
 	</properties>
+
+	<repositories>
+		<!-- just beanshell -->
+		<repository>
+			<id>bintray-beanshell-Beanshell</id>
+			<name>bintray</name>
+			<url>http://dl.bintray.com/beanshell/Beanshell</url>
+			<snapshots><enabled>false</enabled></snapshots>
+		</repository>
+	</repositories>
 	<profiles>
 		<profile>
 			<id>dev</id>
@@ -116,6 +126,19 @@
 			<artifactId>jfreechart</artifactId>
 			<version>1.5.0</version>
 		</dependency>
+		<!-- https://github.com/beanshell/beanshell -->
+		<dependency>
+			<groupId>org.apache-extras.beanshell</groupId>
+			<artifactId>bsh</artifactId>
+			<version>2.0b6</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.netty/netty-codec-redis -->
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-codec-redis</artifactId>
+			<version>4.1.38.Final</version>
+		</dependency>
+
 
 	</dependencies>
 	<build>
@@ -130,39 +153,38 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.4.2</version>
-				<configuration>
-					<skipTests>true</skipTests>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.18.1</version>
 				<configuration>
 					<skipTests>true</skipTests>
 				</configuration>
 			</plugin>
 			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
 				<configuration>
-					<appendAssemblyId>false</appendAssemblyId>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<archive>
-						<manifest>
-							<mainClass>cn.org.tpeach.nosql.Application</mainClass>
-						</manifest>
-					</archive>
+					<source>1.8</source>
+					<target>1.8</target>
+					<encoding>UTF-8</encoding>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.1</version>
 				<executions>
 					<execution>
-						<id>make-assembly</id>
 						<phase>package</phase>
 						<goals>
-							<goal>single</goal>
+							<goal>shade</goal>
 						</goals>
+						<configuration>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>cn.org.tpeach.nosql.Application</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

@@ -45,6 +45,7 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
     protected RedisCodec<K, V> redisCodec;
 
     public AbstractRedisLark(RedisConnectInfo connectInfo, RedisCodec<K, V> redisCodec) {
+//        Lettuce命令延迟测量(CommandLatency)https://www.cnblogs.com/wei-zw/p/9159234.html
         this.redisCodec = redisCodec;
         this.id = connectInfo.getId();
         String auth;

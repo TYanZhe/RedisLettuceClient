@@ -2,7 +2,6 @@ package cn.org.tpeach.nosql.constant;
 
 import cn.org.tpeach.nosql.tools.IOUtil;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
-import sun.nio.cs.ext.GBK;
 
 import javax.swing.*;
 import java.awt.*;
@@ -161,6 +160,7 @@ public class PublicConstant {
         public static ImageIcon switch_off = IOUtil.getImageIcon("image/base/switch_off.png" );
 //        public static ImageIcon tempIcon = IOUtil.getImageIcon("image/base/箭头.png" );
         public static ImageIcon loading_g = IOUtil.getImageIcon("image/base/loading_g.gif" );
+        public static ImageIcon  command = IOUtil.getImageIcon("image/base/command.png" );
     }
 
 
