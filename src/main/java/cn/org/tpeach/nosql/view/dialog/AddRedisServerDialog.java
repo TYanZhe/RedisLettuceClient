@@ -20,7 +20,12 @@ import io.lettuce.core.RedisURI;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -107,6 +112,29 @@ public class AddRedisServerDialog extends AbstractRowDialog<RedisConnectInfo, Re
         portField.resetHeightSize(LarkFrame.fm.getHeight() - 5);
         portField.setPlaceholder(LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.CONNECT, I18nKey.RedisResource.PORT));
         authField = new PlaceHolderPasswordField(20);
+        authField.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if(e.getKeyCode() == KeyEvent.VK_C && e.isControlDown()){
+                    char echoChar = authField.getEchoChar();
+                    if('•' != echoChar){
+                        Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
+                        Transferable tText = new StringSelection(authField.getSelectedText());
+                        clip.setContents(tText, null);
+                    }
+                }
+            }
+        });
         authField.setPlaceholder(LarkFrame.getI18nFirstUpAllText(I18nKey.RedisResource.CONNECT, I18nKey.RedisResource.PASSWORD));
         authField.resetHeightSize(LarkFrame.fm.getHeight() - 5);
 

@@ -282,6 +282,8 @@ public class ConsolePanel extends JPanel {
             while ((line = bufInput.readLine()) != null) {
                 if (line.equalsIgnoreCase("quit")){
                     break;
+                }else if(line.equals(";")){
+                    line="\n";
                 }
                 //发送
                 lastWriteFuture = channel.writeAndFlush(StringUtils.decodeUnicode(line));
@@ -289,8 +291,7 @@ public class ConsolePanel extends JPanel {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
                         if (!future.isSuccess()) {
-                            System.err.print("write failed: ");
-                            future.cause().printStackTrace(System.err);
+                            console.print(future.cause().getMessage());
                         }
                     }
                 });
@@ -421,7 +422,6 @@ class RedisClientHandler extends ChannelDuplexHandler {
         ByteBufAllocator alloc = ctx.alloc();
         ByteBuf buffer = alloc.buffer();
         buffer.writeBytes(stringBuffer.toString().getBytes());
-        System.out.println(stringBuffer.toString());
         children.add(new FullBulkStringRedisMessage(buffer));
         stringBuffer.delete(0,stringBuffer.length());
     }
