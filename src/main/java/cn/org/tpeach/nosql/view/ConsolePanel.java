@@ -14,11 +14,14 @@ import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.CodecException;
 import io.netty.handler.codec.redis.*;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -204,7 +207,7 @@ public class ConsolePanel extends JPanel {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap bootstrap = new Bootstrap();
-            bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000);
+            bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 20000);
             bootstrap.option(ChannelOption.TCP_NODELAY, true);
             bootstrap.group(group)
                     .channel(NioSocketChannel.class)
@@ -216,6 +219,8 @@ public class ConsolePanel extends JPanel {
                             pipeline.addLast(new RedisBulkStringAggregator());
                             pipeline.addLast(new RedisArrayAggregator());
                             pipeline.addLast(new RedisEncoder());
+                            // 若60s没有收到消息，调用userEventTriggered方法
+                            pipeline.addLast(new IdleStateHandler(0, 0, 60, TimeUnit.SECONDS));
                             pipeline.addLast(new RedisClientHandler(console,ConsolePanel.this));
                         }
                     });
@@ -331,14 +336,15 @@ public class ConsolePanel extends JPanel {
 
 }
 class RedisClientHandler extends ChannelDuplexHandler {
-
+    private static final ByteBuf HEARTBEAT_SEQUENCE = Unpooled.unreleasableBuffer(Unpooled.copiedBuffer("PING", CharsetUtil.UTF_8));
     RConsole console;
     ConsolePanel consolePanel;
     String selectComand = null;
+    private boolean isHeart = false;
     public RedisClientHandler(RConsole console, ConsolePanel consolePanel) {
         this.console = console;
         this.consolePanel = consolePanel;
-}
+    }
 
     /**
      * 发送 redis 命令
@@ -431,7 +437,21 @@ class RedisClientHandler extends ChannelDuplexHandler {
 
     }
 
-
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if(evt instanceof IdleStateEvent) {
+            // 发送心跳到远端
+            List<RedisMessage> children = new ArrayList<>(1);
+            children.add(new FullBulkStringRedisMessage(HEARTBEAT_SEQUENCE.duplicate()));
+            RedisMessage request = new ArrayRedisMessage(children);
+            ctx.writeAndFlush(request)
+                    .addListener(ChannelFutureListener.CLOSE_ON_FAILURE);    // 关闭连接
+            isHeart = true;
+        } else {
+            // 传递给下一个处理程序
+            super.userEventTriggered(ctx, evt);
+        }
+    }
 
     /**
      * 接收 redis 响应数据
@@ -441,8 +461,13 @@ class RedisClientHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         RedisMessage redisMessage = (RedisMessage) msg;
-        // 打印响应消息
-        printAggregatedRedisResponse(redisMessage);
+        //心跳
+        if (msg instanceof SimpleStringRedisMessage && isHeart && "PONG".equalsIgnoreCase(((SimpleStringRedisMessage) msg).content())) {
+            isHeart = false;
+        }else{
+            // 打印响应消息
+            printAggregatedRedisResponse(redisMessage);
+        }
         // 是否资源
         ReferenceCountUtil.release(redisMessage);
     }
