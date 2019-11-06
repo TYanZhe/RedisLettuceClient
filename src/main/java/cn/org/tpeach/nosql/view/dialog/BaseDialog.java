@@ -17,7 +17,6 @@ import java.awt.event.WindowListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public abstract class BaseDialog<T,R> extends JDialog implements WindowListener {
 	protected T t;
@@ -264,35 +263,39 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	protected void submit(ActionEvent e) {
 
 	}
-	public void submit(final JButton okBtn, Supplier<Boolean> request,boolean timeout){
-		Layer.showDialogLoading(this,true,()->{
+	public void submit(final JButton okBtn, Runnable request,boolean timeout){
+		Layer.showDialogLoading_v2(false,timeout,()->{
 			if(okBtn != null){
 				okBtn.setEnabled(false);
+			}else{
+				this.okBtn.setEnabled(false);
 			}
 
 			try{
-				return request.get();
+				request.run();
 			}finally {
 				if(okBtn != null){
 					okBtn.setEnabled(true);
+				}else{
+					this.okBtn.setEnabled(true);
 				}
 			}
-		},timeout);
+		});
 	}
-	public void submit(final JButton okBtn, Supplier<Boolean> request ){
+	public void submit(final JButton okBtn, Runnable request ){
 		submit(okBtn,request,true);
 	}
-	public void submit(Supplier<Boolean> request){
+	public void submit(Runnable request){
 		submit(null,request);
 	}
-	public void submit(Supplier<Boolean> request,boolean timeout){
+	public void submit(Runnable request,boolean timeout){
 		submit(null,request,timeout);
 	}
 	/**
 	 * @param e
 	 */
 	protected void cancel(ActionEvent e) {
-		this.dispose();
+		close();
 	}
 
 	@Override

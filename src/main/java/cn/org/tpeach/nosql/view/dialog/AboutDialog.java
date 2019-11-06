@@ -53,7 +53,7 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 		leftPanel = new JPanel();
 		leftPanel.setBackground(Color.WHITE);
 		contextPanel.add(leftPanel);
-		if(!"test".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))){
+		if("release".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))){
 			addRightPanel(contextPanel);
 		}
 

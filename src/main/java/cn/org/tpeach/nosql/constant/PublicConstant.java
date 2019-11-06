@@ -161,6 +161,7 @@ public class PublicConstant {
 //        public static ImageIcon tempIcon = IOUtil.getImageIcon("image/base/箭头.png" );
         public static ImageIcon loading_g = IOUtil.getImageIcon("image/base/loading_g.gif" );
         public static ImageIcon  command = IOUtil.getImageIcon("image/base/command.png" );
+        public static ImageIcon loading_o = IOUtil.getImageIcon("image/base/o_loading.gif");
     }
 
 

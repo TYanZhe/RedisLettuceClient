@@ -22,7 +22,7 @@ import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.*;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
-import cn.org.tpeach.nosql.view.dialog.AddRedisAbstractRowDialog;
+import cn.org.tpeach.nosql.view.dialog.AddRedisKeyRowDialog;
 import cn.org.tpeach.nosql.view.dialog.AddRedisServerDialog;
 import cn.org.tpeach.nosql.view.dialog.DeleteRedisKeyDialog;
 import cn.org.tpeach.nosql.view.dialog.Layer;
@@ -391,7 +391,7 @@ public enum MenuManager {
             if (conform == JOptionPane.YES_OPTION) {
                 RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent();
                 RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
-                Layer.showLoading(true, () -> {
+                Layer.showLoading_v2(() -> {
                     final ResultRes<String> resultRes = BaseController.dispatcher(() -> redisConnectService.flushDb(redisTreeItem.getId(), redisTreeItem.getDb()));
                     if (resultRes.isRet()) {
                         Enumeration enumeration = node.children();
@@ -495,7 +495,7 @@ public enum MenuManager {
     }
 
     public void openTabbedPane(JTree tree, RTabbedPane topTabbedPane, RTreeNode node) {
-        Layer.showLoading(true, () -> {
+        Layer.showLoading_v2( () -> {
             //获取数量
             int count = topTabbedPane.getTabCount();
             RedisTreeItem item = (RedisTreeItem) node.getUserObject();
@@ -506,7 +506,6 @@ public enum MenuManager {
                 topTabbedPane.add(item.getName(), selectedIndex + 1, PublicConstant.Image.key_icon, new RedisTabbedPanel(node, tree));
 //			topTabbedPane.remove(selectedIndex+1);
             }
-            return;
         });
 
     }
@@ -540,7 +539,7 @@ public enum MenuManager {
             topTabbedPane.setSelectedIndex(selectedIndex);
             redisTabbedPanel.updateUI(node, tree, new PageBean(), true, true);
         } else {
-            Layer.showLoading(true, () -> {
+            Layer.showLoading_v2(() -> {
                 if (componect instanceof ServiceInfoPanel) {
                     int count = topTabbedPane.getTabCount();
                     for (int i = count - 1; i > 0; i--) {
@@ -564,7 +563,7 @@ public enum MenuManager {
 
 
     private void addNewKey(JTree tree, RTreeNode node, RedisTreeItem redisTreeItem, JTextField keyFilterField) {
-        AddRedisAbstractRowDialog d = new AddRedisAbstractRowDialog(LarkFrame.frame, redisTreeItem);
+        AddRedisKeyRowDialog d = new AddRedisKeyRowDialog(LarkFrame.frame, redisTreeItem);
         d.getResult((item) -> {
             //重新加载
 //				SwingTools.addTreeNode(node, redisTreeItem.getId(), db+"", item.getKey(), PublicConstant.Image.logo_20, RedisType.KEY);

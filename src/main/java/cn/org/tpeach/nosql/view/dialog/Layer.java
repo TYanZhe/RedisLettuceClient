@@ -1,27 +1,31 @@
 package cn.org.tpeach.nosql.view.dialog;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
-import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.view.RedisMainWindow;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
+@Slf4j
 public class Layer {
     private static ConcurrentLinkedDeque<LoadingDialog> loadingDeque = new ConcurrentLinkedDeque();
 
+    private static JDialog jDialog = new JDialog(LarkFrame.frame,true);
+    static {
+        jDialog.setUndecorated(true);
+        jDialog.setResizable(false);
+    }
+    @Deprecated
     public static void showDialogLoading(JDialog jDialog, boolean isload, Supplier<Boolean> doInBackground, boolean timeout) {
         jDialog.setVisible(false);
         showLoading(isload, doInBackground, b -> {
@@ -30,26 +34,30 @@ public class Layer {
             }
         }, timeout);
     }
-
+    @Deprecated
     public static void showLoading(boolean isload, Runnable doInBackground, boolean timeout) {
         showLoading(isload, doInBackground, timeout,false);
     }
-
+    @Deprecated
     public static void showLoading(boolean isload, Runnable doInBackground) {
         showLoading(isload, doInBackground, true);
     }
+    @Deprecated
     public static void showLoading(boolean isload, Runnable doInBackground,boolean timeout,boolean rightNow) {
         showLoading(isload, doInBackground, timeout,rightNow,false,0);
     }
+    @Deprecated
     public static void showLoading(boolean isload, Runnable doInBackground,boolean timeout,boolean rightNow,boolean delayHidden,int delayMils) {
         showLoading(isload,  () -> {
             doInBackground.run();
             return true;
         }, null,  timeout,rightNow,delayHidden,delayMils);
     }
+    @Deprecated
     public static void showLoading(boolean isload, Supplier<Boolean> doInBackground, Consumer<Boolean> hidden, boolean timeout){
         showLoading(isload,  doInBackground, hidden,  timeout,false,false,0);
     }
+    @Deprecated
     public static void showLoading(boolean isload, Supplier<Boolean> doInBackground, Consumer<Boolean> hidden, boolean timeout,boolean rightNow,boolean delayHidden,int delayMils) {
         while (loadingDeque.size() > 10) {
             loadingDeque.pop();
@@ -72,6 +80,107 @@ public class Layer {
 
     public static void resizeDialog(int width, int height) {
         LoadingDialog.resizeDialog(width, height);
+    }
+    /**
+     *
+     * @param rightNow false 请求超过300毫秒才显示loading
+     * @param timeout 是否65秒超时关闭
+     * @param doInBackground
+     */
+    public static synchronized void showDialogLoading_v2(boolean rightNow, boolean timeout,Runnable doInBackground) {
+        showLoading_v2(true,rightNow,timeout,doInBackground,true);
+    }
+    public static synchronized void showLoading_v2(boolean rightNow, boolean timeout,Runnable doInBackground) {
+        showLoading_v2(true,rightNow,timeout,doInBackground,false);
+    }
+    /**
+     *
+     * @param rightNow false 请求超过300毫秒才显示loading
+     * @param timeout 是否65秒超时关闭
+     * @param doInBackground
+     */
+    public static synchronized void showLoading_v2(boolean isloading,boolean rightNow, boolean timeout,Runnable doInBackground,boolean isDialog) {
+        if(isloading) {
+            CountDownLatch countDownLatch = new CountDownLatch(1);
+            AtomicBoolean isFinish = new AtomicBoolean(false);
+            SwingTools.swingWorkerExec(() -> {
+                try {
+                    //超时隐藏loading
+                    final Thread requestThread = Thread.currentThread();
+                    if (timeout) {
+                        LarkFrame.executorService.execute(() -> {
+                            try {
+                                AtomicBoolean longTime = new AtomicBoolean(true);
+                                Thread thread = Thread.currentThread();
+                                LarkFrame.executorService.execute(() -> {
+                                    try {
+                                        countDownLatch.await();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    if (longTime.get()) {
+                                        thread.interrupt();
+                                    }
+                                });
+                                TimeUnit.SECONDS.sleep(65);
+                                longTime.set(false);
+                                if (!isFinish.get()) {
+                                    requestThread.interrupt();
+                                    SwingTools.showMessageErrorDialog(null, "请求超时");
+                                }
+                            } catch (InterruptedException e) {
+
+                            }
+
+                        });
+                    }
+                    //开始请求
+                    doInBackground.run();
+                } catch (Exception e) {
+                    log.error("loding异常", e);
+                    SwingTools.showMessageErrorDialog(null, ServiceProxy.getStackTrace(e));
+                } finally {
+
+                    isFinish.set(true);
+                    countDownLatch.countDown();
+                    hiddenLoading(isDialog);
+                }
+
+                return true;
+            });
+            if (rightNow) {
+                showLoadingPanel(isDialog);
+            } else {
+                LarkFrame.executorService.schedule(() -> {
+                    if (!isFinish.get()) {
+                        showLoadingPanel(isDialog);
+                    }
+                }, 300, TimeUnit.MILLISECONDS);
+            }
+        }
+    }
+
+    /**
+     * 请求超过300毫秒才显示loading  65秒超时关闭
+     * @param doInBackground
+     */
+    public static synchronized void showLoading_v2( Runnable doInBackground) {
+        showLoading_v2(false,true, doInBackground);
+    }
+    private static void showLoadingPanel(boolean isDialog){
+        RedisMainWindow.loadingGlassPane.setVisible(true);
+        RedisMainWindow.loadingGlassPane.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        if(!isDialog){
+            SwingTools.swingWorkerExec(()->{jDialog.setVisible(true);return  true;});
+        }
+
+    }
+    private static void hiddenLoading(boolean isDialog){
+        RedisMainWindow.loadingGlassPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        RedisMainWindow.loadingGlassPane.setVisible(false);
+        if(!isDialog){
+            jDialog.setVisible(false);
+        }
     }
 }
 
@@ -150,7 +259,12 @@ class LoadingDialog extends JDialog {
         this.setUndecorated(true);
 //        container.setBackground (new Color (0, 0, 0, 0));
         this.setBackground(new Color(0, 0, 0, 5));
-        this.setOpacity(0.8f);
+        //某些平台 不支持
+        try {
+            this.setOpacity(0.8f);
+        }catch (UnsupportedOperationException e){
+
+        }
         this.getRootPane().setOpaque(false);
         contextPanel.setOpaque(false);
         contextPanel.setBackground(Color.RED);

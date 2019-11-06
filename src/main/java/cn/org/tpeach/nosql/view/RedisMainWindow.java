@@ -18,16 +18,9 @@ import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.ConfigParser;
-import cn.org.tpeach.nosql.tools.StringUtils;
-import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
-import cn.org.tpeach.nosql.view.component.EasyJSP;
-import cn.org.tpeach.nosql.view.component.NonRectanglePopupFactory;
-import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
-import cn.org.tpeach.nosql.view.component.RTabbedPane;
-import cn.org.tpeach.nosql.view.dialog.Layer;
+import cn.org.tpeach.nosql.view.component.*;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.jtree.RedisTreeModel;
@@ -44,6 +37,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.function.Consumer;
@@ -58,7 +52,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
     private static final long serialVersionUID = 4087854446377861533L;
     private final int INIT_WIDTH = 1152;
     private final int INIT_HEIGHT = 720;
-
+    public  static JPanel loadingGlassPane;
     private RedisTreeRenderer redisTreeRenderer = new RedisTreeRenderer();
     //初始化宽度占总屏幕宽度百分比
     private float SIZE_PERCENT = 0.60F;
@@ -245,7 +239,6 @@ public class RedisMainWindow extends javax.swing.JFrame {
                 monitorDialog.setSize(new Dimension(width,height));
                 final Point location = RedisMainWindow.this.getLocation();
                 monitorDialog.setLocation(location.x+10,location.y+RedisMainWindow.this.getHeight()-monitorDialog.getHeight()-statePanel.getHeight()-10);
-                Layer.resizeDialog(source.getWidth(),source.getHeight());
             }
 
             @Override
@@ -256,8 +249,47 @@ public class RedisMainWindow extends javax.swing.JFrame {
             }
             
         });
+        String s ="                                           _._\n" +
+                "                                      _.-``__ ''-._\n" +
+                "                                 _.-``    `.  `_.  ''-._           \n" +
+                "                             .-`` .-```.  ```\\/    _.,_ ''-._\n" +
+                "                            (    '      ,       .-`  | `,    )     \n" +
+                "                            |`-._`-...-` __...-.``-._|'` _.-'|     \n" +
+                "                            |    `-._   `._    /     _.-'    |     \n" +
+                "                             `-._    `-._  `-./  _.-'    _.-'\n" +
+                "                            |`-._`-._    `-.__.-'    _.-'_.-'|\n" +
+                "                            |    `-"+ DateUtils.format(new Date(),"yyyy-MM-dd HH:mm:ss") +" -'    |          \n" +
+                "                             `-._    `-._`-.__.-'_.-'    _.-'\n" +
+                "                            |`-._`-._ RedisLark-"+LarkFrame.APPLICATION_VALUE.get("version")+"_.-'_.-'|\n" +
+                "                            |    `-._`-._        _.-'_.-'    |\n" +
+                "                             `-._    `-._`-.__.-'_.-'    _.-'\n" +
+                "                                 `-._    `-.__.-'    _.-'\n" +
+                "                                     `-._        _.-'\n" +
+                "                                         `-.__.-'\n\n";
+        LarkFrame.larkLog.info(null,s,Color.RED.brighter().brighter().brighter());
 
 
+        loadingGlassPane = getLoadingGlassPane();
+        this.setGlassPane(loadingGlassPane);
+    }
+
+    private JPanel getLoadingGlassPane(){
+        JPanel loadingGlassPane = new JPanel();
+        RButton button = new RButton();
+        button.setText("Loading data, please wait...");
+        button.setIcon(PublicConstant.Image.loading_g);
+        button.setVerticalTextPosition(SwingConstants.BOTTOM);
+        button.setHorizontalTextPosition(SwingConstants.CENTER);
+        button.setFocusPainted(false);
+        button.setOpaque(false);
+//        button.setFont(new Font("新宋体", Font.ITALIC, 16));
+        button.setForeground(new Color(80,223,240));
+        loadingGlassPane.setLayout(new BorderLayout());
+
+        loadingGlassPane.add(button);
+// Transparent
+        loadingGlassPane.setOpaque(false);
+        return loadingGlassPane;
     }
 
     //------------------------------------------------------toolbar start-------------------------------------------

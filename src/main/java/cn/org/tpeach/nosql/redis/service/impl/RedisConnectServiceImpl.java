@@ -280,25 +280,16 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
             }
             //优化删除不完全
             if (totalCount != null && number < totalCount) {
-                final DbSizeCommand dbSizeCommand = new DbSizeCommand(id, db);
-                dbSizeCommand.setPrintLog(false);
-                final Long aLong = dbSizeCommand.execute();
-                if (aLong != null) {
-//                    logger.info("尝试删除未扫描到keys:{},当前库key总数:{}", totalCount - number, aLong);
-                    int count = aLong.intValue();
-                    while (count > 0) {
-                        count = count - maxCount;
-                        scanCommand = new ScanCommand(id, db, ScanCursor.INITIAL, maxCount);
-                        scanCommand.match(pattern);
-                        keyScanCursor = scanCommand.execute();
-                        resultKeys = keyScanCursor.getKeys();
-                        if (CollectionUtils.isNotEmpty(resultKeys)) {
-                            keys = new byte[resultKeys.size()][];
-                            resultKeys.toArray(keys);
-                            resultKeys.clear();
-                            number += this.deleteKeys(id, db, keys);
-                        }
-                    }
+//                    logger.info("尝试删除未扫描到keys:{},当前库key总数:{}", totalCount - number, aLong)
+                scanCommand = new ScanCommand(id, db, ScanCursor.INITIAL, maxCount);
+                scanCommand.match(pattern);
+                keyScanCursor = scanCommand.execute();
+                resultKeys = keyScanCursor.getKeys();
+                if (CollectionUtils.isNotEmpty(resultKeys)) {
+                    keys = new byte[resultKeys.size()][];
+                    resultKeys.toArray(keys);
+                    resultKeys.clear();
+                    number += this.deleteKeys(id, db, keys);
                 }
             }
         }else{

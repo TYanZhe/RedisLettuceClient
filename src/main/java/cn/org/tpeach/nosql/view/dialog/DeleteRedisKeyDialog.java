@@ -5,6 +5,7 @@ package cn.org.tpeach.nosql.view.dialog;
 
 import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
+import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
@@ -79,7 +80,7 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 		this.keyPattern = redisTreeItem.getOriginName()+":*";
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 		this.containerMap.put("countDownLatch",countDownLatch);
-		Layer.showLoading(true,()->{
+		Layer.showLoading_v2(()->{
 			try {
 				countDownLatch.await();
 			} catch (InterruptedException e) {
@@ -184,14 +185,15 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
         int conform = SwingTools.showConfirmDialogYNC(null, "是否确认删除？", "删除确认");
         if(conform == JOptionPane.YES_OPTION){
             super.submit(()->{
+            	this.setVisible(false);
 				long startMillis = Clock.systemDefaultZone().millis();
 				ResultRes<Long> dispatcher = BaseController.dispatcher(() ->redisConnectService.deleteKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyPattern,Integer.valueOf(totalKeys)));
+				LarkFrame.executorService.execute(()->this.setVisible(true));
                 if(dispatcher.isRet()) {
                     consumer.accept(dispatcher.getData()+","+(Clock.systemDefaultZone().millis()- startMillis));
                 }else {
                     SwingTools.showMessageErrorDialog(null,dispatcher.getMsg());
                 }
-                return !dispatcher.isRet();
             },false);
         }
 	}

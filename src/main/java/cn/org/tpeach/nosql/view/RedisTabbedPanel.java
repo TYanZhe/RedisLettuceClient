@@ -917,7 +917,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                     if(StringUtils.isBlank(valueArea.getText())||selectValueViewComn.getSelectedIndex() != 0){
                         magnifyTextDialog.setEditable(false);
                     }
-                    Layer.showLoading(true,()->{
+                    Layer.showDialogLoading_v2(false,true,()->{
                         magnifyTextDialog.setText(valueArea.getText());
                         magnifyTextDialog.open(s->setTextLoading(valueArea,s,true));
                     });
@@ -1378,7 +1378,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     }
 
     private void saveKeyInfo(MouseEvent evt) {//TODO
-        Layer.showLoading(true,()->{
+        Layer.showLoading_v2( ()->{
             try {
                 TimeUnit.MILLISECONDS.sleep(600);
             } catch (InterruptedException e) {
@@ -1856,7 +1856,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             return;
         }
         updateStatus.set(false);
-        Layer.showLoading(loading,()->{
+        Layer.showLoading_v2(loading,false,true,()->{
             try {
                 PageBean oldPageBean = this.pageBean;
                 RTreeNode oldTreeNode = this.treeNode;
@@ -1931,7 +1931,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             }finally {
                 updateStatus.set(true);
             }
-        });
+        },false);
     }
 
     private void refreshTable(){

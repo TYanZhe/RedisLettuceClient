@@ -27,7 +27,7 @@ import java.awt.event.ActionEvent;
  *
  * @author taoyz @date 2019年8月24日 @version 1.0
  */
-public class AddRedisAbstractRowDialog extends AbstractRowDialog<RedisTreeItem, RedisKeyInfo> {
+public class AddRedisKeyRowDialog extends AbstractRowDialog<RedisTreeItem, RedisKeyInfo> {
 
     /**
      *
@@ -47,11 +47,11 @@ public class AddRedisAbstractRowDialog extends AbstractRowDialog<RedisTreeItem, 
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService",
             IRedisConnectService.class);
 
-    public AddRedisAbstractRowDialog(JFrame parent, Image icon, RedisTreeItem t) {
+    public AddRedisKeyRowDialog(JFrame parent, Image icon, RedisTreeItem t) {
         super(parent, icon, t);
     }
 
-    public AddRedisAbstractRowDialog(JFrame parent, RedisTreeItem t) {
+    public AddRedisKeyRowDialog(JFrame parent, RedisTreeItem t) {
         super(parent, t);
     }
 
@@ -223,7 +223,6 @@ public class AddRedisAbstractRowDialog extends AbstractRowDialog<RedisTreeItem, 
                 SwingTools.showMessageErrorDialog(this, "未知错误：添加失败");
 
             }
-            return !res.isRet();
         });
     }
 

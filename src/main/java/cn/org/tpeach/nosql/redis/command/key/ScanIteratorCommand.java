@@ -27,7 +27,7 @@ public class ScanIteratorCommand extends JedisCommand<ScanIterator<byte[]>> {
 
     @Override
     public String sendCommand() {
-        return "SCAN ...";
+        return "SCAN ... MATCH "+pattern+" COUNT "+count;
     }
 
     @Override

@@ -9,7 +9,6 @@ import cn.org.tpeach.nosql.tools.ConfigParser;
 import cn.org.tpeach.nosql.tools.ReflectUtil;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.view.component.EasyJSP;
-import cn.org.tpeach.nosql.view.component.OnlyReadTextPane;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -33,8 +32,6 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -72,104 +69,7 @@ class RConsole extends JConsole{
 }
 
 
-class ConsoleTextPane extends OnlyReadTextPane implements KeyListener {
-    @Getter
-    @Setter
-    private String prefix;
-    public ConsoleTextPane() {
-        this.setBackground(Color.BLACK);
-    }
-
-    @Override
-    public void init() {
-        jsp = new EasyJSP(this).hiddenHorizontalScrollBar();
-        this.setCandy(Color.BLACK);
-        setOpaque(false);
-        this.setFont(new Font("黑体",Font.PLAIN,15));
-        setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-        setForeground(Color.GREEN.darker().darker().darker());
-        addKeyListener(this);
-        clear();
-    }
-
-    @Override
-    public  boolean isEditable() {
-        return true;
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-        ConsoleTextPane.this.setCaretPosition(this.getDocument().getLength());
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        ConsoleTextPane.this.setCaretPosition(this.getDocument().getLength());
-        if(e.getKeyCode() == KeyEvent.VK_ENTER){
-            //获取最后一行数据
-
-            //发送命令
-
-
-            //接收命令后
-            if(StringUtils.isNotBlank(prefix)){
-                print( prefix+">",Color.WHITE);
-            }
-
-        }
-
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        ConsoleTextPane.this.setCaretPosition(this.getDocument().getLength());
-    }
-}
-
 public class ConsolePanel extends JPanel {
-/*    ConsoleTextPane jTextPane = new ConsoleTextPane();
-    *//**
-     * 最多显示条数
-     *//*
-    @Getter
-    @Setter
-    protected int maxEntries = 1000;
-    *//**
-     * 已经在显示的条数
-     *//*
-    private int entries = 0;
-
-
-    public String getPrefix() {
-        return jTextPane.getPrefix();
-    }
-
-    public void setPrefix(String prefix) {
-        jTextPane.setPrefix(prefix);
-    }
-
-    public ConsolePanel() {
-        this.setBackground(Color.BLACK);
-        this.setLayout(new BorderLayout());
-        this.add(jTextPane.getJsp(),BorderLayout.CENTER);
-    }
-
-    public synchronized void println(String s) {
-        jTextPane.println(s);
-    }
-    public synchronized void println(String s, Color fontColor) {
-        jTextPane.println(s,fontColor);
-    }
-    public synchronized void print(String s) {
-        jTextPane.print(s);
-    }
-    public synchronized void print(String s, Color fontColor) {
-        jTextPane.print(s,fontColor);
-    }
-
-    public void initFinish() {
-        jTextPane.requestFocus();
-    }*/
     RConsole console;
     @Getter
     @Setter
@@ -181,6 +81,7 @@ public class ConsolePanel extends JPanel {
     private RedisConnectInfo connectInfo;
     private  BufferedReader bufInput;
     static  SimpleAttributeSet attrs = new SimpleAttributeSet();
+    static EventLoopGroup group = new NioEventLoopGroup();
     static {
         StyleConstants.setForeground(attrs, Color.WHITE);
     }
@@ -204,7 +105,7 @@ public class ConsolePanel extends JPanel {
         list.add(thread);
         promptFormat = "["+connectInfo.getName()+"](%s)$> ";
         prompt = String.format(promptFormat,"0");
-        EventLoopGroup group = new NioEventLoopGroup();
+
         try {
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 20000);
@@ -289,6 +190,10 @@ public class ConsolePanel extends JPanel {
                     break;
                 }else if(line.equals(";")){
                     line="\n";
+                }else if (line.equalsIgnoreCase("clear")){
+                    console.getTextPane().setText("");
+                    console.print(prompt,Color.WHITE);
+                    continue;
                 }
                 //发送
                 lastWriteFuture = channel.writeAndFlush(StringUtils.decodeUnicode(line));
