@@ -917,7 +917,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                     if(StringUtils.isBlank(valueArea.getText())||selectValueViewComn.getSelectedIndex() != 0){
                         magnifyTextDialog.setEditable(false);
                     }
-                    Layer.showDialogLoading_v2(false,true,()->{
+                    Layer.showLoading_v2(()->{
                         magnifyTextDialog.setText(valueArea.getText());
                         magnifyTextDialog.open(s->setTextLoading(valueArea,s,true));
                     });
@@ -1931,7 +1931,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             }finally {
                 updateStatus.set(true);
             }
-        },false);
+        });
     }
 
     private void refreshTable(){

@@ -195,6 +195,16 @@ public class RedisMainWindow extends javax.swing.JFrame {
                 }
             }
         });
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                int result = SwingTools.showConfirmDialogYNC(null,"确认退出?","确认");
+                if (result == JOptionPane.OK_OPTION) {
+                    // 退出
+                    System.exit(0);
+                }
+            }
+        });
         //设置内容与日志间隔  最大化保持日志panel高度不变 
         dataBgSplitPane.setDividerLocation(height - logPanelheight);
         contentPane.addComponentListener(new ComponentAdapter() {
@@ -618,7 +628,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         statePanel = new StatePanel(monitorDialog);
         jToolBar = getToolBar();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
 
         contentPane.setBackground(new java.awt.Color(255, 255, 255));

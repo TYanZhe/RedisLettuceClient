@@ -19,12 +19,6 @@ import java.util.function.Supplier;
 @Slf4j
 public class Layer {
     private static ConcurrentLinkedDeque<LoadingDialog> loadingDeque = new ConcurrentLinkedDeque();
-
-    private static JDialog jDialog = new JDialog(LarkFrame.frame,true);
-    static {
-        jDialog.setUndecorated(true);
-        jDialog.setResizable(false);
-    }
     @Deprecated
     public static void showDialogLoading(JDialog jDialog, boolean isload, Supplier<Boolean> doInBackground, boolean timeout) {
         jDialog.setVisible(false);
@@ -87,11 +81,8 @@ public class Layer {
      * @param timeout 是否65秒超时关闭
      * @param doInBackground
      */
-    public static synchronized void showDialogLoading_v2(boolean rightNow, boolean timeout,Runnable doInBackground) {
-        showLoading_v2(true,rightNow,timeout,doInBackground,true);
-    }
     public static synchronized void showLoading_v2(boolean rightNow, boolean timeout,Runnable doInBackground) {
-        showLoading_v2(true,rightNow,timeout,doInBackground,false);
+        showLoading_v2(true,rightNow,timeout,doInBackground);
     }
     /**
      *
@@ -99,7 +90,7 @@ public class Layer {
      * @param timeout 是否65秒超时关闭
      * @param doInBackground
      */
-    public static synchronized void showLoading_v2(boolean isloading,boolean rightNow, boolean timeout,Runnable doInBackground,boolean isDialog) {
+    public static synchronized void showLoading_v2(boolean isloading,boolean rightNow, boolean timeout,Runnable doInBackground) {
         if(isloading) {
             CountDownLatch countDownLatch = new CountDownLatch(1);
             AtomicBoolean isFinish = new AtomicBoolean(false);
@@ -143,17 +134,17 @@ public class Layer {
 
                     isFinish.set(true);
                     countDownLatch.countDown();
-                    hiddenLoading(isDialog);
+                    hiddenLoading();
                 }
 
                 return true;
             });
             if (rightNow) {
-                showLoadingPanel(isDialog);
+                showLoadingPanel();
             } else {
                 LarkFrame.executorService.schedule(() -> {
                     if (!isFinish.get()) {
-                        showLoadingPanel(isDialog);
+                        showLoadingPanel();
                     }
                 }, 300, TimeUnit.MILLISECONDS);
             }
@@ -167,20 +158,13 @@ public class Layer {
     public static synchronized void showLoading_v2( Runnable doInBackground) {
         showLoading_v2(false,true, doInBackground);
     }
-    private static void showLoadingPanel(boolean isDialog){
+    private static void showLoadingPanel(){
         RedisMainWindow.loadingGlassPane.setVisible(true);
         RedisMainWindow.loadingGlassPane.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        if(!isDialog){
-            SwingTools.swingWorkerExec(()->{jDialog.setVisible(true);return  true;});
-        }
-
     }
-    private static void hiddenLoading(boolean isDialog){
+    private static void hiddenLoading(){
         RedisMainWindow.loadingGlassPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         RedisMainWindow.loadingGlassPane.setVisible(false);
-        if(!isDialog){
-            jDialog.setVisible(false);
-        }
     }
 }
 

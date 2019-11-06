@@ -264,7 +264,7 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 
 	}
 	public void submit(final JButton okBtn, Runnable request,boolean timeout){
-		Layer.showDialogLoading_v2(false,timeout,()->{
+		Layer.showLoading_v2(false,timeout,()->{
 			if(okBtn != null){
 				okBtn.setEnabled(false);
 			}else{
