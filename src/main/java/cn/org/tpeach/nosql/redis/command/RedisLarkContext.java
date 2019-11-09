@@ -111,7 +111,7 @@ public class RedisLarkContext<K,V> {
 
     public RedisVersion getRedisVersion() {
         if(this.version == null) {
-            Map<String, String> infoMap = getInfo(true);
+            Map<String, String> infoMap = getInfo(!redisConnectInfo.isTest());
             if(MapUtils.isNotEmpty(infoMap)){
                 this.version = RedisVersion.getRedisVersion(infoMap.get(RedisInfoKeyConstant.redisVersion));
             }

@@ -60,7 +60,9 @@ public class RedisConnectInfo implements Serializable,Cloneable {
     @Getter
     @Setter
     private String nameSpaceSepartor = PublicConstant.NAMESPACE_SPLIT;
-
+    @Getter
+    @Setter
+    private boolean isTest;
     @Override
     public boolean equals(Object o) {
         if (this == o){

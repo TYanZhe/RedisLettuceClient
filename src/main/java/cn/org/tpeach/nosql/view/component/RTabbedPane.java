@@ -276,7 +276,7 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 					}
 
 				}
-				SwingTools.swingWorkerExec(()->{ removeList.forEach(o->{try{o.accept(component);}catch (Exception ex){}});return  null;});
+				SwingTools.swingWorkerExec(()->{ removeList.forEach(o->{try{o.accept(component);}catch (Exception ex){}});});
 
 
 			}

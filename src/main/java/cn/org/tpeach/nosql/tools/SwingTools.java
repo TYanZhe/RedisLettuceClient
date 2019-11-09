@@ -5,9 +5,7 @@ import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.exception.ServiceException;
-import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
-import cn.org.tpeach.nosql.view.StatePanel;
 import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.component.ROptionPane;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
@@ -275,7 +273,6 @@ public class SwingTools {
 			}finally {
 				atomicBoolean.set(false);
 			}
-			return false;
 		});
 
 
@@ -331,10 +328,7 @@ public class SwingTools {
 	}
 
 	public static void showMessageErrorDialog(Component parentComponent, Object message, String title) {
-		swingWorkerExec(()->{
-			ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.ERROR_MESSAGE);
-			return null;
-		});
+		swingWorkerExec(()->ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.ERROR_MESSAGE));
 	}
 
 	public static void showMessageErrorDialog(Component parentComponent, Object message) {
@@ -343,17 +337,11 @@ public class SwingTools {
 	}
 
 	public static void showMessageMessageDialog(Component parentComponent, Object message, String title) {
-		swingWorkerExec(()->{
-			ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.WARNING_MESSAGE);
-			return null;
-		});
+		swingWorkerExec(()->ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.WARNING_MESSAGE));
 	}
 
 	public static void showMessageInfoDialog(Component parentComponent, Object message, String title) {
-		swingWorkerExec(()->{
-			ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE);
-			return null;
-		});
+		swingWorkerExec(()->ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE));
 
 	}
 
@@ -495,8 +483,8 @@ public class SwingTools {
 		};
 		task.execute();
 	}
-	public static <T> void  swingWorkerExec(Supplier<T> doInBackground ){
-		swingWorkerExec(doInBackground,null);
+	public static void  swingWorkerExec(Runnable doInBackground ){
+		swingWorkerExec(()->{doInBackground.run();return true;},null);
 	}
 
 

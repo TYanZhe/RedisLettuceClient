@@ -192,9 +192,11 @@ public class RToolBar extends JToolBar {
         this.add(monitorButton);
         this.add(settingsButton);
 //        jToolBar.add(helpButton);
-        this.add(aboutButton);
+
         if("test".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))){
             this.add(testBatch);
+        }else if("release".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))|| "beta".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))){
+            this.add(aboutButton);
         }
         this.putClientProperty("JToolBar.isRollover", Boolean.TRUE);
     }

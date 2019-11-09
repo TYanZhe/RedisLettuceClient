@@ -3,6 +3,7 @@ package cn.org.tpeach.nosql.view.dialog;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.service.ServiceProxy;
+import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.RedisMainWindow;
 import lombok.Getter;
@@ -19,6 +20,7 @@ import java.util.function.Supplier;
 @Slf4j
 public class Layer {
     private static ConcurrentLinkedDeque<LoadingDialog> loadingDeque = new ConcurrentLinkedDeque();
+    private static ConcurrentLinkedDeque<String> hiddenDeque = new ConcurrentLinkedDeque();
     @Deprecated
     public static void showDialogLoading(JDialog jDialog, boolean isload, Supplier<Boolean> doInBackground, boolean timeout) {
         jDialog.setVisible(false);
@@ -92,52 +94,42 @@ public class Layer {
      */
     public static synchronized void showLoading_v2(boolean isloading,boolean rightNow, boolean timeout,Runnable doInBackground) {
         if(isloading) {
+            String uuid = StringUtils.getUUID();
+            hiddenDeque.push(uuid);
             CountDownLatch countDownLatch = new CountDownLatch(1);
             AtomicBoolean isFinish = new AtomicBoolean(false);
+            //超时隐藏loading
+            final Thread requestThread = Thread.currentThread();
             SwingTools.swingWorkerExec(() -> {
                 try {
-                    //超时隐藏loading
-                    final Thread requestThread = Thread.currentThread();
-                    if (timeout) {
-                        LarkFrame.executorService.execute(() -> {
-                            try {
-                                AtomicBoolean longTime = new AtomicBoolean(true);
-                                Thread thread = Thread.currentThread();
-                                LarkFrame.executorService.execute(() -> {
-                                    try {
-                                        countDownLatch.await();
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-                                    if (longTime.get()) {
-                                        thread.interrupt();
-                                    }
-                                });
-                                TimeUnit.SECONDS.sleep(65);
-                                longTime.set(false);
-                                if (!isFinish.get()) {
-                                    requestThread.interrupt();
-                                    SwingTools.showMessageErrorDialog(null, "请求超时");
-                                }
-                            } catch (InterruptedException e) {
-
-                            }
-
-                        });
+                    int timeOutSeconds = 65;
+                    if (!timeout) {
+                        timeOutSeconds = 300;
                     }
-                    //开始请求
-                    doInBackground.run();
-                } catch (Exception e) {
-                    log.error("loding异常", e);
-                    SwingTools.showMessageErrorDialog(null, ServiceProxy.getStackTrace(e));
-                } finally {
+                    AtomicBoolean longTime = new AtomicBoolean(true);
+                    Thread thread = Thread.currentThread();
+                    LarkFrame.executorService.execute(() -> {
+                        try {
+                            countDownLatch.await();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        if (longTime.get()) {
+                            thread.interrupt();
+                        }
+                    });
+                    TimeUnit.SECONDS.sleep(timeOutSeconds);
+                    longTime.set(false);
+                    if (!isFinish.get()) {
+                        requestThread.interrupt();
+                        if(timeout){
+                            SwingTools.showMessageErrorDialog(null, "请求超时");
+                        }
+                    }
+                } catch (InterruptedException e) {
 
-                    isFinish.set(true);
-                    countDownLatch.countDown();
-                    hiddenLoading();
                 }
 
-                return true;
             });
             if (rightNow) {
                 showLoadingPanel();
@@ -148,6 +140,23 @@ public class Layer {
                     }
                 }, 300, TimeUnit.MILLISECONDS);
             }
+            SwingTools.swingWorkerExec(() -> {
+                try {
+                    //开始请求
+                    doInBackground.run();
+                } catch (Exception e) {
+                    log.error("loding异常", e);
+                    SwingTools.showMessageErrorDialog(null, ServiceProxy.getStackTrace(e));
+                } finally {
+
+                    isFinish.set(true);
+                    countDownLatch.countDown();
+                    hiddenLoading(uuid);
+                }
+            });
+
+        }else{
+            doInBackground.run();
         }
     }
 
@@ -162,9 +171,15 @@ public class Layer {
         RedisMainWindow.loadingGlassPane.setVisible(true);
         RedisMainWindow.loadingGlassPane.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     }
-    private static void hiddenLoading(){
-        RedisMainWindow.loadingGlassPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        RedisMainWindow.loadingGlassPane.setVisible(false);
+    private static void hiddenLoading(String uuid){
+        if(hiddenDeque.contains(uuid)){
+            hiddenDeque.remove(uuid);
+            if(hiddenDeque.isEmpty()){
+                RedisMainWindow.loadingGlassPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                RedisMainWindow.loadingGlassPane.setVisible(false);
+            }
+        }
+
     }
 }
 
@@ -324,7 +339,6 @@ class LoadingDialog extends JDialog {
 
 
                 }
-                return null;
             });
             try {
                 countDownLatch.await();
@@ -345,7 +359,6 @@ class LoadingDialog extends JDialog {
             if (hiddenLister != null) {
                 hiddenLister.run();
             }
-            return null;
         });
     }
 }

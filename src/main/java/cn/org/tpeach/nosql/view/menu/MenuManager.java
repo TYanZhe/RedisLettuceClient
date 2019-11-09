@@ -159,7 +159,6 @@ public enum MenuManager {
                     RedisLarkPool.destory(redisTreeItem.getId());
                     node.removeAllChildren();
                     ServiceManager.getInstance().openConnectRedisTree(statePanel, node, redisTreeItem, tree);
-                    return true;
                 });
             });
             serverInfoItem.addActionListener(e -> {
@@ -203,7 +202,7 @@ public enum MenuManager {
                 if(RedisStructure.getRedisStructure(connectInfo.getStructure()).equals(RedisStructure.SINGLE)){
                     ConsolePanel consolePanel = new ConsolePanel(connectInfo,logTabbedPane);
                     logTabbedPane.add(connectInfo.getName(), logTabbedPane.getTabCount(), PublicConstant.Image.command, consolePanel);
-                    SwingTools.swingWorkerExec(()->{consolePanel.start();return null;});
+                    SwingTools.swingWorkerExec(()->consolePanel.start());
                 }
             });
             totalItem.setEnabled(false);
@@ -359,10 +358,7 @@ public enum MenuManager {
                     }
                     d.close();
                 });
-                SwingTools.swingWorkerExec(() -> {
-                    d.open();
-                    return null;
-                });
+                SwingTools.swingWorkerExec(() -> d.open());
             }
 
         });
@@ -383,7 +379,6 @@ public enum MenuManager {
                 node.removeAllChildren();
                 RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
                 ServiceManager.getInstance().openDbRedisTree(node, redisTreeItem, tree, keyFilterField, true);
-                return true;
             });
         });
         flushDbItem.addActionListener(e -> {
@@ -483,10 +478,7 @@ public enum MenuManager {
                 defaultModel.reload(node);
 
             });
-            SwingTools.swingWorkerExec(() -> {
-                d.open();
-                return null;
-            });
+            SwingTools.swingWorkerExec(() -> d.open());
         });
 
         popMenu.add(reloadItem);

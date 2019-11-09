@@ -259,25 +259,26 @@ public class RedisMainWindow extends javax.swing.JFrame {
             }
             
         });
-        String s ="                                           _._\n" +
-                "                                      _.-``__ ''-._\n" +
-                "                                 _.-``    `.  `_.  ''-._           \n" +
-                "                             .-`` .-```.  ```\\/    _.,_ ''-._\n" +
-                "                            (    '      ,       .-`  | `,    )     \n" +
-                "                            |`-._`-...-` __...-.``-._|'` _.-'|     \n" +
-                "                            |    `-._   `._    /     _.-'    |     \n" +
-                "                             `-._    `-._  `-./  _.-'    _.-'\n" +
-                "                            |`-._`-._    `-.__.-'    _.-'_.-'|\n" +
-                "                            |    `-"+ DateUtils.format(new Date(),"yyyy-MM-dd HH:mm:ss") +" -'    |          \n" +
-                "                             `-._    `-._`-.__.-'_.-'    _.-'\n" +
-                "                            |`-._`-._ RedisLark-"+LarkFrame.APPLICATION_VALUE.get("version")+"_.-'_.-'|\n" +
-                "                            |    `-._`-._        _.-'_.-'    |\n" +
-                "                             `-._    `-._`-.__.-'_.-'    _.-'\n" +
-                "                                 `-._    `-.__.-'    _.-'\n" +
-                "                                     `-._        _.-'\n" +
-                "                                         `-.__.-'\n\n";
-        LarkFrame.larkLog.info(null,s,Color.RED.brighter().brighter().brighter());
-
+        if("release".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))) {
+            String s = "                                           _._\n" +
+                    "                                      _.-``__ ''-._\n" +
+                    "                                 _.-``    `.  `_.  ''-._           \n" +
+                    "                             .-`` .-```.  ```\\/    _.,_ ''-._\n" +
+                    "                            (    '      ,       .-`  | `,    )     \n" +
+                    "                            |`-._`-...-` __...-.``-._|'` _.-'|     \n" +
+                    "                            |    `-._   `._    /     _.-'    |     \n" +
+                    "                             `-._    `-._  `-./  _.-'    _.-'\n" +
+                    "                            |`-._`-._    `-.__.-'    _.-'_.-'|\n" +
+                    "                            |    `-" + DateUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss") + " -'    |          \n" +
+                    "                             `-._    `-._`-.__.-'_.-'    _.-'\n" +
+                    "                            |`-._`-._ RedisLark-" + LarkFrame.APPLICATION_VALUE.get("version") + "_.-'_.-'|\n" +
+                    "                            |    `-._`-._        _.-'_.-'    |\n" +
+                    "                             `-._    `-._`-.__.-'_.-'    _.-'\n" +
+                    "                                 `-._    `-.__.-'    _.-'\n" +
+                    "                                     `-._        _.-'\n" +
+                    "                                         `-.__.-'\n\n";
+            LarkFrame.larkLog.info(null, s, Color.RED.brighter().brighter().brighter());
+        }
 
         loadingGlassPane = getLoadingGlassPane();
         this.setGlassPane(loadingGlassPane);
@@ -572,11 +573,11 @@ public class RedisMainWindow extends javax.swing.JFrame {
                 }
                 switch (redisTreeItem.getType()) {
                     case SERVER:
-                        SwingTools.swingWorkerExec(()->{serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree);return null;});
+                        SwingTools.swingWorkerExec(()->serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree));
 
                         break;
                     case DATABASE:
-                        SwingTools.swingWorkerExec(()->{serviceManager.openDbRedisTree(treeNode, redisTreeItem, redisTree,keyFilterField,false);return null;});
+                        SwingTools.swingWorkerExec(()->serviceManager.openDbRedisTree(treeNode, redisTreeItem, redisTree,keyFilterField,true));
                         break;
                     case KEY:
                         RTreeNode node = (RTreeNode) redisTree.getLastSelectedPathComponent(); // 获得右键选中的节点

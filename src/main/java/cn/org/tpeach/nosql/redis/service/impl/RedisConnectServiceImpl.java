@@ -60,8 +60,11 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         String uuid = StringUtils.getUUID();
         try {
             connectInfo.setId(uuid);
+            connectInfo.setTest(true);
             RedisLarkPool.addOrUpdateConnectInfo(connectInfo);
-            String ping = super.executeJedisCommand(new PingCommand(uuid));
+            PingCommand pingCommand = new PingCommand(uuid);
+            pingCommand.setPrintLog(false);
+            String ping = super.executeJedisCommand(pingCommand);
             if(!"PONG".equals(ping)){
                 throw new ServiceException("Ping命令执行失败");
             }

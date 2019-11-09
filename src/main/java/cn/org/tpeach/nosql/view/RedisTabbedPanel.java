@@ -45,6 +45,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -874,9 +877,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                     TableColumnBean tableColumnBean = ((ValueInfoPanel) valueInfoPanel).getValueColumnBean();
                     try{
                         String valueAreaText = getSelectDicText(dicBean, tableColumnBean, valueArea);
-//                    valueArea.setText(valueAreaText);
-                        setTextLoading(valueArea,valueAreaText,true);
                         setValueInfoLabelText(valueAreaText.getBytes().length);
+                        setTextLoading(valueArea,valueAreaText,true);
                     }catch (Exception ex){
                         SwingTools.showMessageErrorDialog(null,ex.getMessage());
                     }
@@ -1062,26 +1064,27 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     }
 
     private void changeValueAreaText(int row, int column, TableColumnBean tableColumnBean) {
-        String valueAreaText = tableColumnBean.toString();
-        ((ValueInfoPanel) valueInfoPanel).setSelectColume(column);
-        ((ValueInfoPanel) valueInfoPanel).setSelectRow(row);
-        ((ValueInfoPanel) valueInfoPanel).setIndex(Integer.valueOf(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(row, 0))));
-        ((ValueInfoPanel) valueInfoPanel).setValueColumnBean(tableColumnBean);
-        if(StringUtils.isText(tableColumnBean.getValue())){
-            selectValueViewComn.setSelectedItem(plaintextDic);
-        }else{
-            selectValueViewComn.setSelectedItem(hexPlainDic);
-        }
-//        valueArea.setText(valueAreaText);
-        setTextLoading(valueArea,valueAreaText,true);
-        setValueInfoLabelText(tableColumnBean.getValue().length);
-        if (!RedisType.STRING.equals(this.redisKeyInfo.getType())) {
-            if (redisDataTable.getSelectedRowCount() > 0) {
-                this.deleteRowLabel.setEnabled(true);
+
+            String valueAreaText = tableColumnBean.toString();
+            ((ValueInfoPanel) valueInfoPanel).setSelectColume(column);
+            ((ValueInfoPanel) valueInfoPanel).setSelectRow(row);
+            ((ValueInfoPanel) valueInfoPanel).setIndex(Integer.valueOf(StringUtils.defaultEmptyToString(redisDataTable.getValueAt(row, 0))));
+            ((ValueInfoPanel) valueInfoPanel).setValueColumnBean(tableColumnBean);
+            if (StringUtils.isText(tableColumnBean.getValue())) {
+                selectValueViewComn.setSelectedItem(plaintextDic);
             } else {
-                this.deleteRowLabel.setEnabled(false);
+                selectValueViewComn.setSelectedItem(hexPlainDic);
             }
-        }
+//        valueArea.setText(valueAreaText);
+            if (!RedisType.STRING.equals(this.redisKeyInfo.getType())) {
+                if (redisDataTable.getSelectedRowCount() > 0) {
+                    this.deleteRowLabel.setEnabled(true);
+                } else {
+                    this.deleteRowLabel.setEnabled(false);
+                }
+            }
+            setTextLoading(valueArea, valueAreaText, true);
+            setValueInfoLabelText(tableColumnBean.getValue().length);
     }
 
 
@@ -1136,48 +1139,38 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     }
 
     private void setTextLoading(RTextArea rTextArea,String text,boolean load){
-//        if(StringUtils.isNotBlank(text) && text.getBytes().length > 150*1024) {
-//            Layer.showLoading(load,()->{
-//                CountDownLatch c = new CountDownLatch(1);
-//                JScrollPane jScrollPane = rTextArea.getJScrollPane();
-//                BoundedRangeModel model = jScrollPane.getVerticalScrollBar().getModel();
-//                rTextArea.setText(null);
-//                model.setValue(model.getMinimum());
-//                model.addChangeListener(new ChangeListener() {
-//                    @Override
-//                    public void stateChanged(ChangeEvent e) {
-//                        if(!model.getValueIsAdjusting()) {
-//                            c.countDown();
-//                            System.out.println("Changed: "+model.getValue());
-//                            model.removeChangeListener(this);
-//                        }
-//                        System.out.println("进入");
-//                    }
-//                });
-//                SwingTools.swingWorkerExec(()->{
-//                    try {
-//                        TimeUnit.MILLISECONDS.sleep(50);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                    rTextArea.setText(text);
-//                    model.setValue(model.getMaximum());
-//                    return true;
-//                });
-//                try {
-//                    c.await();
-//                    System.out.println("完成");
-//                } catch ( Exception e) {
-//                    e.printStackTrace();
-//                }
-//            },false,true,true,300);
-//        }else{
-//
-//
-//        }
+        if(StringUtils.isNotBlank(text) && text.getBytes().length > 150*1024) {
+            if(rTextArea.getText() != null && rTextArea.getText().length() * 2 > text.length()){
+                rTextArea.setText(text);
+            }else{
+                SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
+                int incr = 10000;
+                Document document = rTextArea.getDocument();
+                rTextArea.setText("");
+                Layer.showLoading_v2(true,false,()->{
+                    for (int i = 0; i <= text.length();i+=incr ) {
+                        try{
+                            TimeUnit.MILLISECONDS.sleep(800);
+                            int subLength = text.length() - i <= incr?text.length() - i :incr ;
+                            document.insertString(document.getLength(),text.substring(i,i+subLength),simpleAttributeSet);
+                        } catch (BadLocationException | InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    JScrollPane jScrollPane = rTextArea.getJScrollPane();
+                    JScrollBar verticalScrollBar = jScrollPane.getVerticalScrollBar();
+                    verticalScrollBar.setValue(verticalScrollBar.getMaximum());
+                });
+            }
+
+        }else{
             rTextArea.setText(text);
+        }
 
     }
+
+
+
 
     //---------------------------------------------------right value panl end---------------------------------------------------------------------
     //---------------------------------------------------bottom page  panl start---------------------------------------------------------------------

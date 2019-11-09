@@ -301,7 +301,7 @@ public class AddRedisServerDialog extends AbstractRowDialog<RedisConnectInfo, Re
                 throw new ServiceException("请输入正确的端口");
             }
         }
-        return new RedisConnectInfo((short) 0, id, structure, name, host, port, auth, Long.parseLong(timeOutField.getText()), Integer.parseInt(dbAmountField.getText()), nameSpaceSepartorField.getText());
+        return new RedisConnectInfo((short) 0, id, structure, name, host, port, auth, Long.parseLong(timeOutField.getText()), Integer.parseInt(dbAmountField.getText()), nameSpaceSepartorField.getText(),false);
     }
 
     @Override
