@@ -134,8 +134,8 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         }else{
             pageLoadingcheckBox.setSelected(false);
         }
-        appendTextWaittime.setText(append_text_number);
-        appendTextNumber.setText(append_text_waittime);
+        appendTextWaittime.setText(append_text_waittime);
+        appendTextNumber.setText(append_text_number);
 
     }
 

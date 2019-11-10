@@ -28,6 +28,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -58,6 +59,11 @@ public class ServiceManager {
 	 */
 	public  String getPath() {
 		String path = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+		try {
+			path = java.net.URLDecoder.decode(path, PublicConstant.CharacterEncoding.UTF_8);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 		if (System.getProperty("os.name").contains("dows")) {
 			path = path.substring(1, path.length());
 		}

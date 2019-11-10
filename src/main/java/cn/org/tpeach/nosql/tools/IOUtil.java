@@ -35,7 +35,9 @@ public class IOUtil {
 		return setImageLength(getImageIcon(path),width, height);
 	}
 	public static ImageIcon setImageLength(ImageIcon ii,int width,int height) {
-		ii.setImage(ii.getImage().getScaledInstance(width, height,Image.SCALE_DEFAULT));
+		if(ii != null) {
+			ii.setImage(ii.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT));
+		}
 		return ii;
 	}
 	public static ImageIcon getImageIcon(String path) {

@@ -18,7 +18,13 @@ RedisLark是一款基于java swing的跨平台的Redis桌面管理工具，该�
 
 
 
- 
+![控制台](./uploads/2019-11-11-01929.jpg)
+
+![新建连接](./uploads/2019-11-11-185011.png)
+
+![新建key](./uploads/2019-11-11-185511.jpg)
+
+
 
 #### 版本说明
 
@@ -47,7 +53,7 @@ z位的更改不会发布版本，这是缺陷修复或者小需求增加的正�
 克隆项目源码，进入源码地址，执行以下命令：
 
 ```
-mvn clean install 	-Dmaven.test.skip=true -P prod 
+mvn clean install 	-Dmaven.test.skip=true -P release 
 ```
 
 执行命令
@@ -60,3 +66,8 @@ x.y.z为版本号
 
 
 
+百度云：
+
+[https://pan.baidu.com/s/1zJRrgZ4B0ZKpZUuD6bS6NQ](https://pan.baidu.com/s/1zJRrgZ4B0ZKpZUuD6bS6NQ)
+
+提取码：4nq8
