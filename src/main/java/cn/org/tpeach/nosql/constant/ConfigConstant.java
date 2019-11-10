@@ -23,6 +23,7 @@ public class ConfigConstant {
 		public static final String SERVER = "Server";
 		public static final String FONT = "Font";
 		public static final String CHARACTER_ENCODING = "Character Encoding";
+		public static final String EXPERIMENT = "Experiment";
 	}
 	
 	public static final String LANGUAGE = "language";
@@ -30,5 +31,8 @@ public class ConfigConstant {
 	public static final String FONTSIZE = "font-size";
 	public static final String DEFAULT_FONTSIZE = "14";
 	public static final String CHARACTER = "character";
+	public static final String IS_LOADING_TEXT = "is_loading_text";
+	public static final String APPEND_TEXT_NUMBER = "appendTextNumber";
+	public static final String APPEND_TEXT_WAITTIME = "appendTextWaitTime";
 
 }

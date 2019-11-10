@@ -8,6 +8,7 @@ package cn.org.tpeach.nosql.view;
 import cn.org.tpeach.nosql.bean.DicBean;
 import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.bean.TableColumnBean;
+import cn.org.tpeach.nosql.constant.ConfigConstant;
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.controller.BaseController;
@@ -1139,34 +1140,43 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     }
 
     private void setTextLoading(RTextArea rTextArea,String text,boolean load){
-        if(StringUtils.isNotBlank(text) && text.getBytes().length > 150*1024) {
-            if(rTextArea.getText() != null && rTextArea.getText().length() * 2 > text.length()){
-                rTextArea.setText(text);
-            }else{
-                SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
-                int incr = 10000;
-                Document document = rTextArea.getDocument();
-                rTextArea.setText("");
-                Layer.showLoading_v2(true,false,()->{
-                    for (int i = 0; i <= text.length();i+=incr ) {
-                        try{
-                            TimeUnit.MILLISECONDS.sleep(800);
-                            int subLength = text.length() - i <= incr?text.length() - i :incr ;
-                            document.insertString(document.getLength(),text.substring(i,i+subLength),simpleAttributeSet);
-                        } catch (BadLocationException | InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    JScrollPane jScrollPane = rTextArea.getJScrollPane();
-                    JScrollBar verticalScrollBar = jScrollPane.getVerticalScrollBar();
-                    verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-                });
+        boolean isLoading = false;
+        JScrollPane jScrollPane = rTextArea.getJScrollPane();
+        BoundedRangeModel model = jScrollPane.getVerticalScrollBar().getModel();
+        if(StringUtils.isNotBlank(text) && text.getBytes().length > 150*1024 && model.getValue() * 2 <= text.length()) {
+            String is_loading_text = ConfigParser.getInstance().getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.IS_LOADING_TEXT, "0");
+            if( "1".equals(is_loading_text)) {
+                isLoading = true;
             }
-
-        }else{
-            rTextArea.setText(text);
         }
+        if(!isLoading) {
+            rTextArea.setText(text);
+            return;
+        }
+        int incr = ConfigParser.getInstance().getInt(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_NUMBER, 10000);
+        long textWaittime = ConfigParser.getInstance().getLong(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_WAITTIME,1000L);
+        SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
+        JScrollBar verticalScrollBar = jScrollPane.getVerticalScrollBar();
+        Document document = rTextArea.getDocument();
+        rTextArea.setText("");
+        Layer.showLoading_v2(true,-1,()->{
+            long l = System.currentTimeMillis();
+            for (int i = 0; i <= text.length();i+=incr ) {
+                try{
+                    final int index = i;
+                    int subLength = text.length() - index <= incr?text.length() - index :incr ;
+                    document.insertString(document.getLength(),text.substring(index,index+subLength),simpleAttributeSet);
+                    model.setValue(model.getMaximum());
+                    TimeUnit.MILLISECONDS.sleep(textWaittime);
+                } catch (InterruptedException | BadLocationException e) {
+                    e.printStackTrace();
 
+                }
+            }
+            System.out.println("耗时:"+(System.currentTimeMillis() - l));
+            System.out.println("结束");
+            verticalScrollBar.setValue(verticalScrollBar.getMaximum());
+        });
     }
 
 
@@ -1849,7 +1859,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             return;
         }
         updateStatus.set(false);
-        Layer.showLoading_v2(loading,false,true,()->{
+        Layer.showLoading_v2(loading,false,Layer.DEFAULTTIMEOUT,()->{
             try {
                 PageBean oldPageBean = this.pageBean;
                 RTreeNode oldTreeNode = this.treeNode;

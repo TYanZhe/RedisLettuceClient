@@ -539,7 +539,7 @@ public class SwingTools {
 	 * @param parentComponent
 	 * @param panel
 	 */
-	public static  void fillWidthPanel(JComponent parentComponent,JPanel panel ){
+	public static  void fillWidthPanel(JComponent parentComponent,JComponent panel ){
 
 		parentComponent.addComponentListener(new ComponentAdapter() {
 			@Override

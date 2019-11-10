@@ -51,7 +51,6 @@ public abstract class AbstractRowDialog<T,R> extends BaseDialog<T,R>{
 				EasyGBC.build(1, 1, 4, 4).setFill(EasyGBC.HORIZONTAL).setWeight(0.7, 1.0).resetInsets(topMargin, 10, 0, 30).setAnchor(EasyGBC.WEST));
 		return pannel;
 	}
-
 	/**
 	 * 创建label  component的行
 	 * @param parentComponent
@@ -61,7 +60,19 @@ public abstract class AbstractRowDialog<T,R> extends BaseDialog<T,R>{
 	 * @param leftPercent
 	 * @return
 	 */
-	public JPanel createRow(JComponent parentComponent,JLabel label,JComponent component,int rowHeight,double leftPercent){
+	public JPanel createRow(JComponent parentComponent, JComponent label, JComponent component, int rowHeight, double leftPercent){
+		return  createRow(parentComponent,label,component,rowHeight,leftPercent,15,15);
+	}
+	/**
+	 * 创建label  component的行
+	 * @param parentComponent
+	 * @param label
+	 * @param component
+	 * @param rowHeight
+	 * @param leftPercent
+	 * @return
+	 */
+	public JPanel createRow(JComponent parentComponent, JComponent label, JComponent component, int rowHeight, double leftPercent,int leftStrut,int rightStrut){
 		JPanel rowPanel = new JPanel();
 		rowPanel.setPreferredSize(new Dimension(rowPanel.getPreferredSize().width,rowHeight));
 		rowPanel.setMaximumSize(new Dimension(rowPanel.getPreferredSize().width,rowHeight));
@@ -76,9 +87,9 @@ public abstract class AbstractRowDialog<T,R> extends BaseDialog<T,R>{
 		rowPanel.add(fieldPanel,BorderLayout.CENTER);
 		labelPanel.add(Box.createHorizontalGlue());
 		labelPanel.add(label);
-		labelPanel.add(Box.createHorizontalStrut(15));
+		labelPanel.add(Box.createHorizontalStrut(leftStrut));
 		fieldPanel.add(component);
-		fieldPanel.add(Box.createHorizontalStrut(15));
+		fieldPanel.add(Box.createHorizontalStrut(rightStrut));
 		rowPanel.setBackground(getPanelBgColor());
 		labelPanel.setBackground(getPanelBgColor());
 		fieldPanel.setBackground(getPanelBgColor());

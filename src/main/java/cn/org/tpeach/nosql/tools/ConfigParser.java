@@ -137,6 +137,13 @@ public enum ConfigParser {
 			mapper = new LinkedHashMap<>(1);
 			mapper.put(ConfigConstant.CHARACTER, ConfigMapper.builder().value(PublicConstant.CharacterEncoding.UTF_8).build());
 			entries.put(ConfigConstant.Section.CHARACTER_ENCODING, mapper);
+			//实验特性
+			mapper = new LinkedHashMap<>(1);
+			mapper.put(ConfigConstant.IS_LOADING_TEXT, ConfigMapper.builder().value("0").comment("是否开启大文本分页加载").build());
+			mapper.put(ConfigConstant.APPEND_TEXT_NUMBER, ConfigMapper.builder().value("10000").comment("单次加载数量").build());
+			mapper.put(ConfigConstant.APPEND_TEXT_WAITTIME, ConfigMapper.builder().value("1000").comment("单次加载渲染时间（毫秒）").build());
+			entries.put(ConfigConstant.Section.EXPERIMENT, mapper);
+
 			writhConfigFile();
 		} else {
 			if (entries.get(ConfigConstant.Section.LOCAL) == null) {
@@ -164,7 +171,16 @@ public enum ConfigParser {
 				newMapper.put(ConfigConstant.Section.CHARACTER_ENCODING, mapper);
 				IOUtil.fileAppendFW(file, parseWrite(newMapper));
 			}
-
+			if (entries.get(ConfigConstant.Section.EXPERIMENT) == null) {
+				Map<String, Object> newMapper = new LinkedHashMap<>();
+				Map<String, ConfigMapper> mapper = new LinkedHashMap<>(1);
+				mapper.put(ConfigConstant.IS_LOADING_TEXT, ConfigMapper.builder().value("0").comment("是否开启大文本分页加载").build());
+				mapper.put(ConfigConstant.APPEND_TEXT_NUMBER, ConfigMapper.builder().value("10000").comment("单次加载数量").build());
+				mapper.put(ConfigConstant.APPEND_TEXT_WAITTIME, ConfigMapper.builder().value("1000").comment("单次加载渲染时间（毫秒）").build());
+				entries.put(ConfigConstant.Section.EXPERIMENT, mapper);
+				newMapper.put(ConfigConstant.Section.EXPERIMENT, mapper);
+				IOUtil.fileAppendFW(file, parseWrite(newMapper));
+			}
 		}
 //		System.err.println(GsonUtil.gson2String(entries));
 	}
@@ -355,7 +371,13 @@ public enum ConfigParser {
 		}
 		return Long.parseLong(kv.get(key).getValue());
 	}
-
+	public long getLong(String section, String key, long defaultvalue) {
+		Object value = entries.get(section);
+		if (value instanceof Map) {
+			return getLong((Map<String, ConfigMapper>) value, section, key, defaultvalue);
+		}
+		return defaultvalue;
+	}
 
 
 }

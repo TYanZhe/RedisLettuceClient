@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 public class Layer {
     private static ConcurrentLinkedDeque<LoadingDialog> loadingDeque = new ConcurrentLinkedDeque();
     private static ConcurrentLinkedDeque<String> hiddenDeque = new ConcurrentLinkedDeque();
+    public static final int DEFAULTTIMEOUT = 65;
     @Deprecated
     public static void showDialogLoading(JDialog jDialog, boolean isload, Supplier<Boolean> doInBackground, boolean timeout) {
         jDialog.setVisible(false);
@@ -83,7 +84,7 @@ public class Layer {
      * @param timeout 是否65秒超时关闭
      * @param doInBackground
      */
-    public static synchronized void showLoading_v2(boolean rightNow, boolean timeout,Runnable doInBackground) {
+    public static synchronized void showLoading_v2(boolean rightNow, int timeout,Runnable doInBackground) {
         showLoading_v2(true,rightNow,timeout,doInBackground);
     }
     /**
@@ -92,7 +93,16 @@ public class Layer {
      * @param timeout 是否65秒超时关闭
      * @param doInBackground
      */
-    public static synchronized void showLoading_v2(boolean isloading,boolean rightNow, boolean timeout,Runnable doInBackground) {
+    public static synchronized void showLoading_v2(boolean rightNow, boolean timeout,Runnable doInBackground) {
+        showLoading_v2(true,rightNow,timeout ? DEFAULTTIMEOUT : -1 ,doInBackground);
+    }
+    /**
+     *
+     * @param rightNow false 请求超过300毫秒才显示loading
+     * @param timeout 是否65秒超时关闭
+     * @param doInBackground
+     */
+    public static synchronized void showLoading_v2(boolean isloading,boolean rightNow, int timeout,Runnable doInBackground) {
         if(isloading) {
             String uuid = StringUtils.getUUID();
             hiddenDeque.push(uuid);
@@ -102,8 +112,8 @@ public class Layer {
             final Thread requestThread = Thread.currentThread();
             SwingTools.swingWorkerExec(() -> {
                 try {
-                    int timeOutSeconds = 65;
-                    if (!timeout) {
+                    int timeOutSeconds =timeout ;
+                    if (timeout < 0) {
                         timeOutSeconds = 300;
                     }
                     AtomicBoolean longTime = new AtomicBoolean(true);
@@ -122,7 +132,7 @@ public class Layer {
                     longTime.set(false);
                     if (!isFinish.get()) {
                         requestThread.interrupt();
-                        if(timeout){
+                        if(timeout > 0){
                             SwingTools.showMessageErrorDialog(null, "请求超时");
                         }
                     }
@@ -165,7 +175,7 @@ public class Layer {
      * @param doInBackground
      */
     public static synchronized void showLoading_v2( Runnable doInBackground) {
-        showLoading_v2(false,true, doInBackground);
+        showLoading_v2(false,DEFAULTTIMEOUT, doInBackground);
     }
     private static void showLoadingPanel(){
         RedisMainWindow.loadingGlassPane.setVisible(true);
