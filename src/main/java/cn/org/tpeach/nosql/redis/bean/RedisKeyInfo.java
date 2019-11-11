@@ -36,6 +36,13 @@ public class RedisKeyInfo {
     private List<ScoredValue<byte[]>> valueZSet;
     private PageBean pageBean;
     private ScanCursor cursor;
+
+    public void clearBaseInfo(){
+        this.ttl = null;
+        this.type = null;
+        this.idleTime = null;
+        this.size = -1;
+    }
     
     
 }

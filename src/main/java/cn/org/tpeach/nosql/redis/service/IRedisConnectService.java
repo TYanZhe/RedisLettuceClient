@@ -9,7 +9,6 @@ import cn.org.tpeach.nosql.redis.bean.SlowLogBo;
 import io.lettuce.core.KeyScanCursor;
 import io.lettuce.core.ScanCursor;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -80,7 +79,7 @@ public interface IRedisConnectService {
 
     RedisKeyInfo addSingleKeyInfo(RedisKeyInfo keyInfo);
 
-    RedisKeyInfo getRedisKeyInfo(String id, int db, byte[] key, ScanCursor cursor,String pattern,PageBean pageBean);
+    RedisKeyInfo getRedisKeyInfo(String id, int db, byte[] key, ScanCursor cursor,String pattern,PageBean pageBean,RedisKeyInfo srcKeyInfo);
 
     String flushDb(String id, int db);
 

@@ -373,54 +373,67 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
      * @return
      */
     @Override
-    public RedisKeyInfo getRedisKeyInfo(String id, int db, byte[] key,ScanCursor cursor,String pattern, PageBean pageBean) {
+    public RedisKeyInfo getRedisKeyInfo(String id, int db, byte[] key,ScanCursor cursor,String pattern, PageBean pageBean,RedisKeyInfo srcKeyInfo) {
         if (pageBean == null) {
             pageBean = new PageBean();
         }
         if(StringUtils.isNotBlank(pattern)){
             pattern = "*"+pattern.trim()+"*";
         }
-        //获取类型
-        String typeStr = super.executeJedisCommand(new TypeCommand(id, db, key));
-        RedisType type = RedisType.getRedisType(typeStr);
-        if (type == RedisType.UNKNOWN) {
-            throw new ServiceException("key不存在");
-        }
-        //获取ttl
-        Long ttl = super.executeJedisCommand(new TTLCommand(id, db, key));
-
         RedisKeyInfo redisKeyInfo = new RedisKeyInfo();
-        redisKeyInfo.setId(id);
+        //获取类型
+        RedisType type = srcKeyInfo == null ? null : srcKeyInfo.getType();
+        Long ttl  = srcKeyInfo == null ? null : srcKeyInfo.getTtl();
+        Long idleTime  = srcKeyInfo == null ? null : srcKeyInfo.getIdleTime();
+        if(type == null){
+            String typeStr = super.executeJedisCommand(new TypeCommand(id, db, key));
+            type = RedisType.getRedisType(typeStr);
+            if (type == RedisType.UNKNOWN) {
+                throw new ServiceException("key不存在");
+            }
+        }
+        if(ttl == null){
+            //获取ttl
+            ttl = super.executeJedisCommand(new TTLCommand(id, db, key));
+        }
+        if(idleTime == null){
+            idleTime = super.executeJedisCommand(new ObjectIdletime(id, db, key));
+        }
         redisKeyInfo.setType(type);
         redisKeyInfo.setTtl(ttl);
+        redisKeyInfo.setId(id);
         redisKeyInfo.setKey(key);
         redisKeyInfo.setDb(db);
+        redisKeyInfo.setIdleTime(idleTime);
         redisKeyInfo.setCursor(ScanCursor.INITIAL);
-        int size = getSizeAndQueryKeyInfo(id, db, key, cursor, pattern, pageBean, type, redisKeyInfo);
+        int size = getSizeAndQueryKeyInfo(id, db, key, cursor, pattern, pageBean, type, redisKeyInfo,srcKeyInfo);
         redisKeyInfo.setSize(size);
         pageBean.setTotal(size);
-        Long idleTime = super.executeJedisCommand(new ObjectIdletime(id, db, key));
-        redisKeyInfo.setIdleTime(idleTime);
+
         redisKeyInfo.setPageBean(pageBean);
         return redisKeyInfo;
     }
 
-    private int getSizeAndQueryKeyInfo(String id, int db, byte[] key, ScanCursor cursor, String pattern, PageBean pageBean, RedisType type, RedisKeyInfo redisKeyInfo) {
+    private int getSizeAndQueryKeyInfo(String id, int db, byte[] key, ScanCursor cursor, String pattern, PageBean pageBean, RedisType type, RedisKeyInfo redisKeyInfo,RedisKeyInfo srcKeyInfo) {
         //获取值
-        int size = 0;
+        int size = srcKeyInfo == null ? 0 : srcKeyInfo.getSize();;
         switch (type) {
             case STRING:
                 redisKeyInfo.setValue(super.executeJedisCommand(new GetString(id, db, key)));
                 size = 1;
                 break;
             case LIST:
-                size = super.executeJedisCommand(new LlenList(id, db, key)).intValue();
+                if(size <= 0  ){
+                    size = super.executeJedisCommand(new LlenList(id, db, key)).intValue();
+                }
                 pageBean.setTotal(size);
                 List<byte[]> list = super.executeJedisCommand(new LrangeList(id, db, key, pageBean.getStartIndex(), pageBean.getEndIndex() - 1));
                 redisKeyInfo.setValueList(list);
                 break;
             case SET:
-                size = super.executeJedisCommand(new ScardSet(id, db, key)).intValue();
+                if(size <= 0  ){
+                    size = super.executeJedisCommand(new ScardSet(id, db, key)).intValue();
+                }
                 pageBean.setTotal(size);
 //                Set<String> set = super.executeJedisCommand(new SmembersSet(id, db, key));
 //                ScanResult<String> sscanResult = super.executeJedisCommand(new SscanSet(id, db, key, pageBean.getStartIndex() + "", pageBean.getRows()));
@@ -454,7 +467,9 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                 break;
             case HASH:
                 //hscan field数量 >= 512，开始分页
-                size = super.executeJedisCommand(new HlenHash(id, db, key)).intValue();
+                if(size <= 0  ){
+                    size = super.executeJedisCommand(new HlenHash(id, db, key)).intValue();
+                }
                 pageBean.setTotal(size);
                 Map<String, String> map = new LinkedHashMap<>();
 //                ScanResult<Map.Entry<String, String>> hscanResult = super.executeJedisCommand(new HscanHash(id, db, key, pageBean.getStartIndex() + "", pageBean.getRows()));
@@ -500,7 +515,9 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                 redisKeyInfo.setCursor(new ScanCursor(hscanResult.getCursor(),hscanResult.isFinished()));
                 break;
             case ZSET:
-                size = super.executeJedisCommand(new ZcardSet(id, db, key)).intValue();
+                if(size <= 0  ){
+                    size = super.executeJedisCommand(new ZcardSet(id, db, key)).intValue();
+                }
                 pageBean.setTotal(size);
 //                Set<Tuple> zset = super.executeJedisCommand(new ZrangeWithScoresSet(id, db, key, pageBean.getStartIndex(), pageBean.getEndIndex() - 1));
 //                ScanResult<Tuple> zscanResult = super.executeJedisCommand(new ZscanSet(id, db, key, pageBean.getStartIndex() + "", pageBean.getRows()));
@@ -568,7 +585,13 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         byte[] key =  newKeyInfo.getKey();
         switch (oldKeyInfo.getType()) {
             case STRING:
-                super.executeJedisCommand(new SetString(id, db, key, newKeyInfo.getValue()));
+                //修复Redis 更新(set) key值 会重置过期时间问题  2019-11-12
+                Long ttl = super.executeJedisCommand(new TTLCommand(id, db, key).setPrintLog(false));
+                if(ttl != null && ttl > 0){
+                    super.executeJedisCommand(new SetexString(id, db, key,ttl.intValue(), newKeyInfo.getValue()));
+                }else{
+                    super.executeJedisCommand(new SetString(id, db, key, newKeyInfo.getValue()));
+                }
                 break;
             case LIST:
                 //查看下标的值是否相等

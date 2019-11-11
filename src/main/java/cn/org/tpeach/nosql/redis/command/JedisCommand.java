@@ -9,7 +9,6 @@ import cn.org.tpeach.nosql.redis.connection.RedisLarkFactory;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import lombok.Getter;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,11 +27,15 @@ public abstract class JedisCommand<T> implements ICommand<T> {
     final static Logger logger = LoggerFactory.getLogger(JedisCommand.class);
     protected String id;
     @Getter
-    @Setter
     private boolean printLog = true;
     public JedisCommand(String id) {
     	super();
         this.id = id;
+    }
+
+    public JedisCommand<T> setPrintLog(boolean printLog) {
+        this.printLog = printLog;
+        return this;
     }
 
     @Override

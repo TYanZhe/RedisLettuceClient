@@ -1381,7 +1381,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     }
 
     private void saveKeyInfo(MouseEvent evt) {//TODO
-        Layer.showLoading_v2( ()->{
+        Layer.showLoading_v2(()->{
             try {
                 TimeUnit.MILLISECONDS.sleep(600);
             } catch (InterruptedException e) {
@@ -1697,6 +1697,9 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     }
 
     private void reloadBtnMousePressed(java.awt.event.MouseEvent evt) {
+        if(this.redisKeyInfo != null){
+            this.redisKeyInfo.clearBaseInfo();
+        }
         this.updateUI(this.treeNode, this.pageBean,true);
     }
 
@@ -1835,7 +1838,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             cursor = redisKeyInfo.getCursor();
         }
         String pattern =  searchTextField == null? null:searchTextField.getText();
-        ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.getRedisKeyInfo(item.getId(), item.getDb(), item.getKey(),cursor,pattern, pageBean));
+        ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.getRedisKeyInfo(item.getId(), item.getDb(), item.getKey(),cursor,pattern, pageBean,redisKeyInfo));
         if (resultRes.isRet()) {
             redisKeyInfo = resultRes.getData();
             if(RedisType.LIST.equals(redisKeyInfo.getType())){
@@ -1859,6 +1862,14 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             return;
         }
         updateStatus.set(false);
+        if (isNewNode && this.redisKeyInfo != null) {
+            RedisTreeItem item = (RedisTreeItem) treeNode.getUserObject();
+            if(this.redisKeyInfo.getDb() == item.getDb() && Arrays.equals(this.redisKeyInfo.getKey(),item.getKey())){
+                updateStatus.set(true);
+                return;
+            }
+            this.redisKeyInfo.clearBaseInfo();
+        }
         Layer.showLoading_v2(loading,false,Layer.DEFAULTTIMEOUT,()->{
             try {
                 PageBean oldPageBean = this.pageBean;

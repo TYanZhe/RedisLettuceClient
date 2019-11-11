@@ -3,7 +3,6 @@ package cn.org.tpeach.nosql.lettuce;
 import io.lettuce.core.*;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.api.sync.RedisStringCommands;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
@@ -20,12 +19,12 @@ public class RedisLettuce {
     }
     public static void cluster(){
         ArrayList<RedisURI> list = new ArrayList<>();
-        list.add(RedisURI.create("redis://longshine@172.18.125.68:7000"));
-        list.add(RedisURI.create("redis://longshine@172.18.125.68:7001"));
-        list.add(RedisURI.create("redis://longshine@172.18.125.68:7002"));
-        list.add(RedisURI.create("redis://longshine@172.18.125.68:7003"));
-        list.add(RedisURI.create("redis://longshine@172.18.125.68:7004"));
-        list.add(RedisURI.create("redis://longshine@172.18.125.68:7005"));
+        list.add(RedisURI.create("redis://123456@172.18.12.68:7000"));
+        list.add(RedisURI.create("redis://123456@172.18.12.68:7001"));
+        list.add(RedisURI.create("redis://123456@172.18.12.68:7002"));
+        list.add(RedisURI.create("redis://123456@172.18.12.68:7003"));
+        list.add(RedisURI.create("redis://123456@172.18.12.68:7004"));
+        list.add(RedisURI.create("redis://123456@172.18.12.68:7005"));
 
         RedisClusterClient client = RedisClusterClient.create(list);
         //RedisClusterClient client = RedisClusterClient.create("redis://192.168.37.128:7000");
