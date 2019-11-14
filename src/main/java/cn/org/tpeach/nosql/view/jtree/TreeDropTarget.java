@@ -9,12 +9,16 @@ import cn.org.tpeach.nosql.view.common.ServiceManager;
 import lombok.Getter;
 
 import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
+import java.util.Iterator;
 import java.util.Optional;
+import java.util.Vector;
 
 public class TreeDropTarget  implements DropTargetListener {
     IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
@@ -90,7 +94,16 @@ public class TreeDropTarget  implements DropTargetListener {
                 if (tr.isDataFlavorSupported(flavors[i])) {
                     dtde.acceptDrop(dtde.getDropAction());
                     RTreeNode node = (RTreeNode) tr.getTransferData(flavors[i]);
-                    moveNode(node, (RTreeNode) targetNode);
+                    RTreeNode moveNode = moveNode(node, (RTreeNode) targetNode);
+                    if(moveNode.getChildren() != null){
+                        Vector children = moveNode.getChildren();
+                        Iterator iterator = children.iterator();
+                        while (iterator.hasNext()){
+                            DefaultMutableTreeNode next = (DefaultMutableTreeNode) iterator.next();
+                            next.setParent(moveNode);
+                        }
+                    }
+
                     Optional.ofNullable(ServiceManager.getInstance().findoOriginalRedisTreeNode(tree, (RTreeNode) targetNode)).ifPresent(r -> moveNode(node, r));
                     tree.updateUI();
                     dtde.dropComplete(true);
@@ -112,11 +125,12 @@ public class TreeDropTarget  implements DropTargetListener {
 
     }
 
-    private void moveNode(RTreeNode node, RTreeNode targetNode) {
+    private RTreeNode moveNode(RTreeNode node, RTreeNode targetNode) {
         DefaultMutableTreeNode parent = (DefaultMutableTreeNode) targetNode.getParent();
         RTreeNode newNode = RTreeNode.copyNode(node);
         newNode.setId(StringUtils.getUUID());
         newNode.setChildren(node.getChildren());
         parent.insert(newNode,parent.getIndex(targetNode)+1);
+        return newNode;
     }
 }

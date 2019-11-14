@@ -72,28 +72,46 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 				} else {
 					this.setText(redisTreeItem.getName());
 				}
-				if (paths.length == 2) {
-					// 设置图标 服务图标
-					// 按展開情況再賦予不同的圖標
-					if (expanded) {
-						icon = PublicConstant.Image.redis_server;
-					} else {
-						icon = PublicConstant.Image.redis_server;
-//					icon = PublicConstant.Image.redis_db;
+//				if (paths.length == 2) {
+//					// 设置图标 服务图标
+//					// 按展開情況再賦予不同的圖標
+//					if (expanded) {
+//						icon = PublicConstant.Image.redis_server;
+//					} else {
+//						icon = PublicConstant.Image.redis_server;
+////					icon = PublicConstant.Image.redis_db;
+//					}
+//
+//				} else if (paths.length == 3) {
+//					icon = PublicConstant.Image.database;
+//				} else if (paths.length > 3) {
+//					if (redisTreeItem.getType().equals(RedisType.KEY)) {
+//						icon = PublicConstant.Image.key_icon;
+//					} else {
+//						icon = PublicConstant.Image.folder_database;
+//					}
+//
+//				} else {
+//					// 默认图标
+//				}
+				if(redisTreeItem.getType() != null) {
+					switch (redisTreeItem.getType()) {
+						case SERVER:
+							icon = PublicConstant.Image.redis_server;
+							break;
+						case DATABASE:
+							icon = PublicConstant.Image.database;
+							break;
+						case KEY:
+							icon = PublicConstant.Image.key_icon;
+							break;
+						case KEY_NAMESPACE:
+							icon = PublicConstant.Image.folder_database;
+							break;
+						default:
 					}
-
-				} else if (paths.length == 3) {
-					icon = PublicConstant.Image.database;
-				} else if (paths.length > 3) {
-					if (redisTreeItem.getType().equals(RedisType.KEY)) {
-						icon = PublicConstant.Image.key_icon;
-					} else {
-						icon = PublicConstant.Image.folder_database;
-					}
-
-				} else {
-					// 默认图标
 				}
+
 			}
 			if (!tree.isEnabled() || !treeNode.isEnabled()) {
 				setEnabled(false);

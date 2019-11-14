@@ -17,7 +17,6 @@ import java.util.*;
 import java.util.Map.Entry;
 
 
-
 /**
  * <p>
  * Title: ConfigParserService.java
@@ -144,13 +143,23 @@ public class ConfigParserService implements IRedisConfigService {
 
 	@Override
 	public RedisConnectInfo getRedisConfigById(String id) {
-		List<Map<String, Map<String, ConfigMapper>>> listBySectionList = configParser.getListBySectionList(ConfigConstant.Section.CONNECTLIST);
-		if(CollectionUtils.isNotEmpty(listBySectionList)) {
-			for (Map<String, Map<String, ConfigMapper>> map : listBySectionList) {
-				for (Entry<String, Map<String, ConfigMapper>> entry : map.entrySet()) {
-					String configId = configParser.getString(entry.getValue(), ConfigConstant.Section.SERVER, "id", "");
-					if(configId.equals(id)) {
-						return configMapperToRedisConnectInfo(entry.getValue());
+		Map<String, ConfigMapper> mapper = getConfigMapperById(id);
+		if(mapper != null){
+			return configMapperToRedisConnectInfo(mapper);
+		}
+		return null;
+	}
+
+	private Map<String, ConfigMapper> getConfigMapperById(String id){
+		if(StringUtils.isNotBlank(id)){
+			List<Map<String, Map<String, ConfigMapper>>> listBySectionList = configParser.getListBySectionList(ConfigConstant.Section.CONNECTLIST);
+			if(CollectionUtils.isNotEmpty(listBySectionList)) {
+				for (Map<String, Map<String, ConfigMapper>> map : listBySectionList) {
+					for (Entry<String, Map<String, ConfigMapper>> entry : map.entrySet()) {
+						String configId = configParser.getString(entry.getValue(), ConfigConstant.Section.SERVER, "id", "");
+						if(configId.equals(id)) {
+							return entry.getValue();
+						}
 					}
 				}
 			}
@@ -158,38 +167,32 @@ public class ConfigParserService implements IRedisConfigService {
 		return null;
 	}
 
-
 	@Override
 	public RedisConnectInfo updateRedisConfig(RedisConnectInfo conn) {
-		List<Map<String, Map<String, ConfigMapper>>> listBySectionList = configParser.getListBySectionList(ConfigConstant.Section.CONNECTLIST);
-		if(CollectionUtils.isNotEmpty(listBySectionList)) {
-			for (Map<String, Map<String, ConfigMapper>> map : listBySectionList) {
-				for (Entry<String, Map<String, ConfigMapper>> entry : map.entrySet()) {
-					Map<String, ConfigMapper> value = entry.getValue();
-					String configId = configParser.getString(value, ConfigConstant.Section.SERVER, "id", "");
-					if(configId.equals(conn.getId())) {
-						 setValue(value,"id",conn.getId());
-						 setValue(value,"name",StringUtils.defaultEmptyToString(conn.getName()));
-						 setValue(value,"auth",AESUtil.encrypt(StringUtils.defaultEmptyToString(conn.getAuth())));
-						 setValue(value,"connType",StringUtils.defaultEmptyToString(conn.getConnType()));
-						 setValue(value,"host",StringUtils.defaultEmptyToString(conn.getHost()));
-						 setValue(value,"port",StringUtils.defaultEmptyToString(conn.getPort()));
-						 setValue(value,"structure",StringUtils.defaultEmptyToString(conn.getStructure()));
-						 setValue(value,"timeout",StringUtils.defaultEmptyToString(conn.getTimeout()));
-						 setValue(value,"dbAmount",StringUtils.defaultEmptyToString(conn.getDbAmount()));
-						 setValue(value,"nameSpaceSepartor",StringUtils.defaultEmptyToString(conn.getNameSpaceSepartor()));
-						try {
-							configParser.writhConfigFile();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-						RedisLarkPool.addOrUpdateConnectInfo(conn);
-						return conn;
-					}
-				}
-			}
+		if(conn == null){
+			return null;
 		}
-		return conn;
+		Map<String, ConfigMapper> mapper = getConfigMapperById(conn.getId());
+		if(mapper != null){
+			setValue(mapper,"id",conn.getId());
+			setValue(mapper,"name",StringUtils.defaultEmptyToString(conn.getName()));
+			setValue(mapper,"auth",AESUtil.encrypt(StringUtils.defaultEmptyToString(conn.getAuth())));
+			setValue(mapper,"connType",StringUtils.defaultEmptyToString(conn.getConnType()));
+			setValue(mapper,"host",StringUtils.defaultEmptyToString(conn.getHost()));
+			setValue(mapper,"port",StringUtils.defaultEmptyToString(conn.getPort()));
+			setValue(mapper,"structure",StringUtils.defaultEmptyToString(conn.getStructure()));
+			setValue(mapper,"timeout",StringUtils.defaultEmptyToString(conn.getTimeout()));
+			setValue(mapper,"dbAmount",StringUtils.defaultEmptyToString(conn.getDbAmount()));
+			setValue(mapper,"nameSpaceSepartor",StringUtils.defaultEmptyToString(conn.getNameSpaceSepartor()));
+			try {
+				configParser.writhConfigFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			RedisLarkPool.addOrUpdateConnectInfo(conn);
+			return conn;
+		}
+		return null;
 	}
 
 
@@ -206,10 +209,16 @@ public class ConfigParserService implements IRedisConfigService {
 
 	@Override
 	public void moveRedisconfig(RedisConnectInfo conn,RedisConnectInfo targetConn) {
+		if(conn == null || targetConn == null){
+			return;
+		}
+		if(getIndex(targetConn) == null){
+			return;
+		}
 		List<Map<String, Map<String, ConfigMapper>>> listBySectionList = configParser.getListBySectionList(ConfigConstant.Section.CONNECTLIST);
 		if(CollectionUtils.isNotEmpty(listBySectionList)) {
 			Integer index = null;
-			Map<String, Map<String, ConfigMapper>> moveElem = null;
+			HashMap<String, Map<String, ConfigMapper>> moveElem = null;
 			label:
 			for (int i = 0; i <listBySectionList.size() ; i++) {
 				Map<String, Map<String, ConfigMapper>> map = listBySectionList.get(i);
@@ -218,17 +227,14 @@ public class ConfigParserService implements IRedisConfigService {
 					String configId = configParser.getString(value, ConfigConstant.Section.SERVER, "id", "");
 					if(configId.equals(conn.getId())) {
 						index = i;
-						moveElem = map;
-						listBySectionList.remove(moveElem);
+						moveElem = (HashMap<String, Map<String, ConfigMapper>>) map;
 						break label;
 					}
 				}
 			}
-
 			if(index != null){
-
+				listBySectionList.remove(moveElem);
 				listBySectionList.add(getIndex(targetConn)+1,moveElem);
-
 				configParser.getEntries().put(ConfigConstant.Section.CONNECTLIST, listBySectionList);
 				try {
 					configParser.writhConfigFile();

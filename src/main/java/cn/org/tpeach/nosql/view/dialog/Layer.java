@@ -3,7 +3,6 @@ package cn.org.tpeach.nosql.view.dialog;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.RedisMainWindow;
 import lombok.Getter;
@@ -103,71 +102,12 @@ public class Layer {
      * @param doInBackground
      */
     public static synchronized void showLoading_v2(boolean isloading,boolean rightNow, int timeout,Runnable doInBackground) {
-        if(isloading) {
-            String uuid = StringUtils.getUUID();
-            hiddenDeque.push(uuid);
-            CountDownLatch countDownLatch = new CountDownLatch(1);
-            AtomicBoolean isFinish = new AtomicBoolean(false);
-            //超时隐藏loading
-            final Thread requestThread = Thread.currentThread();
-            SwingTools.swingWorkerExec(() -> {
-                try {
-                    int timeOutSeconds =timeout ;
-                    if (timeout < 0) {
-                        timeOutSeconds = 300;
-                    }
-                    AtomicBoolean longTime = new AtomicBoolean(true);
-                    Thread thread = Thread.currentThread();
-                    LarkFrame.executorService.execute(() -> {
-                        try {
-                            countDownLatch.await();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        if (longTime.get()) {
-                            thread.interrupt();
-                        }
-                    });
-                    TimeUnit.SECONDS.sleep(timeOutSeconds);
-                    longTime.set(false);
-                    if (!isFinish.get()) {
-                        requestThread.interrupt();
-                        if(timeout > 0){
-                            SwingTools.showMessageErrorDialog(null, "请求超时");
-                        }
-                    }
-                } catch (InterruptedException e) {
-
-                }
-
-            });
-            if (rightNow) {
-                showLoadingPanel();
-            } else {
-                LarkFrame.executorService.schedule(() -> {
-                    if (!isFinish.get()) {
-                        showLoadingPanel();
-                    }
-                }, 300, TimeUnit.MILLISECONDS);
-            }
-            SwingTools.swingWorkerExec(() -> {
-                try {
-                    //开始请求
-                    doInBackground.run();
-                } catch (Exception e) {
-                    log.error("loding异常", e);
-                    SwingTools.showMessageErrorDialog(null, ServiceProxy.getStackTrace(e));
-                } finally {
-
-                    isFinish.set(true);
-                    countDownLatch.countDown();
-                    hiddenLoading(uuid);
-                }
-            });
-
+        if(isloading){
+            SwingTools.swingWorkerExec(()->doInBackground.run());
         }else{
             doInBackground.run();
         }
+
     }
 
     /**
