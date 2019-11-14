@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  */
 //@Component(value = "redisConfigService", scope = Component.BeanScope.SCOPE_SINGLETON, lazy = false)
 @Deprecated
-public class RedisConfigServiceImpl implements IRedisConfigService {
+public abstract class RedisConfigServiceImpl implements IRedisConfigService {
 	final static Logger logger = LoggerFactory.getLogger(RedisConfigServiceImpl.class);
 	private List<RedisConnectInfo> configList;
 
@@ -169,6 +169,7 @@ public class RedisConfigServiceImpl implements IRedisConfigService {
 			e.printStackTrace();
 		}
 	}
+
 
 	@Override
 	public RedisConnectInfo getRedisConfigById(String id) {

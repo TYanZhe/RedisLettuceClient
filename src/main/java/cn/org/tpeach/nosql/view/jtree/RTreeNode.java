@@ -14,6 +14,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.util.Objects;
+import java.util.Vector;
 
 /**
  *
@@ -51,7 +52,10 @@ public class RTreeNode extends DefaultMutableTreeNode {
 		this.id = StringUtils.getUUID();
 	}
 	public static RTreeNode copyNode(RTreeNode node){
+		Object clone = node.clone();
 		RTreeNode rTreeNode = new RTreeNode(node.getUserObject());
+		rTreeNode.children = null;
+		rTreeNode.parent = null;
 		rTreeNode.id = node.getId();
 		rTreeNode.isSelected = node.isSelected;
 		rTreeNode.isVisible = node.isVisible;
@@ -64,6 +68,12 @@ public class RTreeNode extends DefaultMutableTreeNode {
 		this.id = StringUtils.getUUID();
 	}
 
+	public void setChildren(Vector children){
+		this.children = children;
+	}
+	public Vector getChildren(){
+		return children;
+	}
 	public RTreeNode(Object userObject, ImageIcon icon) {
 		super(userObject);
 		this.icon = icon;
@@ -71,7 +81,7 @@ public class RTreeNode extends DefaultMutableTreeNode {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param userObject
 	 * @param allowsChildren
 	 * @param isSelected

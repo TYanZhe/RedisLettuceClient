@@ -22,10 +22,7 @@ import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.*;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
-import cn.org.tpeach.nosql.view.jtree.RTreeNode;
-import cn.org.tpeach.nosql.view.jtree.RedisTreeModel;
-import cn.org.tpeach.nosql.view.jtree.RedisTreeRenderer;
-import cn.org.tpeach.nosql.view.jtree.TreeNodeBuilder;
+import cn.org.tpeach.nosql.view.jtree.*;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 import cn.org.tpeach.nosql.view.ui.RScrollBarUI;
 import sun.font.FontDesignMetrics;
@@ -36,6 +33,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.dnd.DnDConstants;
 import java.awt.event.*;
 import java.util.Date;
 import java.util.Enumeration;
@@ -353,6 +351,9 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //        SwingTools.addMouseClickedListener(redisTree, (e) -> {
 //
 //        });
+        //添加拖拽功能 2019-11-14
+        new TreeDragSource(redisTree, DnDConstants.ACTION_COPY_OR_MOVE);
+        new TreeDropTarget(redisTree);
     }
 
     private TreeModel getTreeModel() {

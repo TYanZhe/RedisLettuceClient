@@ -33,7 +33,8 @@ public interface IRedisConfigService {
 
     void resetConfig();
 
-    default boolean checkRedisConnectInfo(RedisConnectInfo conn) {
-        return true;
-    }
+    void moveRedisconfig(RedisConnectInfo conn,RedisConnectInfo targetConn);
+
+    Integer getIndex(RedisConnectInfo conn);
+    Integer getIndexById(String id);
 }

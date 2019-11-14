@@ -1246,6 +1246,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         selectPageComboBox.setMaximumSize(new java.awt.Dimension(60, borderWidth));
         selectPageComboBox.setMinimumSize(new java.awt.Dimension(60, borderWidth));
         selectPageComboBox.setPreferredSize(new java.awt.Dimension(60, borderWidth));
+        selectPageComboBox.setEnabled(!RedisType.STRING.equals(redisKeyInfo.getType()));
         selectPageComboBox.addItemListener(e -> {
             if(e.getStateChange() == ItemEvent.SELECTED){
                 pageBean.setRows((Integer) e.getItem());
@@ -1849,6 +1850,9 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         } else {
             searchTextField.setPlaceholder("输入筛选条件");
         }
+        if(selectPageComboBox != null) {
+            selectPageComboBox.setEnabled(!RedisType.STRING.equals(redisKeyInfo.getType()));
+        }
         resultResConsumer.accept(resultRes);
     }
 
@@ -1870,6 +1874,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             }
             this.redisKeyInfo.clearBaseInfo();
         }
+
         Layer.showLoading_v2(loading,false,Layer.DEFAULTTIMEOUT,()->{
             try {
                 PageBean oldPageBean = this.pageBean;

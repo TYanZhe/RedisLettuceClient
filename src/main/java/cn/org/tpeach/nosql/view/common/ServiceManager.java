@@ -272,7 +272,12 @@ public class ServiceManager {
 		return -1;
 	}
 
-
+	/**
+	 * 如果node节点是复制的  查找原始节点  否则返回空
+	 * @param tree
+	 * @param node
+	 * @return
+	 */
 	public RTreeNode findoOriginalRedisTreeNode(JTree tree,RTreeNode node){
 		RTreeNode root = ((RedisMainWindow) LarkFrame.frame).root;
 		if(root != tree.getModel().getRoot()){

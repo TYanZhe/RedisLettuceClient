@@ -156,9 +156,15 @@ public class StringUtils {
 		return true;
 	}
 	public static boolean isText(byte[] bytes){
+		if(bytes == null){
+			return true;
+		}
 		return isText(byteToStr(bytes));
 	}
 	public static String showHexStringValue(String value) {
+		if(value == null){
+			return null;
+		}
 		char[] chars = value.toCharArray();
 		char[] hex = {'0', '1', '2', '3', '4', '5', '6', '7',
 				'8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -320,6 +326,9 @@ public class StringUtils {
 	
 	
     public static String byteToStr(byte[] b){
+		if(b== null){
+			return null;
+		}
         String character = ConfigParser.getInstance().getString(ConfigConstant.Section.CHARACTER_ENCODING, ConfigConstant.CHARACTER, PublicConstant.CharacterEncoding.UTF_8);
         try {
             return new String(b,character);

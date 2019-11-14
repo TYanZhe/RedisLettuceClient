@@ -204,7 +204,63 @@ public class ConfigParserService implements IRedisConfigService {
 
 	}
 
-	private void setValue(Map<String, ConfigMapper> value,String key,String context){
+	@Override
+	public void moveRedisconfig(RedisConnectInfo conn,RedisConnectInfo targetConn) {
+		List<Map<String, Map<String, ConfigMapper>>> listBySectionList = configParser.getListBySectionList(ConfigConstant.Section.CONNECTLIST);
+		if(CollectionUtils.isNotEmpty(listBySectionList)) {
+			Integer index = null;
+			Map<String, Map<String, ConfigMapper>> moveElem = null;
+			label:
+			for (int i = 0; i <listBySectionList.size() ; i++) {
+				Map<String, Map<String, ConfigMapper>> map = listBySectionList.get(i);
+				for (Entry<String, Map<String, ConfigMapper>> entry : map.entrySet()) {
+					Map<String, ConfigMapper> value = entry.getValue();
+					String configId = configParser.getString(value, ConfigConstant.Section.SERVER, "id", "");
+					if(configId.equals(conn.getId())) {
+						index = i;
+						moveElem = map;
+						listBySectionList.remove(moveElem);
+						break label;
+					}
+				}
+			}
+
+			if(index != null){
+
+				listBySectionList.add(getIndex(targetConn)+1,moveElem);
+
+				configParser.getEntries().put(ConfigConstant.Section.CONNECTLIST, listBySectionList);
+				try {
+					configParser.writhConfigFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	@Override
+	public Integer getIndex(RedisConnectInfo conn){
+		return getIndexById(conn.getId());
+	}
+
+	@Override
+	public Integer getIndexById(String id) {
+		List<Map<String, Map<String, ConfigMapper>>> listBySectionList = configParser.getListBySectionList(ConfigConstant.Section.CONNECTLIST);
+		for (int i = 0; i <listBySectionList.size() ; i++) {
+			Map<String, Map<String, ConfigMapper>> map = listBySectionList.get(i);
+			for (Entry<String, Map<String, ConfigMapper>> entry : map.entrySet()) {
+				Map<String, ConfigMapper> value = entry.getValue();
+				String configId = configParser.getString(value, ConfigConstant.Section.SERVER, "id", "");
+				if(configId.equals(id)) {
+					return i;
+				}
+			}
+		}
+		return null;
+	}
+
+	private void setValue(Map<String, ConfigMapper> value, String key, String context){
 		ConfigMapper configMapper = value.get("key");
 		if(configMapper == null){
 			configMapper = ConfigMapper.builder().build();

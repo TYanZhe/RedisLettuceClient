@@ -113,7 +113,9 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         SwingTools.fillWidthPanel(panel,horizontalBox);
         panel.add(horizontalBox);
         panel.add(Box.createVerticalStrut(10));
-        panel.add(experimentPanl);
+        if(!"dev".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))) {
+            panel.add(experimentPanl);
+        }
         panel.add(Box.createVerticalGlue());
 
     }
@@ -125,18 +127,18 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         String country = configParser.getString(ConfigConstant.Section.LOCAL, ConfigConstant.COUNTRY,Locale.getDefault().getCountry());
         languageComboBox.setSelectedItem(findLanguage(language,country));
         characterEncodingComboBox.setSelectedItem(character);
-
-        String is_loading_text = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.IS_LOADING_TEXT, "0");
-        String append_text_number = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_NUMBER, "10000");
-        String append_text_waittime = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_WAITTIME,"1000");
-        if("1".equals(is_loading_text)){
-            pageLoadingcheckBox.setSelected(true);
-        }else{
-            pageLoadingcheckBox.setSelected(false);
+        if(!"dev".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))) {
+            String is_loading_text = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.IS_LOADING_TEXT, "0");
+            String append_text_number = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_NUMBER, "10000");
+            String append_text_waittime = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_WAITTIME, "1000");
+            if ("1".equals(is_loading_text)) {
+                pageLoadingcheckBox.setSelected(true);
+            } else {
+                pageLoadingcheckBox.setSelected(false);
+            }
+            appendTextWaittime.setText(append_text_waittime);
+            appendTextNumber.setText(append_text_number);
         }
-        appendTextWaittime.setText(append_text_waittime);
-        appendTextNumber.setText(append_text_number);
-
     }
 
 
@@ -176,21 +178,22 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         mapper.get(ConfigConstant.CHARACTER).setValue(selectedItem);
         configParser.getEntries().put(ConfigConstant.Section.CHARACTER_ENCODING,mapper);
 
-        mapper = (Map<String, ConfigMapper>) configParser.getEntries().get(ConfigConstant.Section.EXPERIMENT);
-
-        boolean selected = pageLoadingcheckBox.isSelected();
-        if(selected){
-            mapper.get(ConfigConstant.IS_LOADING_TEXT).setValue("1");
-        }else{
-            mapper.get(ConfigConstant.IS_LOADING_TEXT).setValue("0");
+        if(!"dev".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))) {
+            mapper = (Map<String, ConfigMapper>) configParser.getEntries().get(ConfigConstant.Section.EXPERIMENT);
+            boolean selected = pageLoadingcheckBox.isSelected();
+            if (selected) {
+                mapper.get(ConfigConstant.IS_LOADING_TEXT).setValue("1");
+            } else {
+                mapper.get(ConfigConstant.IS_LOADING_TEXT).setValue("0");
+            }
+            if (StringUtils.isNotBlank(appendTextWaittime.getText())) {
+                mapper.get(ConfigConstant.APPEND_TEXT_WAITTIME).setValue(appendTextWaittime.getText());
+            }
+            if (StringUtils.isNotBlank(appendTextNumber.getText())) {
+                mapper.get(ConfigConstant.APPEND_TEXT_NUMBER).setValue(appendTextNumber.getText());
+            }
+            configParser.getEntries().put(ConfigConstant.Section.EXPERIMENT, mapper);
         }
-        if (StringUtils.isNotBlank(appendTextWaittime.getText())) {
-            mapper.get(ConfigConstant.APPEND_TEXT_WAITTIME).setValue(appendTextWaittime.getText());
-        }
-        if (StringUtils.isNotBlank(appendTextNumber.getText())) {
-            mapper.get(ConfigConstant.APPEND_TEXT_NUMBER).setValue(appendTextNumber.getText());
-        }
-        configParser.getEntries().put(ConfigConstant.Section.EXPERIMENT,mapper);
         try {
             configParser.writhConfigFile();
             SwingTools.showMessageInfoDialog(null,"修改成功,部分功能重启后生效",LarkFrame.getI18nText(I18nKey.RedisResource.SETTING));
