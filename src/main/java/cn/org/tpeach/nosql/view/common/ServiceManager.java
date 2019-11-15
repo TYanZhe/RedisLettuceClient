@@ -170,9 +170,11 @@ public class ServiceManager {
 	public void openConnectRedisTree(StatePanel statePanel,RTreeNode treeNode, RedisTreeItem redisTreeItem, JTree redisTree ) {
 		String connectId = StringUtils.getUUID();
 		RedisLarkPool.connectMap.put(treeNode,connectId);
+		treeNode.incrConnecting(1);
 		SwingTools.addLoadingTreeNode(redisTree,treeNode,redisTreeItem,
-				()->BaseController.dispatcher(() -> redisConnectService.getDbAmountAndSize(redisTreeItem.getId())),
+				()->BaseController.dispatcher(() -> redisConnectService.getDbAmountAndSize(redisTreeItem.getId()),false),
 				res ->{
+					treeNode.incrConnecting(-1);
 					if(RedisLarkPool.connectMap.get(treeNode) != null && connectId.equals(RedisLarkPool.connectMap.get(treeNode))){
 						RedisLarkPool.connectMap.remove(treeNode);
 						statePanel.doUpdateStatus(redisTreeItem);
@@ -191,9 +193,13 @@ public class ServiceManager {
 	}
 	
 	public void openDbRedisTree(RTreeNode treeNode, RedisTreeItem redisTreeItem, JTree redisTree, JTextField keyFilterField,boolean reload) {
+		treeNode.incrConnecting(1);
+		((RTreeNode) treeNode.getParent()).incrConnecting(1);
 		SwingTools.addLoadingTreeNode(redisTree,treeNode,redisTreeItem,
-				()->BaseController.dispatcher(() -> redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyFilterField.getText() ,false)),
+				()->BaseController.dispatcher(() ->  redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyFilterField.getText() ,false),false) ,
 				resDatabase ->{
+					treeNode.incrConnecting(-1);
+					((RTreeNode) treeNode.getParent()).incrConnecting(-1);
 					if (resDatabase.isRet()) {
 						final List<byte[]> keys = resDatabase.getData().getKeys();
 						this.drawRedisKeyTree(redisTree,treeNode, redisTreeItem, keys,true);
@@ -225,9 +231,9 @@ public class ServiceManager {
 			ResultRes<Boolean> resultRes = BaseController.dispatcher(() -> redisConnectService.remamenx(redisTreeItem.getId(), redisTreeItem.getDb(), redisTreeItem.getKey(), nameByte));
 
 			if (!resultRes.isRet()) {
-				SwingTools.showMessageErrorDialog(null, "重命名失败:" + resultRes.getMsg());
+				SwingTools.showMessageErrorDialog(null, "Rename Failed: " + resultRes.getMsg());
 			} else if (!resultRes.getData()) {
-				SwingTools.showMessageErrorDialog(null, "Cant't rename name: Key with new name already exist in database or original key was removed");
+				SwingTools.showMessageErrorDialog(null, "Rename Failed: Key with new name already exist in database or original key was removed");
 			}else{
 				redisTreeItem.updateKeyName(nameByte,name);
 				tree.updateUI();
@@ -236,7 +242,7 @@ public class ServiceManager {
 				}
 			}
 		}else{
-			SwingTools.showMessageErrorDialog(null, "重命名失败:名称不能为空" );
+			SwingTools.showMessageErrorDialog(null, "Rename Failed: Name cannot be null" );
 			this.renameKey(tree,treeNode,success);
 		}
 	}

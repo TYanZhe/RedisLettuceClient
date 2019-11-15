@@ -113,7 +113,7 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         SwingTools.fillWidthPanel(panel,horizontalBox);
         panel.add(horizontalBox);
         panel.add(Box.createVerticalStrut(10));
-        if(!"dev".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))) {
+        if(!PublicConstant.ProjectEnvironment.DEV.equals(LarkFrame.getProjectEnv())) {
             panel.add(experimentPanl);
         }
         panel.add(Box.createVerticalGlue());
@@ -127,7 +127,7 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         String country = configParser.getString(ConfigConstant.Section.LOCAL, ConfigConstant.COUNTRY,Locale.getDefault().getCountry());
         languageComboBox.setSelectedItem(findLanguage(language,country));
         characterEncodingComboBox.setSelectedItem(character);
-        if(!"dev".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))) {
+        if(!PublicConstant.ProjectEnvironment.DEV.equals(LarkFrame.getProjectEnv())) {
             String is_loading_text = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.IS_LOADING_TEXT, "0");
             String append_text_number = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_NUMBER, "10000");
             String append_text_waittime = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_WAITTIME, "1000");
@@ -178,7 +178,7 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         mapper.get(ConfigConstant.CHARACTER).setValue(selectedItem);
         configParser.getEntries().put(ConfigConstant.Section.CHARACTER_ENCODING,mapper);
 
-        if(!"dev".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))) {
+        if(!PublicConstant.ProjectEnvironment.DEV.equals(LarkFrame.getProjectEnv())) {
             mapper = (Map<String, ConfigMapper>) configParser.getEntries().get(ConfigConstant.Section.EXPERIMENT);
             boolean selected = pageLoadingcheckBox.isSelected();
             if (selected) {

@@ -1,5 +1,5 @@
 @echo off
-set char=redisLark-1.1.1
+set char=RedisLark-1.1.2
 echo char : %char%
 for /f "usebackq tokens=1-2" %%a in (`jps -l ^| findstr %char%`) do (
 	echo find process %%a %%b

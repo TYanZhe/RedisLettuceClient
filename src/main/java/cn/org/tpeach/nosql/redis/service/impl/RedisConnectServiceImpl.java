@@ -389,7 +389,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
             String typeStr = super.executeJedisCommand(new TypeCommand(id, db, key));
             type = RedisType.getRedisType(typeStr);
             if (type == RedisType.UNKNOWN) {
-                throw new ServiceException("key不存在");
+                throw new ServiceException("Cannot load key "+StringUtils.byteToStr(key)+" because it doesn't exist in database.Please reload connection tree and try again.");
             }
         }
         if(ttl == null){
@@ -587,23 +587,30 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
             case STRING:
                 //修复Redis 更新(set) key值 会重置过期时间问题  2019-11-12
                 Long ttl = super.executeJedisCommand(new TTLCommand(id, db, key).setPrintLog(false));
+                String s;
                 if(ttl != null && ttl > 0){
-                    super.executeJedisCommand(new SetexString(id, db, key,ttl.intValue(), newKeyInfo.getValue()));
+                    s = super.executeJedisCommand(new SetexString(id, db, key, ttl.intValue(), newKeyInfo.getValue()));
                 }else{
-                    super.executeJedisCommand(new SetString(id, db, key, newKeyInfo.getValue()));
+                    s = super.executeJedisCommand(new SetString(id, db, key, newKeyInfo.getValue()));
+                }
+                if(!"OK".equals(s)){
+                    throw new ServiceException(s);
                 }
                 break;
             case LIST:
                 //查看下标的值是否相等
                 List<byte[]> list = super.executeJedisCommand(new LrangeList(id, db, key, newKeyInfo.getIndex(), newKeyInfo.getIndex()));
                 if(CollectionUtils.isEmpty(list)){
-                    throw new ServiceException("添加失败，数据已更新");
+                    throw new ServiceException("the row has been changed and can't be update now.Reload and try again");
                 }
                 byte[] oldValue = list.get(0);
                 if(!Arrays.equals(oldKeyInfo.getValue(), oldValue)) {
                     throw new ServiceException("the row has been changed and can't be update now.Reload and try again");
                 }
-                super.executeJedisCommand(new LsetList(id, db, key, newKeyInfo.getIndex(), newKeyInfo.getValue()));
+                s = super.executeJedisCommand(new LsetList(id, db, key, newKeyInfo.getIndex(), newKeyInfo.getValue()));
+                if(!"OK".equals(s)){
+                    throw new ServiceException(s);
+                }
                 break;
             case SET:
                 super.executeJedisCommand(new SremSet(id, db, key, oldKeyInfo.getValue()));
@@ -628,37 +635,58 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     }
 
     @Override
-    public RedisKeyInfo addRowKeyInfo(RedisKeyInfo keyInfo, boolean isLeftList) {
-
+    public Long addRowKeyInfo(RedisKeyInfo keyInfo, boolean isLeftList) {
+        Long size = null;
         switch (keyInfo.getType()) {
             case STRING:
                 break;
             case LIST:
                 if (isLeftList) {
-                    super.executeJedisCommand(new LpushList(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getValue()));
+                    size =  super.executeJedisCommand(new LpushList(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getValue()));
                 } else {
-                    super.executeJedisCommand(new RpushList(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getValue()));
+                    size = super.executeJedisCommand(new RpushList(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getValue()));
                 }
-
+                if(size != null && size > 0){
+                    //修复新增list不更新 2019-11-15
+                    List<byte[]> valueList = keyInfo.getValueList();
+                    keyInfo.setSize(size.intValue());
+                    if(CollectionUtils.isEmpty(valueList)){
+                        valueList = new ArrayList<>();
+                        keyInfo.setValueList(valueList);
+                    }
+                    if(isLeftList){
+                        valueList.add(0,keyInfo.getValue());
+                    }else{
+                        valueList.add( keyInfo.getValue());
+                    }
+                }
                 break;
             case SET:
-                super.executeJedisCommand(new SAddSet(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getValue()));
+                size = super.executeJedisCommand(new SAddSet(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getValue()));
+                if(size != null && size > 0){
+                    keyInfo.setSize(keyInfo.getSize()+1);
+                }
                 break;
             case HASH:
                 Boolean res = super.executeJedisCommand(new HsetnxHash(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getField(), keyInfo.getValue()));
                 if (!res) {
                     throw new ServiceException("Value with the same key already exist");
                 }
+                size = 1L;
+                keyInfo.setSize(keyInfo.getSize()+1);
                 break;
             case ZSET:
-                super.executeJedisCommand(new ZAddSet(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getScore(), keyInfo.getValue()));
+                size = super.executeJedisCommand(new ZAddSet(keyInfo.getId(), keyInfo.getDb(), keyInfo.getKey(), keyInfo.getScore(), keyInfo.getValue()));
+                if(size != null && size > 0) {
+                    keyInfo.setSize(keyInfo.getSize()+1);
+                }
                 break;
             default:
                 logger.error("未知的类型：" + keyInfo);
                 throw new ServiceException("未知的类型：" + keyInfo);
 
         }
-        return keyInfo;
+        return size;
     }
 
     @Override

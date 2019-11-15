@@ -449,5 +449,17 @@ public class StringUtils {
 		}
 		return dataStr;
 	}
-
+	public static String getLengthHummanText(long bytes){
+		String humenText;
+		if(bytes >  9999*1024*1024){
+			humenText = MathUtils.divide(2,bytes+"", "1073741824")+"GB";
+		}else if(bytes >  9999*1024){
+			humenText = MathUtils.divide(2,bytes+"", "1048576")+"MB";
+		}else if(bytes >  9999){
+			humenText = MathUtils.divide(2,bytes+"", "1024")+"KB";
+		}else {
+			humenText = bytes+"Bytes";
+		}
+		return humenText;
+	}
 }

@@ -204,4 +204,11 @@ public class PublicConstant {
     public final static class FontConstant{
         public static final Font baseFont = new Font("宋体", Font.PLAIN,14);
     }
+
+    public final static class ProjectEnvironment{
+        public static final  String DEV = "dev";
+        public static final  String TEST = "test";
+        public static final  String BETA = "beta";
+        public static final  String RELEASE = "release";
+    }
 }

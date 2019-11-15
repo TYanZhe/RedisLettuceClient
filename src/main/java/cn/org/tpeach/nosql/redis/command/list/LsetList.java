@@ -35,6 +35,14 @@ public class LsetList  extends JedisDbCommand<String>{
 		return "LSET "+ byteToStr(key) +" "+ index + " "+byteToStr(value);
 	}
 
+	/**
+	 * 将列表key下标为index的元素的值甚至为value。
+	 * 时间复杂度：
+	 * 对头元素或尾元素进行LSET操作，复杂度为O(1)。
+	 * 其他情况下，为O(N)，N为列表的长度。
+	 * @param redisLarkContext
+	 * @return 操作成功返回ok，否则返回错误信息。
+	 */
 	@Override
 	public String concreteCommand(RedisLarkContext<byte[], byte[]> redisLarkContext) {
 		super.concreteCommand(redisLarkContext);

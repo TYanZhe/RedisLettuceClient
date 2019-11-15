@@ -4,6 +4,7 @@ import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.view.StatePanel;
 import cn.org.tpeach.nosql.view.component.RButton;
 import lombok.Getter;
 import lombok.Setter;
@@ -264,13 +265,12 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 
 	}
 	public void submit(final JButton okBtn, Runnable request,boolean timeout){
-		Layer.showLoading_v2(false,timeout,()->{
+		StatePanel.showLoading(()->{
 			if(okBtn != null){
 				okBtn.setEnabled(false);
 			}else{
 				this.okBtn.setEnabled(false);
 			}
-
 			try{
 				request.run();
 			}finally {
@@ -281,6 +281,25 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 				}
 			}
 		});
+
+//
+//		Layer.showLoading_v3(false,timeout,()->{
+//			if(okBtn != null){
+//				okBtn.setEnabled(false);
+//			}else{
+//				this.okBtn.setEnabled(false);
+//			}
+//
+//			try{
+//				request.run();
+//			}finally {
+//				if(okBtn != null){
+//					okBtn.setEnabled(true);
+//				}else{
+//					this.okBtn.setEnabled(true);
+//				}
+//			}
+//		});
 	}
 	public void submit(final JButton okBtn, Runnable request ){
 		submit(okBtn,request,true);

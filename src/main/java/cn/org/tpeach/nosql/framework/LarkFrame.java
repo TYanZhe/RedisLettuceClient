@@ -70,6 +70,9 @@ public class LarkFrame {
 		}
 	}
 
+	public static String getProjectEnv(){
+		return   LarkFrame.APPLICATION_VALUE.getProperty("project.environment");
+	}
 	public static  void run(Class<?> primarySource) {
 		logArea.addMouseListener(new MouseAdapter() {
 			@Override

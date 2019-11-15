@@ -5,13 +5,6 @@ package cn.org.tpeach.nosql.view.dialog;
 
 import cn.org.tpeach.nosql.controller.BaseController;
 import cn.org.tpeach.nosql.controller.ResultRes;
-
-import java.awt.*;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
@@ -19,10 +12,11 @@ import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RTextArea;
-
-import java.awt.event.ActionEvent;
-
 import lombok.Setter;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * <p>
@@ -163,7 +157,7 @@ public class AddRowDialog extends AbstractRowDialog<RedisKeyInfo, RedisKeyInfo> 
             consumer.accept(t);
             this.dispose();
         } else {
-            SwingTools.showMessageErrorDialog(this, "未知错误：添加失败");
+            SwingTools.showMessageErrorDialog(this, res.getMsg());
         }
     }
 

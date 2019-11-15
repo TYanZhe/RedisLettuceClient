@@ -8,7 +8,7 @@ set LnkName=RedisLark
 set WorkDir=
 ::设置快捷方式显示的说明（可选）
 set Desc=RedisClient
-set SoftFile=redisLark-1.1.1
+set SoftFile=RedisLark-1.1.2
 
 if  exist %USERPROFILE%\Desktop\%LnkName%.lnk (
 	del /f /q %USERPROFILE%\Desktop\%LnkName%.lnk
@@ -44,7 +44,7 @@ if "%isExist%"=="1" (
 
 ) else (
 	cd /d %curdir%
-	start javaw -jar ./redisLark-1.1.1.jar
+	start javaw -jar ./RedisLark-1.1.2.jar
 	exit
 )
 

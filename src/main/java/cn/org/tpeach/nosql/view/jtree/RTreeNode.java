@@ -5,6 +5,7 @@
  */
 package cn.org.tpeach.nosql.view.jtree;
 
+import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +14,9 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
+import java.util.LinkedList;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Vector;
 
 /**
@@ -46,6 +49,24 @@ public class RTreeNode extends DefaultMutableTreeNode {
 	public Color ForegroundSelectionColor;// 选中前景色
 	public Color BackgroundNonSelectionColor;// 未选中时背景色
 	public Color ForegroundNonSelectionColor;// 未选中背景色
+
+	private Queue connectQueue;
+
+	public void incrConnecting(int incr){
+		if(connectQueue == null){
+			connectQueue = new LinkedList<>();
+		}
+		if(incr > 0){
+			connectQueue.offer(1);
+		}else{
+			if(CollectionUtils.isNotEmpty(connectQueue)){
+				connectQueue.poll();
+			}
+		}
+	}
+	public boolean isConnecting(){
+		return CollectionUtils.isNotEmpty(connectQueue);
+	}
 
 	public RTreeNode() {
 		super();

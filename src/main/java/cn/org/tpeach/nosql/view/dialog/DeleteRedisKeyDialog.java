@@ -14,6 +14,7 @@ import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.view.StatePanel;
 import cn.org.tpeach.nosql.view.component.EasyJSP;
 import cn.org.tpeach.nosql.view.component.OnlyReadArea;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
@@ -27,7 +28,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.time.Clock;
 import java.util.Collection;
-import java.util.concurrent.CountDownLatch;
 
 /**
 　 * <p>Title: DeleteRedisKeyDialog.java</p> 
@@ -78,15 +78,8 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 		}
 		this.redisTreeItem = (RedisTreeItem) t.getUserObject();
 		this.keyPattern = redisTreeItem.getOriginName()+":*";
-		CountDownLatch countDownLatch = new CountDownLatch(1);
-		this.containerMap.put("countDownLatch",countDownLatch);
-		Layer.showLoading_v2(()->{
-			try {
-				countDownLatch.await();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		});
+
+
 	}
 	private JLabel getLable(String text,int horizontalAlignment ) {
 		Font font = new Font("宋体",Font.PLAIN,14);
@@ -98,7 +91,7 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 
 	@Override
 	protected void contextUiImpl(JPanel contextPanel, JPanel btnPanel) {
-		try {
+		StatePanel.showLoading(()->{
 			ResultRes<KeyScanCursor<byte[]>> dispatcher = BaseController.dispatcher(() -> redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(), keyPattern, true));
 			if (dispatcher.isRet()) {
 				keys = dispatcher.getData().getKeys();
@@ -171,11 +164,8 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 			keys.forEach(s -> textArea.println(StringUtils.showHexStringValue(s)));
 			JScrollPane scrollPane = new EasyJSP(textArea).hiddenHorizontalScrollBar();
 			contextPanel.add(scrollPane);
-		}finally {
-			final CountDownLatch countDownLatch = (CountDownLatch) containerMap.get("countDownLatch");
-			countDownLatch.countDown();
-		}
 
+		});
 
 	}
 	

@@ -16,7 +16,6 @@ import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.RButton;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.AboutDialog;
-import cn.org.tpeach.nosql.view.dialog.Layer;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import cn.org.tpeach.nosql.view.dialog.SettingDialog;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
@@ -184,7 +183,7 @@ public class RToolBar extends JToolBar {
             aboutDialog.open();
         });
         testBatch.addActionListener(e->{
-            Layer.showLoading_v2(true,false,()->testBatchString());
+            StatePanel.showLoading(()->testBatchString());
         });
         this.add(newButton);
         this.add(serverButton);
@@ -193,9 +192,9 @@ public class RToolBar extends JToolBar {
         this.add(settingsButton);
 //        jToolBar.add(helpButton);
 
-        if("test".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))){
+        if(PublicConstant.ProjectEnvironment.TEST.equals(LarkFrame.getProjectEnv())){
             this.add(testBatch);
-        }else if("release".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))|| "beta".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))){
+        }else if(PublicConstant.ProjectEnvironment.RELEASE.equals(LarkFrame.getProjectEnv())|| PublicConstant.ProjectEnvironment.BETA.equals(LarkFrame.getProjectEnv())){
             this.add(aboutButton);
         }
         this.putClientProperty("JToolBar.isRollover", Boolean.TRUE);

@@ -20,7 +20,10 @@ import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
 import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
-import cn.org.tpeach.nosql.view.component.*;
+import cn.org.tpeach.nosql.view.component.EasyJSP;
+import cn.org.tpeach.nosql.view.component.NonRectanglePopupFactory;
+import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
+import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import cn.org.tpeach.nosql.view.jtree.*;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
@@ -30,7 +33,6 @@ import sun.font.FontDesignMetrics;
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.dnd.DnDConstants;
@@ -50,7 +52,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
     private static final long serialVersionUID = 4087854446377861533L;
     private final int INIT_WIDTH = 1152;
     private final int INIT_HEIGHT = 720;
-    public  static JPanel loadingGlassPane;
+
     private RedisTreeRenderer redisTreeRenderer = new RedisTreeRenderer();
     //初始化宽度占总屏幕宽度百分比
     private float SIZE_PERCENT = 0.60F;
@@ -156,6 +158,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //        System.out.println("计算后的宽度：" + width + ",高度：" + height + ">>>>>treePanelWidth:" + treePanelWidth);
         initUiManager();
         this.setIconImage(PublicConstant.Image.logo.getImage());
+        this.setTitle(LarkFrame.APPLICATION_VALUE.getProperty("project.name") + " "+LarkFrame.APPLICATION_VALUE.getProperty("version"));
         initComponents();
         ((PlaceholderTextField) keyFilterField).setPlaceholder("请输入检索键的表达式");
         keyFilterField.setText("*");
@@ -257,7 +260,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
             }
             
         });
-        if("release".equals(LarkFrame.APPLICATION_VALUE.get("project.environment"))) {
+        if(PublicConstant.ProjectEnvironment.RELEASE.equals(LarkFrame.getProjectEnv())){
             String s = "                                           _._\n" +
                     "                                      _.-``__ ''-._\n" +
                     "                                 _.-``    `.  `_.  ''-._           \n" +
@@ -277,29 +280,9 @@ public class RedisMainWindow extends javax.swing.JFrame {
                     "                                         `-.__.-'\n\n";
             LarkFrame.larkLog.info(null, s, Color.RED.brighter().brighter().brighter());
         }
-
-        loadingGlassPane = getLoadingGlassPane();
-        this.setGlassPane(loadingGlassPane);
     }
 
-    private JPanel getLoadingGlassPane(){
-        JPanel loadingGlassPane = new JPanel();
-        RButton button = new RButton();
-        button.setText("Loading data, please wait...");
-        button.setIcon(PublicConstant.Image.loading_g);
-        button.setVerticalTextPosition(SwingConstants.BOTTOM);
-        button.setHorizontalTextPosition(SwingConstants.CENTER);
-        button.setFocusPainted(false);
-        button.setOpaque(false);
-//        button.setFont(new Font("新宋体", Font.ITALIC, 16));
-        button.setForeground(new Color(80,223,240));
-        loadingGlassPane.setLayout(new BorderLayout());
 
-        loadingGlassPane.add(button);
-// Transparent
-        loadingGlassPane.setOpaque(false);
-        return loadingGlassPane;
-    }
 
     //------------------------------------------------------toolbar start-------------------------------------------
 
@@ -355,7 +338,6 @@ public class RedisMainWindow extends javax.swing.JFrame {
         new TreeDragSource(redisTree, DnDConstants.ACTION_COPY_OR_MOVE);
         new TreeDropTarget(redisTree);
     }
-
     private TreeModel getTreeModel() {
 
         //加载配置
@@ -411,9 +393,10 @@ public class RedisMainWindow extends javax.swing.JFrame {
             if (path.length == 2) {
                 serverTreePopMenu.show(redisTree, x, y);
                 if(childCount > 0 ){
-                	if(childCount == 1 && RedisType.LOADING.equals(((RedisTreeItem)((RTreeNode) treeNode.getChildAt(0)).getUserObject()).getType())) {
+                    //连接中或者loading不能操作
+                	if(treeNode.isConnecting() || (childCount == 1 && RedisType.LOADING.equals(((RedisTreeItem)((RTreeNode) treeNode.getChildAt(0)).getUserObject()).getType()))) {
                         serverTreePopMenu.getComponent(0).setEnabled(false);
-                        serverTreePopMenu.getComponent(1).setEnabled(RedisType.SERVER == item.getType());
+                        serverTreePopMenu.getComponent(1).setEnabled(!treeNode.isConnecting() && RedisType.SERVER == item.getType());
                         serverTreePopMenu.getComponent(2).setEnabled(false);
                         serverTreePopMenu.getComponent(3).setEnabled(false);
                         serverTreePopMenu.getComponent(4).setEnabled(false);
@@ -458,7 +441,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 
             } else if (path.length == 3) {
                 dbTreePopMenu.show(redisTree, x, y);
-                if(childCount > 0){
+                if(!treeNode.isConnecting() && childCount > 0){
                     //重新加载
                     dbTreePopMenu.getComponent(2).setEnabled(true);
                 }else{
@@ -491,70 +474,6 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //                redisTree.repaint();
 
     }//GEN-LAST:event_redisTreeMouseMoved
-    private void doubleClickTreeNode(MouseEvent evt) {
-        RTreeNode treeNode = (RTreeNode) redisTree.getLastSelectedPathComponent();
-        if (!treeNode.isEnabled()) {
-            return;
-        }
-        final int childCount = treeNode.getChildCount();
-        //判断是否已经加载过
-        if (childCount > 0) {
-            return;
-        }
-        final TreeNode[] path = treeNode.getPath();
-        if (null != treeNode) {
-            Object userObject = treeNode.getUserObject();
-
-            if (null != userObject && userObject instanceof RedisTreeItem) {
-                RedisTreeItem redisTreeItem = (RedisTreeItem) userObject;
-                final String id = redisTreeItem.getId();
-                switch (redisTreeItem.getType()) {
-                    case SERVER:
-                        // 连接 查询redis数据库
-//                        LarkFrame.executorService.execute(() -> serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree));
-                        SwingWorker<String, Object> task = new SwingWorker<String, Object>() {
-                            @Override
-                            protected String doInBackground() throws Exception {
-                                serviceManager.openConnectRedisTree((StatePanel) statePanel, treeNode, redisTreeItem, redisTree);
-                                return "SUCCESS";
-                            }
-                            @Override
-                            protected void done() {
-
-                            }
-                        };
-                        // 启动任务
-                        task.execute();
-                        break;
-                    case DATABASE:
-
-                        break;
-                    case KEY:
-
-                        break;
-                    case KEY_NAMESPACE:
-                        break;
-                    case STRING:
-                        break;
-                    case LIST:
-                        break;
-                    case SET:
-                        break;
-                    case ZSET:
-                        break;
-                    case HASH:
-                        break;
-                    case ROOT:
-                        break;
-                    case LOADING:
-                        break;
-                    case UNKNOWN:
-                        break;
-                    default:
-                }
-            }
-        }
-    }
 
     /**
      * 鼠标左键点击树
@@ -574,11 +493,10 @@ public class RedisMainWindow extends javax.swing.JFrame {
                 }
                 switch (redisTreeItem.getType()) {
                     case SERVER:
-                        SwingTools.swingWorkerExec(()->serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree));
-
+                        serviceManager.openConnectRedisTree((StatePanel) statePanel,treeNode, redisTreeItem, redisTree);
                         break;
                     case DATABASE:
-                        SwingTools.swingWorkerExec(()->serviceManager.openDbRedisTree(treeNode, redisTreeItem, redisTree,keyFilterField,true));
+                        serviceManager.openDbRedisTree(treeNode, redisTreeItem, redisTree,keyFilterField,true);
                         break;
                     case KEY:
                         RTreeNode node = (RTreeNode) redisTree.getLastSelectedPathComponent(); // 获得右键选中的节点
@@ -603,6 +521,10 @@ public class RedisMainWindow extends javax.swing.JFrame {
     //------------------------------------------------------tree end-------------------------------------------
 
     //------------------------------------------------------statusPanel start-------------------------------------------
+
+    public StatePanel getStatePanel(){
+        return (StatePanel) statePanel;
+    }
 
     //------------------------------------------------------statusPanel end-------------------------------------------
     /**
