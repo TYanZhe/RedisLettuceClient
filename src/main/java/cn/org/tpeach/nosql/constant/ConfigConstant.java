@@ -32,7 +32,9 @@ public class ConfigConstant {
 	public static final String DEFAULT_FONTSIZE = "14";
 	public static final String CHARACTER = "character";
 	public static final String IS_LOADING_TEXT = "is_loading_text";
+	public static final String  MAGNIFYTEXT_DIALOG_SWITH = "magnifyTextDialog";
 	public static final String APPEND_TEXT_NUMBER = "appendTextNumber";
 	public static final String APPEND_TEXT_WAITTIME = "appendTextWaitTime";
+	public static final String  MEMORY_FIXEDRATE_PERIOD= "MemoryFixedRatePeriod";
 
 }

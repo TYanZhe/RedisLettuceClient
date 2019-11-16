@@ -12,25 +12,23 @@ import java.util.function.Consumer;
 
 public class MagnifyTextDialog extends BaseDialog<String,String>{
 
-    private static final class SingleHolder{
-        private static MagnifyTextDialog instance = new MagnifyTextDialog(null,null);
-    }
 
-
-    public static MagnifyTextDialog getInstance() {
-        final MagnifyTextDialog instance = SingleHolder.instance;
-        instance.reset();
-        return instance;
-    }
     @Setter
     @Getter
     private String text;
     private boolean needBtn;
+    private RTextArea textArea;
 
-    private RTextArea onlyReadArea;
-
-    private MagnifyTextDialog(JFrame parent, String s) {
+    protected RTextArea getTextArea() {
+        return textArea;
+    }
+    protected void setTextArea(RTextArea textArea) {
+        this.textArea = textArea;
+    }
+    public MagnifyTextDialog(JFrame parent, String s) {
         super(parent, s);
+        textArea = new RTextArea( );
+         reset();
     }
 
 
@@ -43,9 +41,6 @@ public class MagnifyTextDialog extends BaseDialog<String,String>{
         int minWidth = this.getMinWidth();
         this.setMinHeight(width*minHeight/minWidth);
         this.setMinWidth(width);
-        onlyReadArea = new RTextArea( );
-        onlyReadArea.setLineWrap(true);
-        SwingTools.addTextCopyMenu(onlyReadArea);
     }
 
 
@@ -64,7 +59,7 @@ public class MagnifyTextDialog extends BaseDialog<String,String>{
         btnPanel.setPreferredSize(new Dimension(this.getWidth(), btnPanelHeight));
         contextPanel.setBorder(BorderFactory.createEmptyBorder(25,25,25,25));
         contextPanel.setLayout(new BorderLayout());
-        contextPanel.add(onlyReadArea.getJScrollPane(),BorderLayout.CENTER);
+        contextPanel.add(textArea.getJScrollPane(),BorderLayout.CENTER);
         contextPanel.updateUI();
     }
     @Override
@@ -72,17 +67,20 @@ public class MagnifyTextDialog extends BaseDialog<String,String>{
 //        middlePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
     }
 
-    private void reset(){
+    protected void reset(){
+
+        textArea.setLineWrap(true);
+        SwingTools.addTextCopyMenu(textArea);
         this.consumer = null;
         this.text = null;
-        onlyReadArea.setEditable(true);
+        textArea.setEditable(true);
         this.needBtn = true;
 
     }
     @Override
     protected void submit(ActionEvent e) {
         if(this.consumer != null){
-            this.consumer.accept(onlyReadArea.getText());
+            this.consumer.accept(textArea.getText());
         }
         this.close();
     }
@@ -98,13 +96,13 @@ public class MagnifyTextDialog extends BaseDialog<String,String>{
 
     public synchronized void open(Consumer<String> result) {
         this.consumer = result;
-        onlyReadArea.append(text);
-        onlyReadArea.paintImmediately(onlyReadArea.getBounds());
+        textArea.append(text);
+        textArea.paintImmediately(textArea.getBounds());
         super.open();
     }
 
     public void setEditable(boolean b){
-        onlyReadArea.setEditable(b);
+        textArea.setEditable(b);
         needBtn = b;
 
 
@@ -112,7 +110,9 @@ public class MagnifyTextDialog extends BaseDialog<String,String>{
 
     @Override
     public void close() {
-        onlyReadArea.setText(null);
+        textArea.setText(null);
         super.close();
+        this.setVisible(false);
+        SwingTools.swingWorkerExec(()->this.dispose());
     }
 }

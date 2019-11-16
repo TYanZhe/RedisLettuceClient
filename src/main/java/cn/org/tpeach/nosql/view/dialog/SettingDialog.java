@@ -5,10 +5,10 @@ import cn.org.tpeach.nosql.constant.ConfigConstant;
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.framework.LarkFrame;
-import cn.org.tpeach.nosql.tools.ConfigMapper;
 import cn.org.tpeach.nosql.tools.ConfigParser;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RComboBox;
 import cn.org.tpeach.nosql.view.ui.ServerTabbedPaneUI;
@@ -20,14 +20,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Map;
 
 
 public class SettingDialog extends AbstractRowDialog<Object, Object>{
     private JPanel panel;
     private JComboBox<DicBean> languageComboBox;
     private JComboBox<String>  characterEncodingComboBox;
-    private JCheckBox pageLoadingcheckBox;
+    private JCheckBox pageLoadingcheckBox,magnifyTextDialogCheckBox;
     private PlaceholderTextField appendTextWaittime,appendTextNumber;
     private ConfigParser configParser = ConfigParser.getInstance();
     public SettingDialog() {
@@ -64,6 +63,9 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
                           PublicConstant.CharacterEncoding.UTF_16LE,*/
         });
         pageLoadingcheckBox = new JCheckBox();
+        pageLoadingcheckBox.setBackground(getPanelBgColor());
+        magnifyTextDialogCheckBox = new JCheckBox();
+        magnifyTextDialogCheckBox.setBackground(getPanelBgColor());
         appendTextWaittime = new PlaceholderTextField(20);
         appendTextNumber = new PlaceholderTextField(20);
         appendTextWaittime.setEnabled(false);
@@ -92,13 +94,25 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         jLabel2.setForeground(Color.lightGray);
         JLabel jLabel3 = new JLabel("单次加载数量:");
         jLabel3.setForeground(Color.lightGray);
+        JLabel jLabel4 = new JLabel("双击打开大窗口编辑Key数据:");
+        jLabel4.setForeground(Color.lightGray);
+
         experimentValuePanl.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0,20,0,20),experimentValueTitledBorder));
-        experimentValuePanl.add(createRow(panel,jLabel1,pageLoadingcheckBox, 20, 0.32));
+        JPanel  pageCheckBoxPanel = new JPanel();
+        pageCheckBoxPanel.setLayout(new GridLayout(1,1));
+        JPanel  magnifyTextCheckBoxPanel = new JPanel();
+        magnifyTextCheckBoxPanel.setLayout(new GridLayout(1,1));
+        experimentValuePanl.add(createRow(panel, pageCheckBoxPanel, magnifyTextCheckBoxPanel, 20, 0.45,0,0,false));
+        pageCheckBoxPanel.add(createCompoundRow(jLabel1, pageLoadingcheckBox, 0.65, EasyGBC.EAST,EasyGBC.WEST,getZeroInsets(),new Insets(0,14,0,0) ));
+        magnifyTextCheckBoxPanel.add(createCompoundRow(jLabel4, magnifyTextDialogCheckBox, 0.1, EasyGBC.WEST,EasyGBC.WEST ,getZeroInsets(),getZeroInsets()));
         experimentValuePanl.add(Box.createVerticalStrut(5));
         experimentValuePanl.add(createRow(panel,jLabel2, appendTextWaittime, 20, 0.32));
         experimentValuePanl.add(Box.createVerticalStrut(5));
         experimentValuePanl.add(createRow(panel, jLabel3, appendTextNumber, 20, 0.32));
         experimentValuePanl.add(Box.createVerticalStrut(5));
+
+
+
         experimentPanl.add(experimentValuePanl);
         experimentPanl.add(Box.createVerticalStrut(10));
         panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
@@ -113,9 +127,7 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         SwingTools.fillWidthPanel(panel,horizontalBox);
         panel.add(horizontalBox);
         panel.add(Box.createVerticalStrut(10));
-        if(!PublicConstant.ProjectEnvironment.DEV.equals(LarkFrame.getProjectEnv())) {
-            panel.add(experimentPanl);
-        }
+        panel.add(experimentPanl);
         panel.add(Box.createVerticalGlue());
 
     }
@@ -127,18 +139,24 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         String country = configParser.getString(ConfigConstant.Section.LOCAL, ConfigConstant.COUNTRY,Locale.getDefault().getCountry());
         languageComboBox.setSelectedItem(findLanguage(language,country));
         characterEncodingComboBox.setSelectedItem(character);
-        if(!PublicConstant.ProjectEnvironment.DEV.equals(LarkFrame.getProjectEnv())) {
-            String is_loading_text = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.IS_LOADING_TEXT, "0");
-            String append_text_number = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_NUMBER, "10000");
-            String append_text_waittime = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_WAITTIME, "1000");
-            if ("1".equals(is_loading_text)) {
-                pageLoadingcheckBox.setSelected(true);
-            } else {
-                pageLoadingcheckBox.setSelected(false);
-            }
-            appendTextWaittime.setText(append_text_waittime);
-            appendTextNumber.setText(append_text_number);
+
+        String is_loading_text = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.IS_LOADING_TEXT, "0");
+        String append_text_number = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_NUMBER, "10000");
+        String append_text_waittime = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_WAITTIME, "1000");
+        String magnifytext_dialog_swith = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.MAGNIFYTEXT_DIALOG_SWITH, "0");
+        if ("1".equals(is_loading_text)) {
+            pageLoadingcheckBox.setSelected(true);
+        } else {
+            pageLoadingcheckBox.setSelected(false);
         }
+        if ("1".equals(magnifytext_dialog_swith)) {
+            magnifyTextDialogCheckBox.setSelected(true);
+        } else {
+            magnifyTextDialogCheckBox.setSelected(false);
+        }
+        appendTextWaittime.setText(append_text_waittime);
+        appendTextNumber.setText(append_text_number);
+
     }
 
 
@@ -158,42 +176,27 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
     @Override
     protected void submit(ActionEvent e) {
         DicBean langItem = (DicBean) languageComboBox.getSelectedItem();
-        Map<String, ConfigMapper> mapper = (Map<String, ConfigMapper>) configParser.getEntries().get(ConfigConstant.Section.LOCAL);
-        ConfigMapper languageMapper = mapper.get(ConfigConstant.LANGUAGE);
-        ConfigMapper countryMapper = mapper.get(ConfigConstant.COUNTRY);
         if(I18nKey.RedisResource.SIM_CHINESE.getKey().equals(langItem.getCode())){
-            languageMapper.setValue(ConfigConstant.Local.zh);
-            countryMapper.setValue(ConfigConstant.Local.CN);
+            configParser.safePutMapperData(ConfigConstant.Section.LOCAL,ConfigConstant.LANGUAGE,ConfigConstant.Local.zh);
+            configParser.safePutMapperData(ConfigConstant.Section.LOCAL,ConfigConstant.COUNTRY,ConfigConstant.Local.CN);
         }else if(I18nKey.RedisResource.ENGLISH.getKey().equals(langItem.getCode())){
-            languageMapper.setValue(ConfigConstant.Local.en);
-            countryMapper.setValue(ConfigConstant.Local.US);
+            configParser.safePutMapperData(ConfigConstant.Section.LOCAL,ConfigConstant.LANGUAGE,ConfigConstant.Local.en);
+            configParser.safePutMapperData(ConfigConstant.Section.LOCAL,ConfigConstant.COUNTRY,ConfigConstant.Local.US);
         }else{
             SwingTools.showMessageErrorDialog(null,"未知语言");
         }
-        configParser.getEntries().put(ConfigConstant.Section.LOCAL,mapper);
+        configParser.safePutMapperData(ConfigConstant.Section.CHARACTER_ENCODING,ConfigConstant.CHARACTER, (String) characterEncodingComboBox.getSelectedItem());
 
+        configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.IS_LOADING_TEXT,pageLoadingcheckBox.isSelected()?"1":"0");
+        configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.MAGNIFYTEXT_DIALOG_SWITH, magnifyTextDialogCheckBox.isSelected()?"1":"0");
 
-        String selectedItem = (String) characterEncodingComboBox.getSelectedItem();
-        mapper = (Map<String, ConfigMapper>) configParser.getEntries().get(ConfigConstant.Section.CHARACTER_ENCODING);
-        mapper.get(ConfigConstant.CHARACTER).setValue(selectedItem);
-        configParser.getEntries().put(ConfigConstant.Section.CHARACTER_ENCODING,mapper);
-
-        if(!PublicConstant.ProjectEnvironment.DEV.equals(LarkFrame.getProjectEnv())) {
-            mapper = (Map<String, ConfigMapper>) configParser.getEntries().get(ConfigConstant.Section.EXPERIMENT);
-            boolean selected = pageLoadingcheckBox.isSelected();
-            if (selected) {
-                mapper.get(ConfigConstant.IS_LOADING_TEXT).setValue("1");
-            } else {
-                mapper.get(ConfigConstant.IS_LOADING_TEXT).setValue("0");
-            }
-            if (StringUtils.isNotBlank(appendTextWaittime.getText())) {
-                mapper.get(ConfigConstant.APPEND_TEXT_WAITTIME).setValue(appendTextWaittime.getText());
-            }
-            if (StringUtils.isNotBlank(appendTextNumber.getText())) {
-                mapper.get(ConfigConstant.APPEND_TEXT_NUMBER).setValue(appendTextNumber.getText());
-            }
-            configParser.getEntries().put(ConfigConstant.Section.EXPERIMENT, mapper);
+        if (StringUtils.isNotBlank(appendTextWaittime.getText())) {
+            configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.APPEND_TEXT_WAITTIME,appendTextWaittime.getText());
         }
+        if (StringUtils.isNotBlank(appendTextNumber.getText())) {
+            configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.APPEND_TEXT_NUMBER,appendTextNumber.getText());
+        }
+        configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.MEMORY_FIXEDRATE_PERIOD,"5",false);
         try {
             configParser.writhConfigFile();
             SwingTools.showMessageInfoDialog(null,"修改成功,部分功能重启后生效",LarkFrame.getI18nText(I18nKey.RedisResource.SETTING));

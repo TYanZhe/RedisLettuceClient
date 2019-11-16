@@ -160,6 +160,15 @@ public class RedisMainWindow extends javax.swing.JFrame {
         this.setIconImage(PublicConstant.Image.logo.getImage());
         this.setTitle(LarkFrame.APPLICATION_VALUE.getProperty("project.name") + " "+LarkFrame.APPLICATION_VALUE.getProperty("version"));
         initComponents();
+       ((RTabbedPane) redisDataTabbedPane).addRemoveLister(new Consumer<Object>() {
+            @Override
+            public void accept(Object o) {
+                if(o != null && o instanceof RedisTabbedPanel){
+                    RedisTabbedPanel panel = (RedisTabbedPanel) o;
+                    panel.close();
+                }
+            }
+        });
         ((PlaceholderTextField) keyFilterField).setPlaceholder("请输入检索键的表达式");
         keyFilterField.setText("*");
         keyFilterField.addKeyListener(new KeyAdapter() {

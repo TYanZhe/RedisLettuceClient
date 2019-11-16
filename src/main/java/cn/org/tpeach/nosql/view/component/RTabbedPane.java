@@ -260,22 +260,26 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 					RTabbedPane.this.remove(RTabbedPane.this.getSelectedIndex());
 				}else{
 					int tabCount = RTabbedPane.this.getTabCount();
+					boolean isRemove = false;
 					for (int i = selectedIndex+1; i < tabCount; i++) {
 						Component componentAt = RTabbedPane.this.getComponentAt(i);
 						if(component == componentAt){
 							RTabbedPane.this.remove(i);
-							return;
+							isRemove = true;
+							break;
 						}
 					}
-					for (int i = selectedIndex-1; i >=0; i++) {
-						Component componentAt = RTabbedPane.this.getComponentAt(i);
-						if(component == componentAt){
-							RTabbedPane.this.remove(i);
-							return;
+					if(!isRemove){
+						for (int i = selectedIndex-1; i >=0; i++) {
+							Component componentAt = RTabbedPane.this.getComponentAt(i);
+							if(component == componentAt){
+								RTabbedPane.this.remove(i);
+								break;
+							}
 						}
 					}
-
 				}
+				System.gc();
 				SwingTools.swingWorkerExec(()->{ removeList.forEach(o->{try{o.accept(component);}catch (Exception ex){}});});
 
 

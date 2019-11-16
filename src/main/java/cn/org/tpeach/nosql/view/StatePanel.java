@@ -1,15 +1,13 @@
 package cn.org.tpeach.nosql.view;
 
+import cn.org.tpeach.nosql.constant.ConfigConstant;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.constant.RedisInfoKeyConstant;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.MapUtils;
-import cn.org.tpeach.nosql.tools.MathUtils;
-import cn.org.tpeach.nosql.tools.StringUtils;
-import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.component.PrefixTextLabel;
 import cn.org.tpeach.nosql.view.component.RButton;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
@@ -93,9 +91,14 @@ public class StatePanel extends JPanel {
         userMemoryLabel.setFont(redisServerVersionLabel.getFont());
         userMemoryLabel.setForeground(Color.GREEN.darker().darker() );
         userMemoryLabel.setText(StringUtils.getLengthHummanText(bean.getHeapMemoryUsage().getUsed()));
+        long period = ConfigParser.getInstance().getLong(ConfigConstant.Section.EXPERIMENT, ConfigConstant.MEMORY_FIXEDRATE_PERIOD, 5);
         LarkFrame.executorService.scheduleAtFixedRate(()->{
-            userMemoryLabel.setText(StringUtils.getLengthHummanText(bean.getHeapMemoryUsage().getUsed()));
-        },1,1,TimeUnit.SECONDS);
+            long used = bean.getHeapMemoryUsage().getUsed();
+            userMemoryLabel.setText(StringUtils.getLengthHummanText(used));
+            if(used > 100 * 1024 * 1024){
+                System.gc();
+            }
+        },period,period,TimeUnit.SECONDS);
         this.add(userMemoryLabel);
         this.add(Box.createHorizontalStrut(5));
 
@@ -117,7 +120,7 @@ public class StatePanel extends JPanel {
         button.setFocusPainted(false);
         button.setOpaque(false);
 //        button.setFont(new Font("新宋体", Font.ITALIC, 16));
-        button.setForeground(new Color(80,223,240));
+        button.setForeground(new Color(94,70,116));
         loadingGlassPane.setLayout(new BorderLayout());
 
         loadingGlassPane.add(button);

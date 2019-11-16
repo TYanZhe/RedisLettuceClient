@@ -17,6 +17,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 public abstract class BaseDialog<T,R> extends JDialog implements WindowListener {
@@ -178,7 +179,13 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 		}finally {
 			after();
 		}
-		this.setVisible(true);
+		CountDownLatch countDownLatch = new CountDownLatch(1);
+		SwingTools.swingWorkerExec(()->{countDownLatch.countDown();this.setVisible(true);});
+		try {
+			countDownLatch.await();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		this.init = true;
 		if (isError) {
 			close();

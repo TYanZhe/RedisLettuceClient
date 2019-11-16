@@ -159,9 +159,9 @@ public class PublicConstant {
         public static ImageIcon switch_on = IOUtil.getImageIcon("image/base/switch_on.png" );
         public static ImageIcon switch_off = IOUtil.getImageIcon("image/base/switch_off.png" );
 //        public static ImageIcon tempIcon = IOUtil.getImageIcon("image/base/箭头.png" );
-        public static ImageIcon loading_g = IOUtil.getImageIcon("image/base/loading_g.gif" );
+        public static ImageIcon loading_g = IOUtil.getImageIcon("image/base/loading_g.gif",200,162 );
         public static ImageIcon  command = IOUtil.getImageIcon("image/base/command.png" );
-        public static ImageIcon loading_o = IOUtil.getImageIcon("image/base/o_loading.gif");
+        public static ImageIcon loading_o = IOUtil.getImageIcon("image/base/o_loading.gif",16,16);
     }
 
 

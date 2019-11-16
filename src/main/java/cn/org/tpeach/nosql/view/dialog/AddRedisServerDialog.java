@@ -158,7 +158,7 @@ public class AddRedisServerDialog extends AbstractRowDialog<RedisConnectInfo, Re
         panel.add(Box.createVerticalStrut(15));
         panel.add(createRow(panel, hostLable, createCompoundRow(hostField, portField, 0.9), rowHeight, 0.25));
         panel.add(Box.createVerticalStrut(15));
-        panel.add(createRow(panel, authLable, createCompoundRow(authField, showPassCheckBox, 0.25), rowHeight, 0.25));
+        panel.add(createRow(panel, authLable, createCompoundRow(authField, showPassCheckBox, 0.1), rowHeight, 0.25));
 //        panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1,2,2,2,Color.GRAY),BorderFactory.createEmptyBorder(5,5,5,5)));
 //        tabbedPane.addTab("Server", null, panel, false);
 

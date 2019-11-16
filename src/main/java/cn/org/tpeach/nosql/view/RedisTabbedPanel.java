@@ -24,6 +24,7 @@ import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.*;
 import cn.org.tpeach.nosql.view.dialog.AddRowDialog;
+import cn.org.tpeach.nosql.view.dialog.LoadingAssistDialog;
 import cn.org.tpeach.nosql.view.dialog.MagnifyTextDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
@@ -47,6 +48,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -106,7 +108,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     private int resultTab = 0;
     private OnlyReadArea resultTextArea;
     private AtomicBoolean updateStatus = new AtomicBoolean(true);
-
+    private MagnifyTextDialog magnifyTextDialog ;
     /**
      *
      */
@@ -126,7 +128,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
     private JLabel fieldInfoLabel, valueInfoLabel, scoreInfoLabel;
     private RComboBox<DicBean> selectKeyViewComn, selectValueViewComn;
-    private RTextArea fieldArea, valueArea;
+    private RTextArea fieldArea;
+    private RTextArea valueArea;
     private Box hBox1, hBox2, hBox3, hBox4, hBox5, hBox6;
     private Component createVerticalStrut1, createVerticalStrut2, createVerticalStrut3, createVerticalStrut4;
     private RButton searchButton;
@@ -819,6 +822,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     }
     //---------------------------------------------------table end---------------------------------------------------------------------
 
+
     //---------------------------------------------------right value panl start---------------------------------------------------------------------
     private void initValueInfoPanel() {
         valueInfoPanel.setLayout(new BoxLayout(valueInfoPanel, BoxLayout.Y_AXIS));
@@ -837,7 +841,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         fieldArea = new RTextArea(5, 20);
         fieldArea.setLineWrap(true);
         fieldArea.setEditable(false);
-        valueArea = new RTextArea(5, 20);
+        valueArea = new RTextArea(5,20);
+//        valueArea.setMinimumSize(new Dimension(0, 0));
         valueArea.setLineWrap(true);
         valueArea.setEditable(false);
         scoreField = new PlaceholderTextField(20);
@@ -920,14 +925,17 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 && StringUtils.isNotBlank(valueArea.getText())) {
-                    MagnifyTextDialog magnifyTextDialog = MagnifyTextDialog.getInstance();
-                    if(StringUtils.isBlank(valueArea.getText())||selectValueViewComn.getSelectedIndex() != 0){
-                        magnifyTextDialog.setEditable(false);
+                    String flag = ConfigParser.getInstance().getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.MAGNIFYTEXT_DIALOG_SWITH, "0");
+                    if ("1".equals(flag)) {
+                        magnifyTextDialog = getMagnifyTextDialog();
+                        if(StringUtils.isBlank(valueArea.getText())||selectValueViewComn.getSelectedIndex() != 0){
+                            magnifyTextDialog.setEditable(false);
+                        }
+                        StatePanel.showLoading(()->{
+                            magnifyTextDialog.setText(valueArea.getText());
+                            magnifyTextDialog.open(s->setTextLoading(valueArea,s,true));
+                        });
                     }
-                    StatePanel.showLoading(()->{
-                        magnifyTextDialog.setText(valueArea.getText());
-                        magnifyTextDialog.open(s->setTextLoading(valueArea,s,true));
-                    });
                 }
             }
         });
@@ -956,12 +964,15 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 && StringUtils.isNotBlank(fieldArea.getText())) {
-                    MagnifyTextDialog magnifyTextDialog = MagnifyTextDialog.getInstance();
-                    if(StringUtils.isBlank(fieldArea.getText())||selectKeyViewComn.getSelectedIndex() != 0){
-                        magnifyTextDialog.setEditable(false);
+                    String flag = ConfigParser.getInstance().getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.MAGNIFYTEXT_DIALOG_SWITH, "0");
+                    if ("1".equals(flag)) {
+                        MagnifyTextDialog magnifyTextDialog = getMagnifyTextDialog();
+                        if(StringUtils.isBlank(fieldArea.getText())||selectKeyViewComn.getSelectedIndex() != 0){
+                            magnifyTextDialog.setEditable(false);
+                        }
+                        magnifyTextDialog.setText(fieldArea.getText());
+                        magnifyTextDialog.open();
                     }
-                    magnifyTextDialog.setText(fieldArea.getText());
-                    magnifyTextDialog.open();
                 }
             }
         });
@@ -1009,10 +1020,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         hBox3.add(selectValueViewComn);
         hBox3.setPreferredSize(new Dimension(hBox3.getPreferredSize().width, 28));
 
-        hBox4.add(Box.createHorizontalStrut(5));
-        hBox4.add(valueArea.getJScrollPane());
-        hBox4.setPreferredSize(new Dimension(hBox4.getPreferredSize().width, 28));
-        hBox4.add(Box.createHorizontalStrut(5));
+        initValueTextBox(valueArea);
         createVerticalStrut1 = Box.createVerticalStrut(5);
         createVerticalStrut2 = Box.createVerticalStrut(5);
         createVerticalStrut3 = Box.createVerticalStrut(5);
@@ -1035,6 +1043,17 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
     }
 
+    private void initValueTextBox(RTextArea valueArea){
+        int componentCount = hBox4.getComponentCount();
+        for (int i = componentCount -1; i >=0; i--) {
+            hBox4.remove(i);
+        }
+        hBox4.add(Box.createHorizontalStrut(5));
+        hBox4.add( valueArea.getJScrollPane());
+        hBox4.setPreferredSize(new Dimension(hBox4.getPreferredSize().width, 28));
+        hBox4.add(Box.createHorizontalStrut(5));
+    }
+
     /**
      * 选择不同显示值
      * @param dicBean
@@ -1042,7 +1061,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
      * @param textArea
      * @return
      */
-    private String getSelectDicText(DicBean dicBean, TableColumnBean tableColumnBean, RTextArea textArea) {
+    private String getSelectDicText(DicBean dicBean, TableColumnBean tableColumnBean, JTextComponent textArea) {
         String text = "";
         textArea.setEditable(false);
         if(tableColumnBean != null){
@@ -1142,13 +1161,45 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         createVerticalStrut1.setVisible(flag);
         createVerticalStrut2.setVisible(flag);
     }
-
+    private void setTextLoading(JTextComponent rTextArea, String text, boolean load){
+        if(rTextArea instanceof  RTextArea){
+            StatePanel.showLoading(()->{
+                setTextLoading((RTextArea)rTextArea,  text,  load);
+            },true,true);
+        }else{
+            rTextArea.setText(text);
+        }
+    }
     private void setTextLoading(RTextArea rTextArea,String text,boolean load){
         //添加分页加载大文本loading会导致有卡死现象 设置里可去除改功能
         boolean isLoading = false;
+        if(!isLoading){
+//            LoadingAssistDialog loadingAssistDialog = LoadingAssistDialog.getInstance(rTextArea);
+//            StatePanel.showLoading(()->{
+//                loadingAssistDialog.setText(text);
+//                loadingAssistDialog.open();
+//            });
+            LoadingAssistDialog loadingAssistDialog = LoadingAssistDialog.getInstance(valueArea);
+            initValueTextBox(new RTextArea());
+            System.out.println(hBox4.getComponentCount());
+            System.out.println(loadingAssistDialog.getTextArea().getJScrollPane());
+            StatePanel.showLoading(()->{
+                loadingAssistDialog.setText(text);
+                loadingAssistDialog.open(s->{
+                    System.err.println(hBox4.getComponentCount());
+                    initValueTextBox(loadingAssistDialog.getTextArea());
+                    System.err.println(loadingAssistDialog.getTextArea().getJScrollPane());
+                    System.err.println(hBox4.getComponentCount());
+                    System.out.println(">>>>>>>>");
+                    valueInfoPanel.updateUI();
+                });
+            });
+            return;
+        }
         JScrollPane jScrollPane = rTextArea.getJScrollPane();
         BoundedRangeModel model = jScrollPane.getVerticalScrollBar().getModel();
         if(StringUtils.isNotBlank(text) && text.getBytes().length > 150*1024 && model.getValue() * 2 <= text.length()) {
+            System.gc();
             String is_loading_text = ConfigParser.getInstance().getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.IS_LOADING_TEXT, "0");
             if( "1".equals(is_loading_text)) {
                 isLoading = true;
@@ -1989,6 +2040,16 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     public void close() {
         this.removeAll();
         this.setVisible(false);
+        if(magnifyTextDialog != null){
+            magnifyTextDialog.close();
+            magnifyTextDialog = null;
+        }
+    }
+    public MagnifyTextDialog getMagnifyTextDialog() {
+        if(magnifyTextDialog == null){
+            magnifyTextDialog = new MagnifyTextDialog(null,null);
+        }
+        return magnifyTextDialog;
     }
 
     //---------------------------------------------自动生成-----------------------------------------------------------------

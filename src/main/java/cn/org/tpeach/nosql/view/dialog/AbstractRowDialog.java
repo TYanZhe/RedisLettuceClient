@@ -61,38 +61,44 @@ public abstract class AbstractRowDialog<T,R> extends BaseDialog<T,R>{
 	 * @return
 	 */
 	public JPanel createRow(JComponent parentComponent, JComponent label, JComponent component, int rowHeight, double leftPercent){
-		return  createRow(parentComponent,label,component,rowHeight,leftPercent,15,15);
+		return  createRow(parentComponent,label,component,rowHeight,leftPercent,15,15,true);
 	}
 	/**
 	 * 创建label  component的行
 	 * @param parentComponent
-	 * @param label
-	 * @param component
+	 * @param leftConmponet
+	 * @param rightComponent
 	 * @param rowHeight
 	 * @param leftPercent
 	 * @return
 	 */
-	public JPanel createRow(JComponent parentComponent, JComponent label, JComponent component, int rowHeight, double leftPercent,int leftStrut,int rightStrut){
+	public JPanel createRow(JComponent parentComponent, JComponent leftConmponet, JComponent rightComponent, int rowHeight, double leftPercent,int leftStrut,int rightStrut,boolean isLeftGlue){
 		JPanel rowPanel = new JPanel();
+		rowPanel.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
 		rowPanel.setPreferredSize(new Dimension(rowPanel.getPreferredSize().width,rowHeight));
 		rowPanel.setMaximumSize(new Dimension(rowPanel.getPreferredSize().width,rowHeight));
 		rowPanel.setMinimumSize(new Dimension(rowPanel.getPreferredSize().width,rowHeight));
 		SwingTools.fillWidthPanel(parentComponent,rowPanel);
 		rowPanel.setLayout(new BorderLayout());
 		JPanel labelPanel = new JPanel();
+		labelPanel.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
 		JPanel fieldPanel = new JPanel();
+		fieldPanel.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
 		labelPanel.setLayout(new BoxLayout(labelPanel,BoxLayout.X_AXIS));
 		fieldPanel.setLayout(new BoxLayout(fieldPanel,BoxLayout.X_AXIS));
 		rowPanel.add(labelPanel,BorderLayout.WEST);
 		rowPanel.add(fieldPanel,BorderLayout.CENTER);
-		labelPanel.add(Box.createHorizontalGlue());
-		labelPanel.add(label);
+		if(isLeftGlue){
+			labelPanel.add(Box.createHorizontalGlue());
+		}
+		labelPanel.add(leftConmponet);
 		labelPanel.add(Box.createHorizontalStrut(leftStrut));
-		fieldPanel.add(component);
+		fieldPanel.add(rightComponent);
 		fieldPanel.add(Box.createHorizontalStrut(rightStrut));
 		rowPanel.setBackground(getPanelBgColor());
 		labelPanel.setBackground(getPanelBgColor());
 		fieldPanel.setBackground(getPanelBgColor());
+
 		rowPanel.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -101,20 +107,57 @@ public abstract class AbstractRowDialog<T,R> extends BaseDialog<T,R>{
 				labelPanel.setPreferredSize(new Dimension(width,preferredSize.height));
 				labelPanel.setMinimumSize(new Dimension(width,preferredSize.height));
 				labelPanel.setMaximumSize(new Dimension(width,preferredSize.height));
+				leftConmponet.setMaximumSize(new Dimension(width,preferredSize.height));
 				labelPanel.updateUI();
 			}
 		});
+
 		return rowPanel;
 	}
-
 	public JComponent createCompoundRow(JComponent leftConponent,JComponent rightComponent,double leftPercent){
+		return  createCompoundRow(leftConponent,rightComponent,leftPercent,EasyGBC.EAST,EasyGBC.WEST,getZeroInsets(),new Insets(0, 10, 0, 0));
+	}
+	public Insets getZeroInsets(){
+		return new Insets(0, 0, 0, 0);
+	}
+
+	public JComponent createCompoundRow(JComponent leftComponentt,JComponent rightComponent,double leftPercent,int leftAnchor,int rightAnchor,Insets leftInsets,Insets rightInsets){
 		JPanel panel = new JPanel();
+		panel.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
 		panel.setBackground(getPanelBgColor());
 		panel.setLayout(new GridBagLayout());
-		panel.add(leftConponent,
-				EasyGBC.build(0, 0, 1, 1).setFill(EasyGBC.BOTH).setWeight(leftPercent, 1.0).resetInsets(0, 0, 0, 0).setAnchor(EasyGBC.WEST));
+		JPanel leftConponentPanel = new JPanel();
+		leftConponentPanel.setLayout(new BoxLayout(leftConponentPanel,BoxLayout.X_AXIS));
+		leftConponentPanel.setBackground(getPanelBgColor());
+		if(EasyGBC.WEST == leftAnchor){
+			leftConponentPanel.add(leftComponentt);
+			leftConponentPanel.add(Box.createHorizontalGlue());
+		}else if(EasyGBC.EAST == leftAnchor){
+			leftConponentPanel.add(Box.createHorizontalGlue());
+			leftConponentPanel.add(leftComponentt);
+		}else if(EasyGBC.CENTER == leftAnchor){
+			leftConponentPanel.add(Box.createHorizontalGlue());
+			leftConponentPanel.add(leftComponentt);
+			leftConponentPanel.add(Box.createHorizontalGlue());
+		}
+//		JPanel rightConponentPanel = new JPanel();
+//		rightConponentPanel.setBackground(getPanelBgColor());
+//		rightConponentPanel.setLayout(new BoxLayout(rightConponentPanel,BoxLayout.X_AXIS));
+//		if(EasyGBC.WEST == rightAnchor){
+//			rightConponentPanel.add(rightComponent);
+//			rightConponentPanel.add(Box.createHorizontalGlue());
+//		}else if(EasyGBC.EAST == rightAnchor){
+//			rightConponentPanel.add(Box.createHorizontalGlue());
+//			rightConponentPanel.add(rightComponent);
+//		}else if(EasyGBC.CENTER == rightAnchor){
+//			rightConponentPanel.add(Box.createHorizontalGlue());
+//			rightConponentPanel.add(rightComponent);
+//			rightConponentPanel.add(Box.createHorizontalGlue());
+//		}
+		panel.add(leftConponentPanel,
+				EasyGBC.build(0, 0, 1, 1).setFill(EasyGBC.BOTH).setWeight(leftPercent, 1.0).resetInsets(leftInsets).setAnchor(leftAnchor));
 		panel.add(rightComponent,
-				EasyGBC.build(1, 0, 1, 1).setFill(EasyGBC.BOTH).setWeight(1-leftPercent, 1.0).resetInsets(0, 10, 0, 0).setAnchor(EasyGBC.EAST));
+				EasyGBC.build(1, 0, 1, 1).setFill(EasyGBC.BOTH).setWeight(1-leftPercent, 1.0).resetInsets(rightInsets).setAnchor(rightAnchor));
 		return panel;
 	}
 }

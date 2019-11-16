@@ -31,7 +31,34 @@ public enum ConfigParser {
 	private Map<String, Object> entries = new LinkedHashMap<>();
 	private File file;
 
-	
+	/**
+	 *
+	 * @param section
+	 * @param key
+	 * @param value
+	 * @param isNewValue 为true时替换值 false只有原来的值不存在时才会覆盖
+	 */
+	public void safePutMapperData( String section,String key,String value,boolean isNewValue){
+		Map<String, ConfigMapper> mapper = (Map<String, ConfigMapper>)  getEntries().get(section);
+		if(mapper == null){
+			mapper = new HashMap<>();
+			getEntries().put(section,mapper);
+		}
+		ConfigMapper configMapper = mapper.get(key);
+		if(configMapper == null){
+			configMapper = ConfigMapper.builder().build();
+		}
+		if(isNewValue){
+			configMapper.setValue(value);
+		}else if(StringUtils.isBlank(configMapper.getValue())){
+			configMapper.setValue(value);
+		}
+
+		mapper.put(key,configMapper);
+	}
+	public void safePutMapperData( String section,String key,String value){
+		safePutMapperData(section,key,value,true);
+	}
 	public File getFile() throws IOException {
 		if (file == null) {
 			file = IOUtil.getFile(PublicConstant.REDIS_CONFIG_PATH);
@@ -139,9 +166,11 @@ public enum ConfigParser {
 			entries.put(ConfigConstant.Section.CHARACTER_ENCODING, mapper);
 			//实验特性
 			mapper = new LinkedHashMap<>(1);
+			mapper.put(ConfigConstant.MAGNIFYTEXT_DIALOG_SWITH, ConfigMapper.builder().value("0").comment("双击打开大窗口编辑Key数据").build());
 			mapper.put(ConfigConstant.IS_LOADING_TEXT, ConfigMapper.builder().value("0").comment("是否开启大文本分页加载").build());
 			mapper.put(ConfigConstant.APPEND_TEXT_NUMBER, ConfigMapper.builder().value("10000").comment("单次加载数量").build());
 			mapper.put(ConfigConstant.APPEND_TEXT_WAITTIME, ConfigMapper.builder().value("1000").comment("单次加载渲染时间（毫秒）").build());
+			mapper.put(ConfigConstant.MEMORY_FIXEDRATE_PERIOD, ConfigMapper.builder().value("5").comment("获取内存间隔").build());
 			entries.put(ConfigConstant.Section.EXPERIMENT, mapper);
 
 			writhConfigFile();
@@ -174,9 +203,11 @@ public enum ConfigParser {
 			if (entries.get(ConfigConstant.Section.EXPERIMENT) == null) {
 				Map<String, Object> newMapper = new LinkedHashMap<>();
 				Map<String, ConfigMapper> mapper = new LinkedHashMap<>(1);
+				mapper.put(ConfigConstant.MAGNIFYTEXT_DIALOG_SWITH, ConfigMapper.builder().value("0").comment("双击打开大窗口编辑Key数据").build());
 				mapper.put(ConfigConstant.IS_LOADING_TEXT, ConfigMapper.builder().value("0").comment("是否开启大文本分页加载").build());
 				mapper.put(ConfigConstant.APPEND_TEXT_NUMBER, ConfigMapper.builder().value("10000").comment("单次加载数量").build());
 				mapper.put(ConfigConstant.APPEND_TEXT_WAITTIME, ConfigMapper.builder().value("1000").comment("单次加载渲染时间（毫秒）").build());
+				mapper.put(ConfigConstant.MEMORY_FIXEDRATE_PERIOD, ConfigMapper.builder().value("5").comment("获取内存间隔").build());
 				entries.put(ConfigConstant.Section.EXPERIMENT, mapper);
 				newMapper.put(ConfigConstant.Section.EXPERIMENT, mapper);
 				IOUtil.fileAppendFW(file, parseWrite(newMapper));
