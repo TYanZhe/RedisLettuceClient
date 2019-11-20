@@ -3,6 +3,7 @@
  */
 package cn.org.tpeach.nosql.bean;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,7 @@ import java.util.Objects;
  */
 @Getter
 @Setter
+@Builder
 public class DicBean {
 	
 	public DicBean() {

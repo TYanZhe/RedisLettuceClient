@@ -4,7 +4,7 @@ package cn.org.tpeach.nosql.function;
  * @author tyz
  * @Title: Each
  * @ProjectName RedisLark
- * @Description: TODO
+ * @Description:  
  * @date 2019-06-25 20:36
  * @since 1.0.0
  */

@@ -18,6 +18,7 @@ import java.awt.event.WindowListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public abstract class BaseDialog<T,R> extends JDialog implements WindowListener {
@@ -53,13 +54,12 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	protected JPanel middlePanel;
 	@Getter
 	protected JPanel btnPanel;
-	protected Image icon = PublicConstant.Image.logo.getImage();
+	protected Image icon = PublicConstant.Image.getImageIcon(PublicConstant.Image.logo).getImage();
 	protected Box btnbox = Box.createHorizontalBox();
 	protected Map<String,Object> containerMap = new HashMap<>();
 	JButton okBtn = new RButton(LarkFrame.getI18nUpText(I18nKey.RedisResource.OK));
 	JButton cancelBtn = new RButton(LarkFrame.getI18nUpText(I18nKey.RedisResource.CANCEL));
 
-	// 错误关闭 单开一个线程调用dispose()才可以关闭 原因未知
 	protected boolean isError = false;
 	// 改变后通知
 	protected Consumer<R> consumer;
@@ -107,7 +107,7 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 		// this.getRootPane().setBorder(BorderFactory.createLineBorder(new
 		// Color(66,153,221),1));
 		container.setLayout(new BorderLayout());
-		container.add(middlePanel);
+		container.add(middlePanel,BorderLayout.CENTER);
 		container.add(btnPanel, BorderLayout.PAGE_END);
 	}
 
@@ -180,19 +180,22 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 			after();
 		}
 		CountDownLatch countDownLatch = new CountDownLatch(1);
-		SwingTools.swingWorkerExec(()->{countDownLatch.countDown();this.setVisible(true);});
+		SwingTools.swingWorkerExec(()->{countDownLatch.countDown();visibleExec();});
 		try {
 			countDownLatch.await();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		this.init = true;
+
 		if (isError) {
 			close();
 			return;
 		}
 	}
-
+	public void visibleExec() {
+		this.setVisible(true);
+	}
 	public void containerStyle(Container container) {
 	}
 
@@ -271,8 +274,8 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	protected void submit(ActionEvent e) {
 
 	}
-	public void submit(final JButton okBtn, Runnable request,boolean timeout){
-		StatePanel.showLoading(()->{
+	public void submit(final JButton okBtn, Runnable request,boolean timeout,BiConsumer<String,Double>hiddenLister){
+		StatePanel.showLoading(true,()->{
 			if(okBtn != null){
 				okBtn.setEnabled(false);
 			}else{
@@ -287,7 +290,7 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 					this.okBtn.setEnabled(true);
 				}
 			}
-		});
+		},true,true,timeout ? StatePanel.DEFAULTTIMEOUT : -1,hiddenLister);
 
 //
 //		Layer.showLoading_v3(false,timeout,()->{
@@ -309,13 +312,13 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 //		});
 	}
 	public void submit(final JButton okBtn, Runnable request ){
-		submit(okBtn,request,true);
+		submit(okBtn,request,true,null);
 	}
 	public void submit(Runnable request){
 		submit(null,request);
 	}
 	public void submit(Runnable request,boolean timeout){
-		submit(null,request,timeout);
+		submit(null,request,timeout,null);
 	}
 	/**
 	 * @param e

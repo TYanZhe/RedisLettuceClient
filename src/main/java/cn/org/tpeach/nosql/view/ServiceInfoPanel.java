@@ -31,7 +31,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -313,7 +316,7 @@ public class ServiceInfoPanel extends JPanel {
                 first = false;
                 liPanel.setSelect(true);
                 JLabel jLabel = (JLabel) liPanel.getComponent(1);
-                jLabel.setIcon(PublicConstant.Image.arrow_circle_down);
+                jLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_circle_down));
             }else{
                 if(childPanel != null){
                     childPanel.setVisible(false);
@@ -343,7 +346,7 @@ public class ServiceInfoPanel extends JPanel {
         panel.setMinimumSize(new Dimension(preferredSize.width,liHeight));
         panel.setMaximumSize(new Dimension(preferredSize.width,liHeight));
         JLabel label = new JLabel(liName);
-        label.setIcon(PublicConstant.Image.arrow_circle_right);
+        label.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_circle_right));
         label.setFont(new Font("新宋体",Font.PLAIN,16));
         panel.add(Box.createHorizontalStrut(10));
         panel.add(label);
@@ -356,17 +359,17 @@ public class ServiceInfoPanel extends JPanel {
                 JPanel childPanel = liPanel.getChildPanel();
                 if(panel != liPanel){
                     liPanel.setSelect(false);
-                    l.setIcon(PublicConstant.Image.arrow_circle_right);
+                    l.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_circle_right));
                     if(childPanel != null){
                         childPanel.setVisible(false);
                     }
                 }else{
                     if(liPanel.isSelect()){
                         //展开
-                        l.setIcon(PublicConstant.Image.arrow_circle_right);
+                        l.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_circle_right));
                     }else {
                         //关闭
-                        l.setIcon(PublicConstant.Image.arrow_circle_down);
+                        l.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_circle_down));
                     }
                     liPanel.setSelect(!liPanel.isSelect());
                     if(childPanel != null){
@@ -405,7 +408,8 @@ public class ServiceInfoPanel extends JPanel {
             TableCellRenderer renderer = new DefaultTableCellRenderer();
             ((DefaultTableCellRenderer) renderer).setForeground(new Color(128,128,128));
             TableColumn t1c = baseInfoTable.getColumnModel().getColumn(i);
-            TableCellRenderer rendererTable = new DefaultTableCellRenderer(){
+            @SuppressWarnings("serial")
+			TableCellRenderer rendererTable = new DefaultTableCellRenderer(){
                 @Override
                 public void setBorder(Border border){
 
@@ -420,8 +424,8 @@ public class ServiceInfoPanel extends JPanel {
 
         autoFreshToggleButton.setFocusPainted(false);
 
-        autoFreshToggleButton.setSelectedIcon(PublicConstant.Image.switch_on);
-        autoFreshToggleButton.setIcon(PublicConstant.Image.switch_off);
+        autoFreshToggleButton.setSelectedIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.switch_on));
+        autoFreshToggleButton.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.switch_off));
         autoFreshToggleButton.setBackground(Color.WHITE);
         autoFreshToggleButton.setOpaque(false);
         autoFreshToggleButton.setUI(new RToggleButtonUI());

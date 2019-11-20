@@ -2,14 +2,23 @@ package cn.org.tpeach.nosql.view.dialog;
 
 import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.component.RTextArea;
+import lombok.Setter;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
 public class LoadingAssistDialog extends MagnifyTextDialog {
+    @Setter
+    private boolean autoSubmit = true;
     private static final class SingleHolder{
         private static LoadingAssistDialog instance = new LoadingAssistDialog();
     }
+
+    @Override
+    public void after() {
+        super.after();
+    }
+
     public static LoadingAssistDialog getInstance(RTextArea textArea) {
         final LoadingAssistDialog instance = SingleHolder.instance;
         instance.setTextArea(textArea);
@@ -31,6 +40,7 @@ public class LoadingAssistDialog extends MagnifyTextDialog {
             contextPanel.remove(i);
         }
         this.setVisible(false);
+        this.autoSubmit = true;
         SwingTools.swingWorkerExec(()->this.dispose());
     }
     @Override
@@ -49,5 +59,13 @@ public class LoadingAssistDialog extends MagnifyTextDialog {
     public RTextArea getTextArea() {
         return super.getTextArea();
     }
+    @Override
+    public void visibleExec() {
+        if(autoSubmit){
+            this.submit((ActionEvent)null);
+        }else{
+            this.setVisible(true);
+        }
 
+    }
 }

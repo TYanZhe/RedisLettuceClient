@@ -17,7 +17,8 @@ import java.util.List;
  * @since 1.0.0
  */
 public class LrangeList extends JedisDbCommand<List<byte[]>> {
-    private static final Logger logger = LoggerFactory.getLogger(LrangeList.class);
+    @SuppressWarnings("unused")
+	private static final Logger logger = LoggerFactory.getLogger(LrangeList.class);
     private byte[] key;
     private long start;
     private long stop;

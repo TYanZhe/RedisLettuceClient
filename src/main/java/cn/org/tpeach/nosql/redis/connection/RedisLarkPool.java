@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2019-06-23 20:17
  * @since 1.0.0
  */
+@SuppressWarnings("rawtypes")
 public class RedisLarkPool {
 	private static Map<String, RedisLarkContext> pool = new HashMap<>();
 	private static Map<String, RedisConnectInfo> redisConnectInfo = new ConcurrentHashMap<>();

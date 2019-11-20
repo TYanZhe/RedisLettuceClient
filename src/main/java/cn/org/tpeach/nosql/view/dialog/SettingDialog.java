@@ -8,6 +8,8 @@ import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.tools.ConfigParser;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.view.RToolBar;
+import cn.org.tpeach.nosql.view.RedisMainWindow;
 import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RComboBox;
@@ -26,11 +28,12 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
     private JPanel panel;
     private JComboBox<DicBean> languageComboBox;
     private JComboBox<String>  characterEncodingComboBox;
-    private JCheckBox pageLoadingcheckBox,magnifyTextDialogCheckBox;
+    private JCheckBox pageLoadingcheckBox,magnifyTextDialogCheckBox,globalLoadingTimeOutCheckBox,testToolBarShowCheckBox;
     private PlaceholderTextField appendTextWaittime,appendTextNumber;
     private ConfigParser configParser = ConfigParser.getInstance();
     public SettingDialog() {
         super(LarkFrame.frame, null);
+        this.setTitle(LarkFrame.getI18nFirstUpText(I18nKey.RedisResource.SETTING));
     }
 
     @Override
@@ -65,6 +68,10 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         pageLoadingcheckBox = new JCheckBox();
         pageLoadingcheckBox.setBackground(getPanelBgColor());
         magnifyTextDialogCheckBox = new JCheckBox();
+        globalLoadingTimeOutCheckBox = new JCheckBox();
+        testToolBarShowCheckBox = new JCheckBox();
+        testToolBarShowCheckBox.setBackground(getPanelBgColor());
+        globalLoadingTimeOutCheckBox.setBackground(getPanelBgColor());
         magnifyTextDialogCheckBox.setBackground(getPanelBgColor());
         appendTextWaittime = new PlaceholderTextField(20);
         appendTextNumber = new PlaceholderTextField(20);
@@ -75,46 +82,8 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
             appendTextNumber.setEnabled(pageLoadingcheckBox.isSelected());
         });
         //实验特性
-        JPanel experimentPanl = new JPanel();
-        experimentPanl.setBackground(getPanelBgColor());
-        experimentPanl.setLayout(new BoxLayout(experimentPanl,BoxLayout.Y_AXIS));
-        TitledBorder experimentTitledBorder = BorderFactory.createTitledBorder("实验特性");
-        experimentTitledBorder.setTitleJustification(TitledBorder.LEFT);
-        experimentPanl.setBorder(experimentTitledBorder);
-        experimentPanl.add(Box.createVerticalStrut(10));
+        JPanel experimentPanl = getExperimentPanel();
 
-        JPanel experimentValuePanl = new JPanel();
-        experimentValuePanl.setBackground(getPanelBgColor());
-        experimentValuePanl.setLayout(new BoxLayout(experimentValuePanl,BoxLayout.Y_AXIS));
-        TitledBorder experimentValueTitledBorder = BorderFactory.createTitledBorder("大文本（>150Kb）分页加载");
-        experimentValueTitledBorder.setTitleColor(Color.lightGray);
-        JLabel jLabel1 = new JLabel("分页加载:");
-        jLabel1.setForeground(Color.lightGray);
-        JLabel jLabel2 = new JLabel("单次渲染时间（ms）:");
-        jLabel2.setForeground(Color.lightGray);
-        JLabel jLabel3 = new JLabel("单次加载数量:");
-        jLabel3.setForeground(Color.lightGray);
-        JLabel jLabel4 = new JLabel("双击打开大窗口编辑Key数据:");
-        jLabel4.setForeground(Color.lightGray);
-
-        experimentValuePanl.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0,20,0,20),experimentValueTitledBorder));
-        JPanel  pageCheckBoxPanel = new JPanel();
-        pageCheckBoxPanel.setLayout(new GridLayout(1,1));
-        JPanel  magnifyTextCheckBoxPanel = new JPanel();
-        magnifyTextCheckBoxPanel.setLayout(new GridLayout(1,1));
-        experimentValuePanl.add(createRow(panel, pageCheckBoxPanel, magnifyTextCheckBoxPanel, 20, 0.45,0,0,false));
-        pageCheckBoxPanel.add(createCompoundRow(jLabel1, pageLoadingcheckBox, 0.65, EasyGBC.EAST,EasyGBC.WEST,getZeroInsets(),new Insets(0,14,0,0) ));
-        magnifyTextCheckBoxPanel.add(createCompoundRow(jLabel4, magnifyTextDialogCheckBox, 0.1, EasyGBC.WEST,EasyGBC.WEST ,getZeroInsets(),getZeroInsets()));
-        experimentValuePanl.add(Box.createVerticalStrut(5));
-        experimentValuePanl.add(createRow(panel,jLabel2, appendTextWaittime, 20, 0.32));
-        experimentValuePanl.add(Box.createVerticalStrut(5));
-        experimentValuePanl.add(createRow(panel, jLabel3, appendTextNumber, 20, 0.32));
-        experimentValuePanl.add(Box.createVerticalStrut(5));
-
-
-
-        experimentPanl.add(experimentValuePanl);
-        experimentPanl.add(Box.createVerticalStrut(10));
         panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
 
         panel.add(Box.createVerticalStrut(15));
@@ -127,9 +96,80 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         SwingTools.fillWidthPanel(panel,horizontalBox);
         panel.add(horizontalBox);
         panel.add(Box.createVerticalStrut(10));
+
         panel.add(experimentPanl);
         panel.add(Box.createVerticalGlue());
 
+    }
+
+    private JPanel getExperimentPanel() {
+        JPanel experimentPanl = new JPanel();
+        experimentPanl.setBackground(getPanelBgColor());
+        experimentPanl.setLayout(new BoxLayout(experimentPanl,BoxLayout.Y_AXIS));
+        TitledBorder experimentTitledBorder = BorderFactory.createTitledBorder("实验特性");
+        experimentTitledBorder.setTitleJustification(TitledBorder.LEFT);
+        experimentPanl.setBorder(experimentTitledBorder);
+        experimentPanl.add(Box.createVerticalStrut(10));
+
+        JPanel experimentValuePanl = new JPanel();
+        experimentValuePanl.setBackground(getPanelBgColor());
+        experimentValuePanl.setLayout(new BoxLayout(experimentValuePanl,BoxLayout.Y_AXIS));
+        TitledBorder experimentValueTitledBorder = BorderFactory.createTitledBorder("大文本（>150Kb）加载");
+        experimentValueTitledBorder.setTitleColor(Color.lightGray);
+        JLabel jLabel1 = new JLabel("Value加载Loading:");
+        jLabel1.setForeground(Color.lightGray);
+        JLabel jLabel2 = new JLabel("单次渲染时间（ms）:");
+        jLabel2.setForeground(Color.lightGray);
+        JLabel jLabel3 = new JLabel("单次加载数量:");
+        jLabel3.setForeground(Color.lightGray);
+        JLabel jLabel4 = new JLabel("双击打开大窗口编辑Key数据:");
+        jLabel4.setForeground(Color.lightGray);
+
+        experimentValuePanl.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0,20,0,20),experimentValueTitledBorder));
+
+        JPanel  pageCheckBoxPanel = getPanel();
+        pageCheckBoxPanel.setLayout(new BoxLayout(pageCheckBoxPanel,BoxLayout.X_AXIS));
+        JPanel  magnifyTextCheckBoxPanel = getPanel();
+        magnifyTextCheckBoxPanel.setLayout(new BoxLayout(magnifyTextCheckBoxPanel,BoxLayout.X_AXIS));
+        experimentValuePanl.add(Box.createVerticalStrut(5));
+        experimentValuePanl.add(createRow(panel, pageCheckBoxPanel, magnifyTextCheckBoxPanel, 20, 0.5,0,0,false));
+        pageCheckBoxPanel.add(createRow(pageCheckBoxPanel, jLabel1, pageLoadingcheckBox, 20, 0.7,10,10,true));
+        magnifyTextCheckBoxPanel.add(createRow(magnifyTextCheckBoxPanel, jLabel4, magnifyTextDialogCheckBox, 20, 0.8,10,10,true));
+        experimentValuePanl.add(Box.createVerticalStrut(5));
+
+        JPanel  globalLoadingTimeOutPanel = getPanel();
+        globalLoadingTimeOutPanel.setLayout(new BoxLayout(globalLoadingTimeOutPanel,BoxLayout.X_AXIS));
+        JPanel  testSettingPanel = getPanel();
+        testSettingPanel.setLayout(new BoxLayout(testSettingPanel,BoxLayout.X_AXIS));
+        experimentValuePanl.add(createRow(panel, globalLoadingTimeOutPanel, testSettingPanel, 20, 0.5,0,0,false));
+        globalLoadingTimeOutPanel.add(createRow(globalLoadingTimeOutPanel, getLightGrayLabel("Loading超时失效:"), globalLoadingTimeOutCheckBox, 20, 0.7,10,10,true));
+        if(!PublicConstant.ProjectEnvironment.DEV.equals(LarkFrame.getProjectEnv())){
+            testSettingPanel.add(createRow(testSettingPanel, getLightGrayLabel("测试数据工具:"), testToolBarShowCheckBox, 20, 0.8,10,10,true));
+        }
+
+
+
+        // cn.org.tpeach.nosql.view.RedisTabbedPanel.setTextLoading使用新方式，分页配置无效 2019-11-17
+//        experimentValuePanl.add(Box.createVerticalStrut(5));
+//        experimentValuePanl.add(createRow(panel,jLabel2, appendTextWaittime, 20, 0.32));
+//        experimentValuePanl.add(Box.createVerticalStrut(5));
+//        experimentValuePanl.add(createRow(panel, jLabel3, appendTextNumber, 20, 0.32));
+        experimentValuePanl.add(Box.createVerticalStrut(10));
+
+
+        experimentPanl.add(experimentValuePanl);
+        experimentPanl.add(Box.createVerticalStrut(10));
+        return experimentPanl;
+    }
+    private JLabel getLightGrayLabel(String text){
+        JLabel j = new JLabel(text);
+        j.setForeground(Color.lightGray);
+        return j;
+    }
+    private JPanel getPanel(){
+        JPanel jPanel = new JPanel();
+        jPanel.setBackground(this.getPanelBgColor());
+        return jPanel;
     }
     @Override
     public void after() {
@@ -144,6 +184,7 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         String append_text_number = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_NUMBER, "10000");
         String append_text_waittime = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_WAITTIME, "1000");
         String magnifytext_dialog_swith = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.MAGNIFYTEXT_DIALOG_SWITH, "0");
+        String globalLoadingTimeOut = configParser.getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.LOADING_GLOBEL_TIMEOGT_ENABLED, "0");
         if ("1".equals(is_loading_text)) {
             pageLoadingcheckBox.setSelected(true);
         } else {
@@ -154,6 +195,13 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         } else {
             magnifyTextDialogCheckBox.setSelected(false);
         }
+        if ("1".equals(globalLoadingTimeOut)) {
+            globalLoadingTimeOutCheckBox.setSelected(true);
+        } else {
+            globalLoadingTimeOutCheckBox.setSelected(false);
+        }
+        RToolBar toolBar = (RToolBar) ((RedisMainWindow) LarkFrame.frame).getToolBar();
+        testToolBarShowCheckBox.setSelected(toolBar.getTestBatch().isVisible());
         appendTextWaittime.setText(append_text_waittime);
         appendTextNumber.setText(append_text_number);
 
@@ -189,7 +237,9 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
 
         configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.IS_LOADING_TEXT,pageLoadingcheckBox.isSelected()?"1":"0");
         configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.MAGNIFYTEXT_DIALOG_SWITH, magnifyTextDialogCheckBox.isSelected()?"1":"0");
-
+        configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.LOADING_GLOBEL_TIMEOGT_ENABLED, globalLoadingTimeOutCheckBox.isSelected()?"1":"0");
+        RToolBar toolBar = (RToolBar) ((RedisMainWindow) LarkFrame.frame).getToolBar();
+        toolBar.getTestBatch().setVisible(testToolBarShowCheckBox.isSelected());
         if (StringUtils.isNotBlank(appendTextWaittime.getText())) {
             configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.APPEND_TEXT_WAITTIME,appendTextWaittime.getText());
         }

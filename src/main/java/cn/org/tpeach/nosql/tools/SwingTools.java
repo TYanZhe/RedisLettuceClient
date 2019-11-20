@@ -5,6 +5,7 @@ import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.controller.ResultRes;
 import cn.org.tpeach.nosql.enums.RedisType;
 import cn.org.tpeach.nosql.exception.ServiceException;
+import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.view.component.EasyGBC;
 import cn.org.tpeach.nosql.view.component.ROptionPane;
@@ -98,7 +99,7 @@ public class SwingTools {
 				return;
 			}
 			JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
-			JMenuItem copyKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.COPY, PublicConstant.Image.copy);
+			JMenuItem copyKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.COPY, PublicConstant.Image.getImageIcon(PublicConstant.Image.copy));
 			copyKeyItem.setMnemonic('C');
 			copyKeyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
 			copyKeyItem.addActionListener(e -> {
@@ -129,9 +130,9 @@ public class SwingTools {
 		addTextCopyMenu(component,null);
 	}
 	public static void enterPressesWhenFocused(JTextField textField,ActionListener actionListener) {
-		textField.registerKeyboardAction(actionListener,
+	/*	textField.registerKeyboardAction(actionListener,
 				KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false),
-				JComponent.WHEN_FOCUSED);
+				JComponent.WHEN_FOCUSED);*/
 
 		textField.registerKeyboardAction(actionListener,
 				KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
@@ -205,7 +206,7 @@ public class SwingTools {
 		AtomicBoolean atomicBoolean = new AtomicBoolean(true);
 		CountDownLatch countDownLatch = new CountDownLatch(1);
         RTreeNode loadingTreeNode = addTreeNode(parentNode, parentItem, parentItem.getId(), null, "loading...", parentItem.getDb(), RedisType.LOADING, null , "loading...");
-        loadingTreeNode.setIcon(PublicConstant.Image.loading01);
+        loadingTreeNode.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.loading01));
         redisTree.expandPath(new TreePath(parentNode.getPath()));
         DefaultTreeModel defaultModel = (DefaultTreeModel)redisTree.getModel();
 		defaultModel.reload(parentNode);
@@ -216,25 +217,25 @@ public class SwingTools {
 						for(int i=0;i<7;i++) {
 							switch (i) {
 								case 0:
-									loadingTreeNode.setIcon(PublicConstant.Image.loading02);
+									loadingTreeNode.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.loading02));
 									break;
 								case 1:
-									loadingTreeNode.setIcon(PublicConstant.Image.loading03);
+									loadingTreeNode.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.loading03));
 									break;
 								case 2:
-									loadingTreeNode.setIcon(PublicConstant.Image.loading04);
+									loadingTreeNode.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.loading04));
 									break;
 								case 3:
-									loadingTreeNode.setIcon(PublicConstant.Image.loading05);
+									loadingTreeNode.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.loading05));
 									break;
 								case 4:
-									loadingTreeNode.setIcon(PublicConstant.Image.loading06);
+									loadingTreeNode.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.loading06));
 									break;
 								case 5:
-									loadingTreeNode.setIcon(PublicConstant.Image.loading07);
+									loadingTreeNode.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.loading07));
 									break;
 								case 6:
-									loadingTreeNode.setIcon(PublicConstant.Image.loading01);
+									loadingTreeNode.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.loading01));
 									break;
 								default:
 									break;
@@ -328,20 +329,20 @@ public class SwingTools {
 	}
 
 	public static void showMessageErrorDialog(Component parentComponent, Object message, String title) {
-		swingWorkerExec(()->ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.ERROR_MESSAGE));
+		swingWorkerExec(()->ROptionPane.showMessageDialog(LarkFrame.frame, message, title, JOptionPane.ERROR_MESSAGE));
 	}
 
 	public static void showMessageErrorDialog(Component parentComponent, Object message) {
-		showMessageErrorDialog(parentComponent,message,"error");
+		showMessageErrorDialog(LarkFrame.frame,message,"error");
 
 	}
 
 	public static void showMessageMessageDialog(Component parentComponent, Object message, String title) {
-		swingWorkerExec(()->ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.WARNING_MESSAGE));
+		swingWorkerExec(()->ROptionPane.showMessageDialog(LarkFrame.frame, message, title, JOptionPane.WARNING_MESSAGE));
 	}
 
 	public static void showMessageInfoDialog(Component parentComponent, Object message, String title) {
-		swingWorkerExec(()->ROptionPane.showMessageDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE));
+		swingWorkerExec(()->ROptionPane.showMessageDialog(LarkFrame.frame, message, title, JOptionPane.INFORMATION_MESSAGE));
 
 	}
 
@@ -354,11 +355,11 @@ public class SwingTools {
 	 * @return
 	 */
 	public static int showConfirmDialogYNC(Component parentComponent, Object message, String title) {
-		return JOptionPane.showConfirmDialog(parentComponent, message, title, JOptionPane.YES_NO_OPTION);
+		return JOptionPane.showConfirmDialog(LarkFrame.frame, message, title, JOptionPane.YES_NO_OPTION);
 	}
 
 	public static String showInputDialog(Component parentComponent, Object message, String title, Object defaultValue) {
-		return (String) JOptionPane.showInputDialog(parentComponent, message, title, JOptionPane.INFORMATION_MESSAGE,
+		return (String) JOptionPane.showInputDialog(LarkFrame.frame, message, title, JOptionPane.INFORMATION_MESSAGE,
 				null, null, defaultValue);
 	}
 

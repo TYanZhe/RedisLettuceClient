@@ -3,7 +3,6 @@ package cn.org.tpeach.nosql.redis.command.key;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author tyz
@@ -13,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2019-07-03 0:26
  * @since 1.0.0
  */
-@Slf4j
 public class ExpireCommand extends JedisDbCommand<Boolean> {
     private byte[] key;
     private int seconds;

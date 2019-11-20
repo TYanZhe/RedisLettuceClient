@@ -15,6 +15,11 @@ import java.awt.event.*;
  */ 
 public class ButtonTabComponent extends JPanel {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public static void main(String[] args) {
 		  /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -55,13 +60,13 @@ public class ButtonTabComponent extends JPanel {
                );
                JTabbedPane pane = new JTabbedPane();
 //               
-               ButtonTabComponent button = new ButtonTabComponent(pane);
+/*               ButtonTabComponent button = new ButtonTabComponent(pane);*/
                j.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
                j.add(pane);
                JPanel jPanel = new JPanel();
                jPanel.setBackground(Color.RED);
                jPanel.setPreferredSize(new Dimension(300,300));
-               pane.addTab("首页", PublicConstant.Image.home,jPanel);
+               pane.addTab("首页", PublicConstant.Image.getImageIcon(PublicConstant.Image.home),jPanel);
                j.pack();
                j.setVisible(true);
             }
@@ -79,7 +84,8 @@ public class ButtonTabComponent extends JPanel {
         setOpaque(false);
         
         //make JLabel read titles from JTabbedPane
-        JLabel label = new JLabel() {
+        @SuppressWarnings("serial")
+		JLabel label = new JLabel() {
             public String getText() {
                 int i = pane.indexOfTabComponent(ButtonTabComponent.this);
                 if (i != -1) {
@@ -100,7 +106,10 @@ public class ButtonTabComponent extends JPanel {
     }
 
     private class TabButton extends JButton implements ActionListener {
-        public TabButton() {
+ 
+		private static final long serialVersionUID = -4455509605220321622L;
+
+		public TabButton() {
             int size = 17;
             setPreferredSize(new Dimension(size, size));
             setToolTipText("close this tab");

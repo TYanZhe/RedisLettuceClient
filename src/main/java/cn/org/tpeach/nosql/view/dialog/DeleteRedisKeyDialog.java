@@ -21,6 +21,7 @@ import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import io.lettuce.core.KeyScanCursor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -28,6 +29,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.time.Clock;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 
 /**
 　 * <p>Title: DeleteRedisKeyDialog.java</p> 
@@ -35,6 +37,7 @@ import java.util.Collection;
 　 * @date 2019年8月27日 
 　 * @version 1.0 
  */
+@Slf4j
 public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 	/**
 	 * 
@@ -48,7 +51,8 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 	@Setter
 	private String keyPattern;
 	private RedisTreeItem redisTreeItem;
-	private int db;
+	private JLabel keyPatternTimeText = getLable("0s", JLabel.LEFT);;
+
 	public DeleteRedisKeyDialog(JFrame parent, boolean modal, Image icon, RTreeNode t) {
 		super(parent, modal, icon, t);
 	}
@@ -78,7 +82,17 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 		}
 		this.redisTreeItem = (RedisTreeItem) t.getUserObject();
 		this.keyPattern = redisTreeItem.getOriginName()+":*";
-
+		CountDownLatch countDownLatch = new CountDownLatch(1);
+		this.containerMap.put("countDownLatch",countDownLatch);
+		StatePanel.showLoading(true,()->{
+			try {
+				countDownLatch.await();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		},true,true,-1,(s,t)->{
+			keyPatternTimeText.setText(t+"s");
+		});
 
 	}
 	private JLabel getLable(String text,int horizontalAlignment ) {
@@ -88,11 +102,21 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 		return label;
 	}
 
+	@Override
+	public void after() {
+		CountDownLatch countDownLatch = (CountDownLatch) this.containerMap.get("countDownLatch");
+		if(countDownLatch != null){
+			countDownLatch.countDown();
+			this.containerMap.remove("countDownLatch");
+		}
+		super.after();
+	}
 
 	@Override
 	protected void contextUiImpl(JPanel contextPanel, JPanel btnPanel) {
-		StatePanel.showLoading(()->{
-			ResultRes<KeyScanCursor<byte[]>> dispatcher = BaseController.dispatcher(() -> redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(), keyPattern, true));
+			middlePanel.setBackground(Color.WHITE);
+			middlePanel.setOpaque(true);
+			ResultRes<KeyScanCursor<byte[]>> dispatcher = BaseController.dispatcher(() -> redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(), keyPattern, true),true,false);
 			if (dispatcher.isRet()) {
 				keys = dispatcher.getData().getKeys();
 				totalKeys = dispatcher.getData().getCursor();
@@ -115,19 +139,20 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 			JLabel serverLabel = this.getLable("Redis Server:", JLabel.LEFT);
 			JLabel dbIndexLabel = this.getLable("Database Index:", JLabel.LEFT);
 			JLabel keyPatternLabel = this.getLable("Key Pattern:", JLabel.LEFT);
-			JLabel affectedKeyLabel = this.getLable("show Keys:" + keys.size(), JLabel.LEFT);
+			JLabel affectedKeyLabel = this.getLable("Show Keys:" + keys.size(), JLabel.LEFT);
 			JLabel totalPattenLabel = this.getLable("Affected Keys:" + totalKeys, JLabel.LEFT);
+			JLabel keyPatternLabelTime = this.getLable("Time Consuming:", JLabel.LEFT);
 			titleLabel.setPreferredSize(new Dimension(150, 28));
 			serverLabel.setPreferredSize(new Dimension(150, 22));
 			dbIndexLabel.setPreferredSize(new Dimension(150, 22));
 			keyPatternLabel.setPreferredSize(new Dimension(150, 22));
-
+			keyPatternLabelTime.setPreferredSize(new Dimension(150, 22));
 			JLabel keyPatternTextLabel = this.getLable(keyPattern, JLabel.LEFT);
 			JLabel serverTextLabel = this.getLable(redisConfig.getHost(), JLabel.LEFT);
 			JLabel dbIndexTextLabel = this.getLable(item.getDb() + "", JLabel.LEFT);
 
 			super.contextUiImpl(contextPanel, btnPanel);
-			((JComponent) contextPanel.getParent()).setBorder(new EmptyBorder(10, 20, 35, 20));
+			((JComponent) contextPanel.getParent()).setBorder(new EmptyBorder(10, 35, 30, 35));
 			contextPanel.getParent().setBackground(Color.WHITE);
 			btnPanel.setBackground(Color.WHITE);
 			contextPanel.setLayout(new BorderLayout());
@@ -153,6 +178,7 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 			topPanel.add(createRowBox(serverLabel, serverTextLabel));
 			topPanel.add(createRowBox(dbIndexLabel, dbIndexTextLabel));
 			topPanel.add(createRowBox(keyPatternLabel, keyPatternTextLabel));
+		topPanel.add(createRowBox(keyPatternLabelTime, keyPatternTimeText));
 			topPanel.add(Box.createVerticalStrut(5));
 
 
@@ -165,8 +191,6 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 			JScrollPane scrollPane = new EasyJSP(textArea).hiddenHorizontalScrollBar();
 			contextPanel.add(scrollPane);
 
-		});
-
 	}
 	
 	
@@ -174,17 +198,19 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 	protected void submit(ActionEvent e) {
         int conform = SwingTools.showConfirmDialogYNC(null, "是否确认删除？", "删除确认");
         if(conform == JOptionPane.YES_OPTION){
-            super.submit(()->{
+            super.submit(null,()->{
             	this.setVisible(false);
 				long startMillis = Clock.systemDefaultZone().millis();
-				ResultRes<Long> dispatcher = BaseController.dispatcher(() ->redisConnectService.deleteKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyPattern,Integer.valueOf(totalKeys)));
+				ResultRes<Long> dispatcher = BaseController.dispatcher(() ->redisConnectService.deleteKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyPattern,Integer.valueOf(totalKeys)),true,false);
 				LarkFrame.executorService.execute(()->this.setVisible(true));
                 if(dispatcher.isRet()) {
                     consumer.accept(dispatcher.getData()+","+(Clock.systemDefaultZone().millis()- startMillis));
                 }else {
                     SwingTools.showMessageErrorDialog(null,dispatcher.getMsg());
                 }
-            },false);
+            },false,(s,t)->{
+            	log.info("{}_{}批量刪除耗時:{}",keyPattern,s,t);
+			});
         }
 	}
 

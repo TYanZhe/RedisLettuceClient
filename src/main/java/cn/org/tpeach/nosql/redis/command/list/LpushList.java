@@ -1,13 +1,11 @@
 package cn.org.tpeach.nosql.redis.command.list;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 /**
  * @author tyz
@@ -18,7 +16,6 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 public class LpushList extends JedisDbCommand<Long> {
-    private static final Logger logger = LoggerFactory.getLogger(LpushList.class);
     private byte[] key;
     private byte[][] values;
 

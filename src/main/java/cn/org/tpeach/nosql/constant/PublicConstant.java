@@ -1,11 +1,22 @@
 package cn.org.tpeach.nosql.constant;
 
+import cn.org.tpeach.nosql.bean.DicBean;
+import cn.org.tpeach.nosql.tools.CollectionUtils;
+import cn.org.tpeach.nosql.tools.GsonUtil;
 import cn.org.tpeach.nosql.tools.IOUtil;
+import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author tyz
@@ -61,110 +72,202 @@ public class PublicConstant {
      * @date 2019年8月28日
      * @version 1.0
      */
+    @Slf4j
     public final static class Image {
         //https://www.easyicon.net/1210880-home_icon.html
 
-        public static ImageIcon home = IOUtil.getImageIcon("image/base/home.png");
+        private static Map<String, ImageIcon> map = new ConcurrentHashMap<>();
+        private static Queue<DicBean> queue = new ConcurrentLinkedQueue<>();
+
+        public final static String home = "image/base/home.png";
         //https://www.easyicon.net/1211616-github_media_social_icon.html
-        public static ImageIcon github = IOUtil.getImageIcon("image/base/github@2x.png");
-        public static ImageIcon changeLog = IOUtil.getImageIcon("image/base/changeLog@2x.png");
-        public static ImageIcon logo = IOUtil.getImageIcon("image/base/logo.png");
-        public static ImageIcon logo_16 = IOUtil.getImageIcon("image/base/logo.png", 16, 16);
-        public static ImageIcon redis_db = IOUtil.getImageIcon("image/base/redisDb.png", 16, 16);
-        public static ImageIcon redis_server = IOUtil.getImageIcon("image/tree/redis_server.png");
+        public final static String github = "image/base/github@2x.png";
+        public final static String changeLog = "image/base/changeLog@2x.png";
+        public final static String logo = "image/base/logo.png";
+        public final static String logo_16 = "image/base/logo.png" ;
+        public final static String redis_db = "image/base/redisDb.png" ;
+        public final static String redis_server = "image/tree/redis_server.png";
         //https://www.easyicon.net/28750-database_icon.html
-        public static ImageIcon database = IOUtil.getImageIcon("image/tree/database.png");
-        public static ImageIcon key_icon = IOUtil.getImageIcon("image/tree/key.png");
-        public static ImageIcon folder_database = IOUtil.getImageIcon("image/tree/folder_database.png");
-        public static ImageIcon arrow_down_blue = IOUtil.getImageIcon("image/base/arrow_down.png", 12, 12);
-        public static ImageIcon arrow_right_blue = IOUtil.getImageIcon("image/base/arrow_right.png", 12, 12);
-        public static ImageIcon arrow_left_blue = IOUtil.getImageIcon("image/base/arrow_left.png", 12, 12);
-        public static ImageIcon arrow_up_blue = IOUtil.getImageIcon("image/base/arrow_up.png", 12, 12);
-        public static ImageIcon separator_v = IOUtil.getImageIcon("image/base/separator_v.png");
-        public static ImageIcon separator_v_solid = IOUtil.getImageIcon("image/base/separator_v_solid.png");
-        public static ImageIcon resultset_refresh = IOUtil.getImageIcon("image/menu/resultset_refresh.png");
-        public static ImageIcon refresh = IOUtil.getImageIcon("image/base/refresh.png");
-        public static ImageIcon loading01 = IOUtil.getImageIcon("image/base/loading01.png");
-        public static ImageIcon loading02 = IOUtil.getImageIcon("image/base/loading02.png");
-        public static ImageIcon loading03 = IOUtil.getImageIcon("image/base/loading03.png");
-        public static ImageIcon loading04 = IOUtil.getImageIcon("image/base/loading04.png");
-        public static ImageIcon loading05 = IOUtil.getImageIcon("image/base/loading05.png");
-        public static ImageIcon loading06 = IOUtil.getImageIcon("image/base/loading06.png");
-        public static ImageIcon loading07 = IOUtil.getImageIcon("image/base/loading07.png");
-        public static ImageIcon arrow_down_scroll = IOUtil.getImageIcon("image/base/arrow_down_scroll.png");
-        public static ImageIcon arrow_up_scroll = IOUtil.getImageIcon("image/base/arrow_up_scroll.png");
-        public static ImageIcon arrow_right_scroll = IOUtil.getImageIcon("image/base/arrow_right_scroll.png");
-        public static ImageIcon arrow_left_scroll = IOUtil.getImageIcon("image/base/arrow_left_scroll.png");
+        public final static String database = "image/tree/database.png";
+        public final static String key_icon = "image/tree/key.png";
+        public final static String folder_database = "image/tree/folder_database.png";
+        public final static String arrow_down_blue = "image/base/arrow_down.png" ;
+        public final static String arrow_right_blue = "image/base/arrow_right.png" ;
+        public final static String arrow_left_blue = "image/base/arrow_left.png" ;
+        public final static String arrow_up_blue = "image/base/arrow_up.png" ;
+        public final static String separator_v = "image/base/separator_v.png";
+        public final static String separator_v_solid = "image/base/separator_v_solid.png";
+        public final static String resultset_refresh = "image/menu/resultset_refresh.png";
+        public final static String refresh = "image/base/refresh.png";
+        public final static String loading01 = "image/base/loading01.png";
+        public final static String loading02 = "image/base/loading02.png";
+        public final static String loading03 = "image/base/loading03.png";
+        public final static String loading04 = "image/base/loading04.png";
+        public final static String loading05 = "image/base/loading05.png";
+        public final static String loading06 = "image/base/loading06.png";
+        public final static String loading07 = "image/base/loading07.png";
+        public final static String arrow_down_scroll = "image/base/arrow_down_scroll.png";
+        public final static String arrow_up_scroll = "image/base/arrow_up_scroll.png";
+        public final static String arrow_right_scroll = "image/base/arrow_right_scroll.png";
+        public final static String arrow_left_scroll = "image/base/arrow_left_scroll.png";
         //菜單
-        public static ImageIcon copy = IOUtil.getImageIcon("image/menu/copy.png");
-        public static ImageIcon paste = IOUtil.getImageIcon("image/menu/paste.png");
-        public static ImageIcon cut = IOUtil.getImageIcon("image/menu/cut.png");
-        public static ImageIcon edit = IOUtil.getImageIcon("image/menu/edit01.png");
-        public static ImageIcon delete = IOUtil.getImageIcon("image/menu/delete.png");
-        public static ImageIcon connect = IOUtil.getImageIcon("image/menu/connect.png");
-        public static ImageIcon disconnect = IOUtil.getImageIcon("image/menu/disconnect.png");
-        public static ImageIcon attribute = IOUtil.getImageIcon("image/menu/Attr.png");
-        public static ImageIcon rename = IOUtil.getImageIcon("image/menu/ic_more_rename.png");
-        public static ImageIcon open = IOUtil.getImageIcon("image/menu/open.png");
-        public static ImageIcon menu_refresh = IOUtil.getImageIcon("image/menu/menu_fresh.png");
-        public static ImageIcon data_reset = IOUtil.getImageIcon("image/menu/data_reset.png");
-        public static ImageIcon cmd_console = IOUtil.getImageIcon("image/menu/cmd_console.png", 14, 14);
-        public static ImageIcon object_add = IOUtil.getImageIcon("image/menu/add_key.png");
-        public static ImageIcon active_data = IOUtil.getImageIcon("image/menu/active_data.png");
+        public final static String copy = "image/menu/copy.png";
+        public final static String paste = "image/menu/paste.png";
+        public final static String cut = "image/menu/cut.png";
+        public final static String edit = "image/menu/edit01.png";
+        public final static String delete = "image/menu/delete.png";
+        public final static String connect = "image/menu/connect.png";
+        public final static String disconnect = "image/menu/disconnect.png";
+        public final static String attribute = "image/menu/Attr.png";
+        public final static String rename = "image/menu/ic_more_rename.png";
+        public final static String open = "image/menu/open.png";
+        public final static String menu_refresh = "image/menu/menu_fresh.png";
+        public final static String data_reset = "image/menu/data_reset.png";
+        public final static String cmd_console = "image/menu/cmd_console.png";
+        public final static String object_add = "image/menu/add_key.png";
+        public final static String active_data = "image/menu/active_data.png";
 
 
         //详情页面
         //https://www.iconfont.cn/collections/detail?spm=a313x.7781069.0.da5a778a4&cid=12191
-        public static ImageIcon overtime_done = IOUtil.getImageIcon("image/page/overtime_done.png");
-        public static ImageIcon cancel = IOUtil.getImageIcon("image/page/cancel_red.png");
+        public final static String overtime_done = "image/page/overtime_done.png";
+        public final static String cancel = "image/page/cancel_red.png";
         //https://thenounproject.com/term/remove-row/502136/
-        public static ImageIcon row_add = IOUtil.getImageIcon("image/page/add-row.png");
-        public static ImageIcon row_add_green = IOUtil.getImageIcon("image/page/add-row-green.png");
+        public final static String row_add = "image/page/add-row.png";
+        public final static String row_add_green = "image/page/add-row-green.png";
         //https://www.iconsdb.com/soylent-red-icons/delete-row-icon.html
-        public static ImageIcon row_delete = IOUtil.getImageIcon("image/page/delete-row.png");
+        public final static String row_delete = "image/page/delete-row.png";
 
-        public static ImageIcon result_first = IOUtil.getImageIcon("image/page/result_first.png");
-        public static ImageIcon result_last = IOUtil.getImageIcon("image/page/result_last.png");
-        public static ImageIcon result_next = IOUtil.getImageIcon("image/page/result_next.png");
-        public static ImageIcon result_previous = IOUtil.getImageIcon("image/page/result_previous.png");
+        public final static String result_first = "image/page/result_first.png";
+        public final static String result_last = "image/page/result_last.png";
+        public final static String result_next = "image/page/result_next.png";
+        public final static String result_previous = "image/page/result_previous.png";
         //https://www.easyicon.net/1182036-loop_icon.html
-        public static ImageIcon page_reload = IOUtil.getImageIcon("image/page/sync.png");
-        public static ImageIcon grid = IOUtil.getImageIcon("image/page/grid_16px_1205810.png");
-        public static ImageIcon text = IOUtil.getImageIcon("image/page/translate.png");
+        public final static String page_reload = "image/page/sync.png";
+        public final static String grid = "image/page/grid_16px_1205810.png";
+        public final static String text = "image/page/translate.png";
 
-        public static ImageIcon close = IOUtil.getImageIcon("image/page/close.png");
+        public final static String close = "image/page/close.png";
         //https://www.easyicon.net/iconsearch/iconset:Material-Design-icons/7/?m=yes&f=iconsetid&s=
         //https://www.easyicon.net/1117056-help_icon.html
-        public static ImageIcon help = IOUtil.getImageIcon("image/base/help@1.5x.png");
-        public static ImageIcon monitor = IOUtil.getImageIcon("image/base/monitor.png");
-        public static ImageIcon settings = IOUtil.getImageIcon("image/base/setting.png");
-        public static ImageIcon server = IOUtil.getImageIcon("image/base/datatable.png");
-        public static ImageIcon server16 = IOUtil.getImageIcon("image/base/datatable.png",16,16);
+        public final static String help = "image/base/help@1.5x.png";
+        public final static String monitor = "image/base/monitor.png";
+        public final static String settings = "image/base/setting.png";
+        public final static String server = "image/base/datatable.png";
+        public final static String server16 = "image/base/datatable.png" ;
         //https://www.iconfont.cn/collections/detail?spm=a313x.7781069.0.da5a778a4&cid=1903
-        public static ImageIcon config = IOUtil.getImageIcon("image/base/config.png");
-        
-        public static ImageIcon atom = IOUtil.getImageIcon("image/base/atom.png");
-        public static ImageIcon about = IOUtil.getImageIcon("image/base/about.png");
-        public static ImageIcon expanded = IOUtil.getImageIcon("image/base/expanded.png");
-        public static ImageIcon foled = IOUtil.getImageIcon("image/base/foled.png");
-        public static ImageIcon gray_arrow_down = IOUtil.getImageIcon("image/base/gray_arrow_down.png");
-        public static ImageIcon gray_arrow_left = IOUtil.getImageIcon("image/base/gray_arrow_left.png");
-        public static ImageIcon gray_arrow_right = IOUtil.getImageIcon("image/base/gray_arrow_right.png");
-        public static ImageIcon gray_arrow_up = IOUtil.getImageIcon("image/base/gray_arrow_up.png");
-        public static ImageIcon donate = IOUtil.getImageIcon("image/base/donate.png");
-        public static ImageIcon wechatpay = IOUtil.getImageIcon("image/base/wechatpay.jpg",150,150);
-        public static ImageIcon alipay = IOUtil.getImageIcon("image/base/alipay.jpg",150,150);
-        public static ImageIcon arrow_circle_down = IOUtil.getImageIcon("image/base/arrow_circle_down.png" );
-        public static ImageIcon arrow_circle_right = IOUtil.getImageIcon("image/base/arrow_circle_right.png" );
-        public static ImageIcon switch_on = IOUtil.getImageIcon("image/base/switch_on.png" );
-        public static ImageIcon switch_off = IOUtil.getImageIcon("image/base/switch_off.png" );
-//        public static ImageIcon tempIcon = IOUtil.getImageIcon("image/base/箭头.png" );
-        public static ImageIcon loading_g = IOUtil.getImageIcon("image/base/loading_g.gif",200,162 );
-        public static ImageIcon  command = IOUtil.getImageIcon("image/base/command.png" );
-        public static ImageIcon loading_o = IOUtil.getImageIcon("image/base/o_loading.gif",16,16);
+        public final static String config = "image/base/config.png";
+
+        public final static String atom = "image/base/atom.png";
+        public final static String about = "image/base/about.png";
+        public final static String st_san_config = "image/base/st_san_config.png";
+        public final static String expanded = "image/base/expanded.png";
+        public final static String foled = "image/base/foled.png";
+        public final static String gray_arrow_down = "image/base/gray_arrow_down.png";
+        public final static String gray_arrow_left = "image/base/gray_arrow_left.png";
+        public final static String gray_arrow_right = "image/base/gray_arrow_right.png";
+        public final static String gray_arrow_up = "image/base/gray_arrow_up.png";
+        public final static String donate = "image/base/donate.png";
+        public final static String wechatpay = "image/base/wechatpay.jpg" ;
+        public final static String alipay = "image/base/alipay.jpg" ;
+        public final static String arrow_circle_down = "image/base/arrow_circle_down.png" ;
+        public final static String arrow_circle_right = "image/base/arrow_circle_right.png" ;
+        public final static String switch_on = "image/base/switch_on.png" ;
+        public final static String switch_off = "image/base/switch_off.png";
+        //        public final static String tempIcon = "image/base/箭头.png";
+        public final static String loading_g = "image/base/loading_g%s.gif";
+        public final static String  command = "image/base/command.png";
+        public final static String loading_o = "image/base/o_loading.gif";
+
+        public static synchronized ImageIcon getImageIcon(String path){
+            return  getImageIcon(path,null,null);
+        }
+        public static synchronized ImageIcon getImageIcon(String path,Integer width,Integer height){
+            if(StringUtils.isBlank(path)){
+                return null;
+            }
+            ImageIcon imageIcon = null;
+            String key = width != null && height != null? path+width+height : path;
+            if(map.containsKey(key)){
+               imageIcon = map.get(key);
+                updateCatchTime(key);
+            }else{
+               if(width != null && height != null){
+                   imageIcon = IOUtil.getImageIcon(path,width,height);
+               }else{
+                   imageIcon = IOUtil.getImageIcon(path );
+               }
+               map.put(key,imageIcon);
+               queue.add(DicBean.builder().code(key).value(System.currentTimeMillis()+"").build());
+           }
+           if(CollectionUtils.isNotEmpty(queue)){
+               DicBean peek = queue.peek();
+               //30分钟不使用则移除
+               while (peek != null && (System.currentTimeMillis() - Long.valueOf(peek.getValue())) > 1800000){
+                   peek = queue.poll();
+                   if(peek != null){
+                       map.remove(peek.getCode());
+                   }
+                   peek = queue.peek();
+               }
+           }
+           return imageIcon;
+        }
+
+        private static void updateCatchTime(String key) {
+            if(CollectionUtils.isNotEmpty(queue)){
+                Iterator<DicBean> iterator = queue.iterator();
+                while (iterator.hasNext()){
+                    DicBean next = iterator.next();
+                    if(key.equals(next.getCode())){
+                        //更新時間
+                        next.setValue(System.currentTimeMillis()+"");
+                        iterator.remove();
+                        boolean offer = queue.offer(next);
+                        if(!offer){
+                            log.error("獲取圖像添加失敗");
+                        }
+                        break;
+                    }
+
+                }
+            }
+        }
+
+        public static synchronized void replaceImageCatch(String path,ImageIcon imageIcon){
+            if (StringUtils.isBlank(path) || imageIcon == null) {
+                return;
+            }
+            map.put(path,imageIcon);
+            updateCatchTime(path);
+        }
+        public static boolean catchContainsKey(String path,Integer width,Integer height) {
+            String key = width != null && height != null ? path + width + height : path;
+            return map.containsKey(key);
+        }
+        public static boolean catchContainsKey(String path) {
+            return map.containsKey(path);
+        }
+        public static synchronized void removeImageCatch(String path,Integer width,Integer height) {
+            if (StringUtils.isBlank(path)) {
+                return;
+            }
+            String key = width != null && height != null ? path + width + height : path;
+            map.remove(key);
+            Iterator<DicBean> iterator = queue.iterator();
+            while (iterator.hasNext()) {
+                DicBean next = iterator.next();
+                if (key.equals(next.getCode())) {
+                    iterator.remove();
+                    break;
+
+                }
+            }
+        }
+        public static synchronized void removeImageCatch(String path) {
+            removeImageCatch(path,null,null);
+        }
     }
-
-
 //    public final static String REDIS_CONFIG_PATH = System.getProperty("user.home") + File.separatorChar + ".RedisLark.conf";
     public final static String REDIS_CONFIG_PATH = ServiceManager.getInstance().getPath() + File.separatorChar + ".RedisLark.conf";
 

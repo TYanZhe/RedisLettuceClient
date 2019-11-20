@@ -270,7 +270,7 @@ class LoadingDialog extends JDialog {
         container.setMinimumSize(new Dimension(initWidth, initHeight));
         contextPanel.setLayout(new BorderLayout());
         ImageIcon imageIcon = new ImageIcon();
-        imageIcon.setImage(PublicConstant.Image.loading_g.getImage());
+        imageIcon.setImage(PublicConstant.Image.getImageIcon(String.format(PublicConstant.Image.loading_g,""),200,162 ).getImage());
         JLabel loadingLabel = new JLabel(imageIcon);
         contextPanel.add(loadingLabel);
         //透明

@@ -3,8 +3,6 @@ package cn.org.tpeach.nosql.redis.command.set;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author tyz
@@ -15,7 +13,6 @@ import org.slf4j.LoggerFactory;
  * @since 1.0.0
  */
 public class ScardSet extends JedisDbCommand<Long> {
-    private static final Logger logger = LoggerFactory.getLogger(ScardSet.class);
     private byte[] key;
 
     /**

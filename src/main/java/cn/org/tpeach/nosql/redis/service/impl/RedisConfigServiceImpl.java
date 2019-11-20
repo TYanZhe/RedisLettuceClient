@@ -38,6 +38,7 @@ public abstract class RedisConfigServiceImpl implements IRedisConfigService {
 	 * @author : taoyz
 	 * @date : 2019/6/27 0027 12:49
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<RedisConnectInfo> getRedisConfigAllList() {
 		try {

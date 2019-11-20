@@ -1,29 +1,8 @@
 package cn.org.tpeach.nosql.framework;
 
-import cn.org.tpeach.nosql.annotation.Component;
-import cn.org.tpeach.nosql.annotation.ComponentScan;
-import cn.org.tpeach.nosql.annotation.JFrameMain;
-import cn.org.tpeach.nosql.constant.ConfigConstant;
-import cn.org.tpeach.nosql.constant.I18nKey;
-import cn.org.tpeach.nosql.constant.PublicConstant;
-import cn.org.tpeach.nosql.tools.*;
-import cn.org.tpeach.nosql.view.component.OnlyReadTextPane;
-import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
-import cn.org.tpeach.nosql.view.menu.MenuManager;
-import lombok.extern.slf4j.Slf4j;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-import sun.font.FontDesignMetrics;
-
-import javax.swing.*;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
-import java.awt.*;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -33,11 +12,51 @@ import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Locale;
+import java.util.Observer;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+
+import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import cn.org.tpeach.nosql.annotation.Component;
+import cn.org.tpeach.nosql.annotation.ComponentScan;
+import cn.org.tpeach.nosql.annotation.JFrameMain;
+import cn.org.tpeach.nosql.constant.ConfigConstant;
+import cn.org.tpeach.nosql.constant.I18nKey;
+import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.tools.AnnotationUtil;
+import cn.org.tpeach.nosql.tools.CollectionUtils;
+import cn.org.tpeach.nosql.tools.ConfigParser;
+import cn.org.tpeach.nosql.tools.PropertiesUtils;
+import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.view.component.OnlyReadTextPane;
+import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
+import cn.org.tpeach.nosql.view.menu.MenuManager;
+import lombok.extern.slf4j.Slf4j;
+import sun.font.FontDesignMetrics;
 
 /**
  * @author tyz
@@ -81,9 +100,9 @@ public class LarkFrame {
 					return;
 				}
 				JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
-				JMenuItem clearItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.MENU_FLUSH, PublicConstant.Image.refresh);
+				JMenuItem clearItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.MENU_FLUSH, PublicConstant.Image.getImageIcon(PublicConstant.Image.refresh));
 				clearItem.addActionListener(evt->logArea.clear());
-                JMenuItem copyKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.COPY, PublicConstant.Image.copy);
+                JMenuItem copyKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.COPY, PublicConstant.Image.getImageIcon(PublicConstant.Image.copy));
                 copyKeyItem.setMnemonic('C');
                 copyKeyItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
                 copyKeyItem.addActionListener(evt-> {

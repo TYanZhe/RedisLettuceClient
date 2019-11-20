@@ -10,7 +10,9 @@ package cn.org.tpeach.nosql.constant;
 　 * @version 1.0 
  */
 public class ConfigConstant {
-	public static  class Local{
+
+
+    public static  class Local{
 		public static final String zh = "zh";
 		public static final String CN = "CN";
 		public  static final String en = "en";
@@ -36,5 +38,6 @@ public class ConfigConstant {
 	public static final String APPEND_TEXT_NUMBER = "appendTextNumber";
 	public static final String APPEND_TEXT_WAITTIME = "appendTextWaitTime";
 	public static final String  MEMORY_FIXEDRATE_PERIOD= "MemoryFixedRatePeriod";
+	public static final String  LOADING_GLOBEL_TIMEOGT_ENABLED = "loadingGlobelTimeogtEnabled";
 
 }

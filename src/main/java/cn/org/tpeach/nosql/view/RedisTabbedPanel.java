@@ -5,6 +5,71 @@
  */
 package cn.org.tpeach.nosql.view;
 
+import static java.util.regex.Pattern.compile;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoundedRangeModel;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.text.JTextComponent;
+
 import cn.org.tpeach.nosql.bean.DicBean;
 import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.bean.TableColumnBean;
@@ -20,9 +85,22 @@ import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.*;
+import cn.org.tpeach.nosql.tools.ConfigParser;
+import cn.org.tpeach.nosql.tools.DateUtils;
+import cn.org.tpeach.nosql.tools.GsonUtil;
+import cn.org.tpeach.nosql.tools.MathUtils;
+import cn.org.tpeach.nosql.tools.ReflectUtil;
+import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.tools.TextForm;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
-import cn.org.tpeach.nosql.view.component.*;
+import cn.org.tpeach.nosql.view.component.EasyJSP;
+import cn.org.tpeach.nosql.view.component.OnlyReadArea;
+import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
+import cn.org.tpeach.nosql.view.component.RButton;
+import cn.org.tpeach.nosql.view.component.RComboBox;
+import cn.org.tpeach.nosql.view.component.RTabbedPane;
+import cn.org.tpeach.nosql.view.component.RTextArea;
 import cn.org.tpeach.nosql.view.dialog.AddRowDialog;
 import cn.org.tpeach.nosql.view.dialog.LoadingAssistDialog;
 import cn.org.tpeach.nosql.view.dialog.MagnifyTextDialog;
@@ -36,40 +114,6 @@ import io.lettuce.core.ScoredValue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.SimpleAttributeSet;
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.event.*;
-import java.text.DecimalFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-
-import static java.util.regex.Pattern.compile;
 
 
 @Getter
@@ -98,7 +142,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     private final int tableRowHeight = 24;
     private final int tableHeaderRowHeight = 30;
     private int actRow = 0;
-    private Vector[] tableContext;
+    @SuppressWarnings("rawtypes")
+	private Vector[] tableContext;
     @Getter
     private RTreeNode treeNode;
     private JTree tree;
@@ -108,12 +153,12 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     private int resultTab = 0;
     private OnlyReadArea resultTextArea;
     private AtomicBoolean updateStatus = new AtomicBoolean(true);
+    private AtomicBoolean searchTexting = new AtomicBoolean(false);
     private MagnifyTextDialog magnifyTextDialog ;
     /**
      *
      */
     private static final long serialVersionUID = -47351539002785269L;
-    private javax.swing.JButton deleteBtn;
     private JTextField keyIdleTimeField;
     private JTextField keyNameField;
     private JTextField keySizeField;
@@ -130,12 +175,12 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     private RComboBox<DicBean> selectKeyViewComn, selectValueViewComn;
     private RTextArea fieldArea;
     private RTextArea valueArea;
+    private static RTextArea tempArea = new RTextArea(5,20);
     private Box hBox1, hBox2, hBox3, hBox4, hBox5, hBox6;
     private Component createVerticalStrut1, createVerticalStrut2, createVerticalStrut3, createVerticalStrut4;
     private RButton searchButton;
     private PlaceholderTextField searchTextField = new PlaceholderTextField(20);
     private RComboBox<Integer> selectPageComboBox;
-
     private DicBean plaintextDic= new DicBean("1", LarkFrame.getI18nText(I18nKey.RedisResource.PLAINTEXT));
     private DicBean jsonDic=new DicBean("2", "Json");
     private DicBean hexPlainDic=new DicBean("3", "Hex Plain");
@@ -159,7 +204,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             if(!resultRes.isRet()){
                 SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
             }
-        } );
+        } ,true,true);
         if (redisKeyInfo == null) {
             this.redisKeyInfo = new RedisKeyInfo();
             this.redisKeyInfo.setType(RedisType.STRING);
@@ -205,18 +250,17 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         searchTextField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener(){
             @Override
             public void insertUpdate(DocumentEvent e) {
-                searchTextChange(e);
+                searchTextChange();
             }
             @Override
             public void removeUpdate(DocumentEvent e) {
-                searchTextChange(e);
+                searchTextChange();
             }
             @Override
             public void changedUpdate(DocumentEvent e) {
             }
-
-
         });
+        SwingTools.enterPressesWhenFocused(searchTextField,e->searchTextChange());
 //        keyTypeLabel.setFont(new java.awt.Font("宋体", 1, 15)); // NOI18N
         keyNameField.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -294,17 +338,24 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
     /**
      * 过滤表格
-     * @param e
+     * @param
      */
-    private void searchTextChange(DocumentEvent e) {
-        //滚动条回到顶部
-        tableScrollPanel.getViewport().setViewPosition(new Point(0, 0));
-        if(RedisType.LIST.equals(redisKeyInfo.getType())){
-            refreshTable();
-        }else{
-            this.updateUI(this.treeNode, this.pageBean,false);
+    private synchronized void searchTextChange() {
+        if(searchTexting.get()){
+            return;
         }
-
+        searchTexting.set(true);
+        //滚动条回到顶部
+        try{
+            tableScrollPanel.getViewport().setViewPosition(new Point(0, 0));
+            if(RedisType.LIST.equals(redisKeyInfo.getType())){
+                refreshTable();
+            }else{
+                this.updateUI(this.treeNode, this.tree, this.pageBean, false,false,true);
+            }
+        }finally {
+            searchTexting.set(false);
+        }
     }
 
     private void updateBasePanel() {
@@ -350,7 +401,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             return;
         }
         JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
-        JMenuItem copyKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.COPY, PublicConstant.Image.copy);
+        JMenuItem copyKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.COPY, PublicConstant.Image.getImageIcon(PublicConstant.Image.copy));
         copyKeyItem.setMnemonic('C');
         copyKeyItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
         copyKeyItem.addActionListener(e -> {
@@ -359,7 +410,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             clip.setContents(tText, null);
         });
 //        if(StringUtils.isText(redisKeyInfo.getKey())){
-        JMenuItem renameKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.REMAME, PublicConstant.Image.rename);
+        JMenuItem renameKeyItem = MenuManager.getInstance().getJMenuItem(I18nKey.RedisResource.REMAME, PublicConstant.Image.getImageIcon(PublicConstant.Image.rename));
         renameKeyItem.addActionListener(e -> {
             renameKey();
         });
@@ -396,7 +447,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             return;
         }
         JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
-        JMenuItem editKeyItem = MenuManager.getInstance().getJMenuItem(LarkFrame.getI18nText(I18nKey.RedisResource.MENU_EDIT) + " TTL", PublicConstant.Image.edit);
+        JMenuItem editKeyItem = MenuManager.getInstance().getJMenuItem(LarkFrame.getI18nText(I18nKey.RedisResource.MENU_EDIT) + " TTL", PublicConstant.Image.getImageIcon(PublicConstant.Image.edit));
         popMenu.add(editKeyItem);
         popMenu.show(keyTTLField, evt.getX(), evt.getY());
         editKeyItem.addActionListener(e -> {
@@ -451,15 +502,16 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
     //---------------------------------------------------Baseinfo end---------------------------------------------------------------------
     //---------------------------------------------------table start---------------------------------------------------------------------
-    private Vector[] getTableContext(RedisKeyInfo redisKeyInfo) {
+    @SuppressWarnings("rawtypes")
+	private Vector[] getTableContext(RedisKeyInfo redisKeyInfo) {
         //表格
         // 表头（列名）
-        Vector<String> columnNames = new Vector(4);
-        Vector<Vector<TableColumnBean>> data = new Vector();
+        Vector<String> columnNames = new Vector<>(4);
+        Vector<Vector<TableColumnBean>> data = new Vector<>();
         headersIcon.clear();
         Vector<TableColumnBean> rowData = null;
         columnNames.add("");
-        headersIcon.add(PublicConstant.Image.logo_16);
+        headersIcon.add(PublicConstant.Image.getImageIcon(PublicConstant.Image.logo_16, 16, 16));
 //        String searchText = StringUtils.isBlank(searchTextField.getText()) || "*".equals(searchTextField.getText())? ".*":searchTextField.getText().trim();
         Pattern pattern =null;
         if(StringUtils.isNotBlank(searchTextField.getText())){
@@ -470,7 +522,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         switch (redisKeyInfo.getType()) {
             case STRING:
                 columnNames.add("VALUE");
-                headersIcon.add(PublicConstant.Image.database);
+                headersIcon.add(PublicConstant.Image.getImageIcon(PublicConstant.Image.database));
                 rowData = new Vector<>();
                 rowData.add(new TableColumnBean(PublicConstant.StingType.INDEX, StringUtils.strToByte(index+""), index));
                 rowData.add(new TableColumnBean(PublicConstant.StingType.TEXT,redisKeyInfo.getValue(), index));
@@ -480,7 +532,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             case LIST:
                 int startIndex = redisKeyInfo.getPageBean().getStartIndex();
                 columnNames.add("VALUE");
-                headersIcon.add(PublicConstant.Image.database);
+                headersIcon.add(PublicConstant.Image.getImageIcon(PublicConstant.Image.database));
                 java.util.List<byte[]> list = redisKeyInfo.getValueList();
                 for (byte[] s : list) {
                     String v = StringUtils.showHexStringValue(s);
@@ -495,7 +547,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 break;
             case SET:
                 columnNames.add("MEMBER");
-                headersIcon.add(PublicConstant.Image.database);
+                headersIcon.add(PublicConstant.Image.getImageIcon(PublicConstant.Image.database));
                 List<byte[]> set = redisKeyInfo.getValueSet();
                 for (byte[] s : set) {
                     rowData = new Vector<>();
@@ -508,8 +560,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             case HASH:
                 columnNames.add("FIELD");
                 columnNames.add("VALUE");
-                headersIcon.add(PublicConstant.Image.database);
-                headersIcon.add(PublicConstant.Image.database);
+                headersIcon.add(PublicConstant.Image.getImageIcon(PublicConstant.Image.database));
+                headersIcon.add(PublicConstant.Image.getImageIcon(PublicConstant.Image.database));
                 Map<byte[], byte[]> valueHash = redisKeyInfo.getValueHash();
                 for (Map.Entry<byte[], byte[]> entry : valueHash.entrySet()) {
                     rowData = new Vector<>();
@@ -523,8 +575,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             case ZSET:
                 columnNames.add("SCORE");
                 columnNames.add("MEMBER");
-                headersIcon.add(PublicConstant.Image.database);
-                headersIcon.add(PublicConstant.Image.database);
+                headersIcon.add(PublicConstant.Image.getImageIcon(PublicConstant.Image.database));
+                headersIcon.add(PublicConstant.Image.getImageIcon(PublicConstant.Image.database));
                 List<ScoredValue<byte[]>> valueZSet = redisKeyInfo.getValueZSet();
                 Iterator<ScoredValue<byte[]>> iterator = valueZSet.iterator();
                 while (iterator.hasNext()) {
@@ -733,7 +785,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
     private void setTableColor() {
         makeFace(redisDataTable, PublicConstant.RColor.tableOddForeground, PublicConstant.RColor.tableEvenBackground);
-        DefaultTableCellRenderer tableCellRenderer = new DefaultTableCellRenderer() {
+        @SuppressWarnings("serial")
+		DefaultTableCellRenderer tableCellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
                                                            boolean hasFocus, int row, int column) {
@@ -762,7 +815,6 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
      */
     @SuppressWarnings("serial")
     public void makeFace(JTable table, Color oddBackground, Color evenBackground) {
-        RTableModel model = (RTableModel) redisDataTable.getModel();
         try {
             DefaultTableCellRenderer tcr = new DefaultTableCellRenderer() {
                 @Override
@@ -807,17 +859,6 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         }
 
         setTableColor();
-        RTableModel model = (RTableModel) redisDataTable.getModel();
-        //设置表头 添加图标
-//        for (int i = 1; i < model.getColumnCount() - 1; i++) {
-//            TableCellRenderer renderer = new JComponentTableCellRenderer();
-//            TableColumn t1c = redisDataTable.getColumnModel().getColumn(i);
-//            JLabel label = new JLabel(tableContext[0].get(i) + "", headersIcon.get(i), JLabel.CENTER);
-//            t1c.setHeaderRenderer(renderer);
-//            t1c.setHeaderValue(label);
-////            t1c.setMinWidth(150);
-////            t1c.setMaxWidth(300);
-//        }
 
     }
     //---------------------------------------------------table end---------------------------------------------------------------------
@@ -899,23 +940,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
             }
         });
-        ValueInfoPanel valueInfo = (ValueInfoPanel) valueInfoPanel;
-        valueArea.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                saveLabelEnabled();
-            }
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                saveLabelEnabled();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                saveLabelEnabled();
-            }
-        });
+        valueArea.getDocument().addDocumentListener(getValueChangeListener());
         valueArea.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -927,34 +952,22 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 if (e.getClickCount() == 2 && StringUtils.isNotBlank(valueArea.getText())) {
                     String flag = ConfigParser.getInstance().getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.MAGNIFYTEXT_DIALOG_SWITH, "0");
                     if ("1".equals(flag)) {
-                        magnifyTextDialog = getMagnifyTextDialog();
+                        boolean isEdit = true;
                         if(StringUtils.isBlank(valueArea.getText())||selectValueViewComn.getSelectedIndex() != 0){
-                            magnifyTextDialog.setEditable(false);
+                            isEdit = false;
                         }
+                        magnifyTextDialog = getMagnifyTextDialog();
+                           magnifyTextDialog.setEditable(isEdit);
                         StatePanel.showLoading(()->{
                             magnifyTextDialog.setText(valueArea.getText());
-                            magnifyTextDialog.open(s->setTextLoading(valueArea,s,true));
+                            magnifyTextDialog.open(s->valueArea.setText(s));
                         });
+
                     }
                 }
             }
         });
-        fieldArea.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                saveLabelEnabled();
-            }
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                saveLabelEnabled();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                saveLabelEnabled();
-            }
-        });
+        fieldArea.getDocument().addDocumentListener(getValueChangeListener());
         fieldArea.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -1041,6 +1054,25 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         valueInfoPanel.add(Box.createVerticalStrut(10));
         togglevalueInfo();
 
+    }
+
+    private DocumentListener getValueChangeListener() {
+        return new DocumentListener() {
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                saveLabelEnabled();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                saveLabelEnabled();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                saveLabelEnabled();
+            }
+        };
     }
 
     private void initValueTextBox(RTextArea valueArea){
@@ -1161,45 +1193,17 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         createVerticalStrut1.setVisible(flag);
         createVerticalStrut2.setVisible(flag);
     }
-    private void setTextLoading(JTextComponent rTextArea, String text, boolean load){
-        if(rTextArea instanceof  RTextArea){
-            StatePanel.showLoading(()->{
-                setTextLoading((RTextArea)rTextArea,  text,  load);
-            },true,true);
-        }else{
-            rTextArea.setText(text);
-        }
-    }
-    private void setTextLoading(RTextArea rTextArea,String text,boolean load){
-        //添加分页加载大文本loading会导致有卡死现象 设置里可去除改功能
+
+    /**
+     *
+     * @param rTextArea
+     * @param text
+     */
+    private void setTextLoading(RTextArea rTextArea,String text,boolean isScoll){
         boolean isLoading = false;
-        if(!isLoading){
-//            LoadingAssistDialog loadingAssistDialog = LoadingAssistDialog.getInstance(rTextArea);
-//            StatePanel.showLoading(()->{
-//                loadingAssistDialog.setText(text);
-//                loadingAssistDialog.open();
-//            });
-            LoadingAssistDialog loadingAssistDialog = LoadingAssistDialog.getInstance(valueArea);
-            initValueTextBox(new RTextArea());
-            System.out.println(hBox4.getComponentCount());
-            System.out.println(loadingAssistDialog.getTextArea().getJScrollPane());
-            StatePanel.showLoading(()->{
-                loadingAssistDialog.setText(text);
-                loadingAssistDialog.open(s->{
-                    System.err.println(hBox4.getComponentCount());
-                    initValueTextBox(loadingAssistDialog.getTextArea());
-                    System.err.println(loadingAssistDialog.getTextArea().getJScrollPane());
-                    System.err.println(hBox4.getComponentCount());
-                    System.out.println(">>>>>>>>");
-                    valueInfoPanel.updateUI();
-                });
-            });
-            return;
-        }
         JScrollPane jScrollPane = rTextArea.getJScrollPane();
         BoundedRangeModel model = jScrollPane.getVerticalScrollBar().getModel();
         if(StringUtils.isNotBlank(text) && text.getBytes().length > 150*1024 && model.getValue() * 2 <= text.length()) {
-            System.gc();
             String is_loading_text = ConfigParser.getInstance().getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.IS_LOADING_TEXT, "0");
             if( "1".equals(is_loading_text)) {
                 isLoading = true;
@@ -1207,38 +1211,55 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         }
         if(!isLoading) {
             rTextArea.setText(text);
+            model.setValue(model.getMaximum());
             return;
         }
-        int incr = ConfigParser.getInstance().getInt(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_NUMBER, 10000);
-        long textWaittime = ConfigParser.getInstance().getLong(ConfigConstant.Section.EXPERIMENT, ConfigConstant.APPEND_TEXT_WAITTIME,1000L);
-        SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
-        JScrollBar verticalScrollBar = jScrollPane.getVerticalScrollBar();
-        Document document = rTextArea.getDocument();
-//        System.out.println("分页加载大文本");
-        rTextArea.setText("");
-        StatePanel.showLoading(()->{
-            long l = System.currentTimeMillis();
-            for (int i = 0; i <= text.length();i+=incr ) {
-                try{
-                    final int index = i;
-                    int subLength = text.length() - index <= incr?text.length() - index :incr ;
-                    document.insertString(document.getLength(),text.substring(index,index+subLength),simpleAttributeSet);
-                    model.setValue(model.getMaximum());
-                    TimeUnit.MILLISECONDS.sleep(textWaittime);
-                } catch (InterruptedException | BadLocationException e) {
-                    e.printStackTrace();
-
-                }
-            }
-//            System.out.println("耗时:"+(System.currentTimeMillis() - l));
-//            System.out.println("结束");
-            verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-        },true,true,300);
-
+        openEditDialog(rTextArea, text, isScoll,false, true);
     }
 
+    private void openEditDialog(RTextArea rTextArea, String text, boolean isScoll, boolean isEditable, boolean autoSumbit) {
+        JScrollPane jScrollPane = rTextArea.getJScrollPane();
+        BoundedRangeModel model = jScrollPane.getVerticalScrollBar().getModel();
+        JComponent component = isScoll?rTextArea.getJScrollPane() : rTextArea ;
+        Container parent = isScoll?rTextArea.getJScrollPane().getParent():rTextArea.getParent();
+        Component[] components = parent.getComponents();
+        int index = -1;
+        for (int i = 0; i < components.length; i++) {
+            Component c = components[i];
+            if(c == component){
+                parent.remove(i);
+                index = i;
+                break;
+            }
+        }
+        if(index < 0 ){
+            throw new ServiceException("setTextLoading未找到元素");
+        }
+        Integer finalIndex = index;
+        parent.add(tempArea.getJScrollPane(),index);
+        if(parent instanceof  JComponent){
+            ((JComponent)parent).updateUI();
+        }
+        SwingTools.swingWorkerExec(()->{
+            LoadingAssistDialog loadingAssistDialog = LoadingAssistDialog.getInstance(rTextArea);
+            loadingAssistDialog.setAutoSubmit(autoSumbit);
+            loadingAssistDialog.setEditable(isEditable);
+            StatePanel.showLoading(()->{
+                loadingAssistDialog.setText(text);
+                loadingAssistDialog.open(s->{
+                    parent.remove(finalIndex);
+                    if(parent instanceof  JComponent){
+                        ((JComponent)parent).updateUI();
+                    }
+                    RTextArea textArea = loadingAssistDialog.getTextArea();
+                    parent.add(isScoll ? textArea.getJScrollPane() : textArea, finalIndex);
+                    textArea.updateUI();
+                    model.setValue(model.getMaximum());
+                });
+            });
+        });
 
-
+    }
 
     //---------------------------------------------------right value panl end---------------------------------------------------------------------
     //---------------------------------------------------bottom page  panl start---------------------------------------------------------------------
@@ -1247,36 +1268,36 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         saveLabel = new JLabel("Save");
         saveLabel.setToolTipText("保存");
 
-        saveLabel.setIcon(PublicConstant.Image.overtime_done);
+        saveLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.overtime_done));
         cancelLabel = new JLabel("Cancel");
         cancelLabel.setToolTipText("取消");
-        cancelLabel.setIcon(PublicConstant.Image.cancel);
+        cancelLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.cancel));
         deleteLabel = new JLabel("Delete");
         deleteLabel.setToolTipText("删除");
-        deleteLabel.setIcon(PublicConstant.Image.delete);
+        deleteLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.delete));
         addRowLeftLabel = new JLabel();
-        addRowLeftLabel.setIcon(PublicConstant.Image.row_add_green);
+        addRowLeftLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.row_add_green));
         addRowLabel = new JLabel();
-        addRowLabel.setIcon(PublicConstant.Image.row_add);
+        addRowLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.row_add));
 
         deleteRowLabel = new JLabel();
         deleteRowLabel.setToolTipText("删除当前行");
-        deleteRowLabel.setIcon(PublicConstant.Image.row_delete);
+        deleteRowLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.row_delete));
         reloadLabel = new JLabel();
         reloadLabel.setToolTipText("重新加载");
-        reloadLabel.setIcon(PublicConstant.Image.page_reload);
+        reloadLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.page_reload));
         firstPageLabel = new JLabel();
         firstPageLabel.setToolTipText("移动至首页");
-        firstPageLabel.setIcon(PublicConstant.Image.result_first);
+        firstPageLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.result_first));
         previousPageLabel = new JLabel();
         previousPageLabel.setToolTipText("移动到上一页");
-        previousPageLabel.setIcon(PublicConstant.Image.result_previous);
+        previousPageLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.result_previous));
         nextPageLabel = new JLabel();
         nextPageLabel.setToolTipText("移动到下一页");
-        nextPageLabel.setIcon(PublicConstant.Image.result_next);
+        nextPageLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.result_next));
         lastPageLabel = new JLabel();
         lastPageLabel.setToolTipText("移动到尾页");
-        lastPageLabel.setIcon(PublicConstant.Image.result_last);
+        lastPageLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.result_last));
         gotoPagefield = new PlaceholderTextField(3);
         gotoPagefield.setToolTipText("跳转页");
         gotoPagefield.setMaximumSize(new java.awt.Dimension(20, borderWidth - 1));
@@ -1288,14 +1309,14 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         addToPagePanel(cancelLabel);
         addToPagePanel(deleteLabel);
         JLabel jSeparator = new JLabel();
-        jSeparator.setIcon(PublicConstant.Image.separator_v_solid);
+        jSeparator.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.separator_v_solid));
         addToPagePanel(jSeparator);
         addToPagePanel(addRowLeftLabel);
         addToPagePanel(addRowLabel);
         addToPagePanel(deleteRowLabel);
         addToPagePanel(reloadLabel);
         jSeparator = new JLabel();
-        jSeparator.setIcon(PublicConstant.Image.separator_v);
+        jSeparator.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.separator_v));
         addToPagePanel(jSeparator);
         //分页
         selectPageComboBox = new RComboBox<>(20);
@@ -1308,7 +1329,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         selectPageComboBox.addItemListener(e -> {
             if(e.getStateChange() == ItemEvent.SELECTED){
                 pageBean.setRows((Integer) e.getItem());
-                RedisTabbedPanel.this.updateUI(treeNode, pageBean,true);
+                RedisTabbedPanel.this.updateUI(treeNode, pageBean);
             }else if(e.getStateChange() == ItemEvent.DESELECTED){
 
             }
@@ -1418,7 +1439,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                     this.redisKeyInfo.setSize(this.redisKeyInfo.getSize()-1);
 //                         RTableModel tableModel = (RTableModel)redisDataTable.getModel();
 //                         tableModel.removeRow(selectRow);
-                    RedisTabbedPanel.this.updateUI(treeNode, pageBean,true);
+                    RedisTabbedPanel.this.updateUI(treeNode, pageBean);
                 } else {
                     SwingTools.showMessageErrorDialog(null, "删除失败："+resultRes.getMsg());
                 }
@@ -1443,182 +1464,202 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                     pageMousePPressed(redisKeyInfo.getPageBean().getTotalPage());
                 }
             }
-            RedisTabbedPanel.this.updateUI(RedisTabbedPanel.this.treeNode, RedisTabbedPanel.this.pageBean,false);
+            RedisTabbedPanel.this.updateUI(RedisTabbedPanel.this.treeNode, RedisTabbedPanel.this.pageBean);
             d.close();
         });
         d.open();
     }
+    private  ResultRes<RedisKeyInfo> sendSaveKeyInfoCommand(RedisKeyInfo newKeyInfo,RedisKeyInfo oldKeyInfo){
+        int selectRow = ((ValueInfoPanel) valueInfoPanel).getSelectRow();
+        final TableColumnBean valueColumnBean = ((ValueInfoPanel) valueInfoPanel).getValueColumnBean();
+        ReflectUtil.copyProperties(this.redisKeyInfo, newKeyInfo);
+        ReflectUtil.copyProperties(this.redisKeyInfo, oldKeyInfo);
+        newKeyInfo.setPageBean(null);
+        newKeyInfo.setValueHash(null);
+        newKeyInfo.setValueList(null);
+        newKeyInfo.setValueZSet(null);
+        oldKeyInfo.setPageBean(null);
+        oldKeyInfo.setValueHash(null);
+        oldKeyInfo.setValueList(null);
+        oldKeyInfo.setValueZSet(null);
+        byte[] oldValue = null;
+        newKeyInfo.setValue(StringUtils.isEmpty(valueArea.getText()) ? null : StringUtils.strToByte(valueArea.getText()));
+        switch (redisKeyInfo.getType()) {
+            case STRING:
+            case LIST:
+                newKeyInfo.setIndex(redisKeyInfo.getPageBean().getStartIndex() + valueColumnBean.getIndex());
+            case SET:
+                oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 1)).getValue();
+                oldKeyInfo.setValue(oldValue);
+                break;
+            case HASH:
+                if (StringUtils.isBlank(fieldArea.getText())) {
+                    SwingTools.showMessageErrorDialog(null, "Field can not be null");
+                    return null;
+                }
+                oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 2)).getValue();
+                byte[] oldfield = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 1)).getValue();
+                oldKeyInfo.setValue(oldValue);
+                oldKeyInfo.setField(oldfield);
+                newKeyInfo.setField(StringUtils.strToByte(fieldArea.getText()));
+                break;
+            case ZSET:
+                String score = scoreField.getText();
+                if (StringUtils.isBlank(score)) {
+                    SwingTools.showMessageErrorDialog(this, "请输入分数");
+                    return null;
+                }
+                try {
+                    newKeyInfo.setScore(Double.valueOf(score));
+                } catch (NumberFormatException ez) {
+                    SwingTools.showMessageErrorDialog(this, "请输入正确的分数");
+                    return null;
+                }
+                oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 2)).getValue();
+                String oldScore = StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1));
+                oldKeyInfo.setValue(oldValue);
+                oldKeyInfo.setScore(Double.valueOf(oldScore));
+                break;
 
-    private void saveKeyInfo(MouseEvent evt) {
-        StatePanel.showLoading(()->{
-            try {
-                TimeUnit.MILLISECONDS.sleep(600);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            int selectRow = ((ValueInfoPanel) valueInfoPanel).getSelectRow();
-            final TableColumnBean keyColumnBean = ((ValueInfoPanel) valueInfoPanel).getKeyColumnBean();
-            final TableColumnBean valueColumnBean = ((ValueInfoPanel) valueInfoPanel).getValueColumnBean();
-            RedisKeyInfo newKeyInfo = new RedisKeyInfo();
-            RedisKeyInfo oldKeyInfo = new RedisKeyInfo();
-            ReflectUtil.copyProperties(this.redisKeyInfo, newKeyInfo);
-            ReflectUtil.copyProperties(this.redisKeyInfo, oldKeyInfo);
-            newKeyInfo.setPageBean(null);
-            newKeyInfo.setValueHash(null);
-            newKeyInfo.setValueList(null);
-            newKeyInfo.setValueZSet(null);
-            oldKeyInfo.setPageBean(null);
-            oldKeyInfo.setValueHash(null);
-            oldKeyInfo.setValueList(null);
-            oldKeyInfo.setValueZSet(null);
-            byte[] oldValue = null;
-            newKeyInfo.setValue(StringUtils.isEmpty(valueArea.getText()) ? null : StringUtils.strToByte(valueArea.getText()));
-            switch (redisKeyInfo.getType()) {
-                case STRING:
-                case LIST:
-                    newKeyInfo.setIndex(redisKeyInfo.getPageBean().getStartIndex() + valueColumnBean.getIndex());
-                case SET:
-                    oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 1)).getValue();
-                    oldKeyInfo.setValue(oldValue);
-                    break;
-                case HASH:
-                    if (StringUtils.isBlank(fieldArea.getText())) {
-                        SwingTools.showMessageErrorDialog(null, "Field can not be null");
-                        return;
-                    }
-                    oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 2)).getValue();
-                    byte[] oldfield = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 1)).getValue();
-                    oldKeyInfo.setValue(oldValue);
-                    oldKeyInfo.setField(oldfield);
-                    newKeyInfo.setField(StringUtils.strToByte(fieldArea.getText()));
-                    break;
-                case ZSET:
-                    String score = scoreField.getText();
-                    if (StringUtils.isBlank(score)) {
-                        SwingTools.showMessageErrorDialog(this, "请输入分数");
-                        return;
-                    }
-                    try {
-                        newKeyInfo.setScore(Double.valueOf(score));
-                    } catch (NumberFormatException ez) {
-                        SwingTools.showMessageErrorDialog(this, "请输入正确的分数");
-                        return;
-                    }
-                    oldValue = ((TableColumnBean) redisDataTable.getValueAt(selectRow, 2)).getValue();
-                    String oldScore = StringUtils.defaultEmptyToString(redisDataTable.getValueAt(selectRow, 1));
-                    oldKeyInfo.setValue(oldValue);
-                    oldKeyInfo.setScore(Double.valueOf(oldScore));
-                    break;
+            default:
 
-                default:
+                break;
 
-                    break;
-
-            }
-            ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.updateKeyInfo(newKeyInfo, oldKeyInfo));
-
-            final RTableModel model = (RTableModel) redisDataTable.getModel();
-
-            if (resultRes.isRet()) {
-
-                valueColumnBean.setValue(newKeyInfo.getValue());
-                //更新表格值 byte值
-                switch (redisKeyInfo.getType()) {
-                    case STRING:
-                        redisKeyInfo.setValue(newKeyInfo.getValue());
-                        break;
-                    case LIST:
-                        List<byte[]> list = redisKeyInfo.getValueList();
-                        list.set(valueColumnBean.getIndex(), newKeyInfo.getValue());
-                        break;
-                    case SET:
+        }
+        return BaseController.dispatcher(() -> redisConnectService.updateKeyInfo(newKeyInfo, oldKeyInfo));
+    }
+    private void resetGuiKeyInfo(RedisKeyInfo newKeyInfo,RedisKeyInfo oldKeyInfo){
+        final TableColumnBean valueColumnBean = ((ValueInfoPanel) valueInfoPanel).getValueColumnBean();
+        valueColumnBean.setValue(newKeyInfo.getValue());
+        //更新表格值 byte值
+        switch (redisKeyInfo.getType()) {
+            case STRING:
+                redisKeyInfo.setValue(newKeyInfo.getValue());
+                break;
+            case LIST:
+                List<byte[]> list = redisKeyInfo.getValueList();
+                list.set(valueColumnBean.getIndex(), newKeyInfo.getValue());
+                break;
+            case SET:
 
 //                    redisDataTable.setValueAt(valueColumnBean, selectRow, 1);
-                        List<byte[]> set = redisKeyInfo.getValueSet();
-                        set.set(valueColumnBean.getIndex(), newKeyInfo.getValue());
-                        for (int i = set.size() - 1; i >= 0; i--) {
-                            if (i != valueColumnBean.getIndex()) {
-                                if (Arrays.equals(set.get(i), newKeyInfo.getValue())) {
-                                    set.remove(i);
-                                    try {
-                                        int size = Integer.valueOf(keySizeField.getText());
-                                        keySizeField.setText((size - 1) + "");
-                                    } catch (Exception e) {
-                                    }
-                                    break;
-                                }
-
-                            }
-                        }
-//                        removeSimpleRow(selectRow, model,1,t->valueArea.getText().equals(t.getValue()));
-
-                        break;
-                    case HASH:
-                        Map<byte[], byte[]> valueHash = redisKeyInfo.getValueHash();
-                        if (!Arrays.equals(oldKeyInfo.getField(), newKeyInfo.getField())) {
-                            int size = 0;
-                            for (Iterator<Map.Entry<byte[],byte[]>> iterator = valueHash.entrySet().iterator(); iterator.hasNext();){
-                                Map.Entry<byte[], byte[]> entry = iterator.next();
-                                if(Arrays.equals(newKeyInfo.getField(),entry.getKey())){
-                                    size++;
-                                    valueHash.put(entry.getKey(),newKeyInfo.getValue());
-                                    break;
-                                }
-                            }
-                            valueHash.remove(oldKeyInfo.getField());
-
+                List<byte[]> set = redisKeyInfo.getValueSet();
+                set.set(valueColumnBean.getIndex(), newKeyInfo.getValue());
+                for (int i = set.size() - 1; i >= 0; i--) {
+                    if (i != valueColumnBean.getIndex()) {
+                        if (Arrays.equals(set.get(i), newKeyInfo.getValue())) {
+                            set.remove(i);
                             try {
-                                keySizeField.setText((Integer.valueOf(keySizeField.getText()) - size) + "");
+                                int size = Integer.valueOf(keySizeField.getText());
+                                keySizeField.setText((size - 1) + "");
                             } catch (Exception e) {
                             }
-                        }else{
-//                            valueHash.remove(oldKeyInfo.getField());
-                            valueHash.put(oldKeyInfo.getField(),newKeyInfo.getValue());
+                            break;
                         }
+
+                    }
+                }
+//                        removeSimpleRow(selectRow, model,1,t->valueArea.getText().equals(t.getValue()));
+
+                break;
+            case HASH:
+                Map<byte[], byte[]> valueHash = redisKeyInfo.getValueHash();
+                if (!Arrays.equals(oldKeyInfo.getField(), newKeyInfo.getField())) {
+                    int size = 0;
+                    for (Iterator<Map.Entry<byte[],byte[]>> iterator = valueHash.entrySet().iterator(); iterator.hasNext();){
+                        Map.Entry<byte[], byte[]> entry = iterator.next();
+                        if(Arrays.equals(newKeyInfo.getField(),entry.getKey())){
+                            size++;
+                            valueHash.put(entry.getKey(),newKeyInfo.getValue());
+                            break;
+                        }
+                    }
+                    valueHash.remove(oldKeyInfo.getField());
+
+                    try {
+                        keySizeField.setText((Integer.valueOf(keySizeField.getText()) - size) + "");
+                    } catch (Exception e) {
+                    }
+                }else{
+//                            valueHash.remove(oldKeyInfo.getField());
+                    valueHash.put(oldKeyInfo.getField(),newKeyInfo.getValue());
+                }
 //                    keyColumnBean.setValue(fieldArea.getText());
 //                    redisDataTable.setValueAt(valueColumnBean, selectRow, 2);
 //                    redisDataTable.setValueAt(keyColumnBean, selectRow, 1);
 //
 //                    setFieldInfoLabelText(fieldArea.getText().getBytes().length);
 //                    removeSimpleRow(selectRow, model,1,t->fieldArea.getText().equals(t.getValue()));
-                        break;
-                    case ZSET:
-                        List<ScoredValue<byte[]>> valueZSet = redisKeyInfo.getValueZSet();
-                        valueZSet.set(valueColumnBean.getIndex(), ScoredValue.fromNullable(Double.valueOf(scoreField.getText()), newKeyInfo.getValue()));
-                        for (int i = valueZSet.size() - 1; i >= 0; i--) {
-                            if (i != valueColumnBean.getIndex()) {
-                                if (Arrays.equals(newKeyInfo.getValue(), valueZSet.get(i).getValue())) {
-                                    valueZSet.remove(i);
-                                    try {
-                                        int size = Integer.valueOf(keySizeField.getText());
-                                        keySizeField.setText((size - 1) + "");
-                                    } catch (Exception e) {
-                                    }
-                                    break;
-                                }
+                break;
+            case ZSET:
+                List<ScoredValue<byte[]>> valueZSet = redisKeyInfo.getValueZSet();
+                valueZSet.set(valueColumnBean.getIndex(), ScoredValue.fromNullable(Double.valueOf(scoreField.getText()), newKeyInfo.getValue()));
+                for (int i = valueZSet.size() - 1; i >= 0; i--) {
+                    if (i != valueColumnBean.getIndex()) {
+                        if (Arrays.equals(newKeyInfo.getValue(), valueZSet.get(i).getValue())) {
+                            valueZSet.remove(i);
+                            try {
+                                int size = Integer.valueOf(keySizeField.getText());
+                                keySizeField.setText((size - 1) + "");
+                            } catch (Exception e) {
                             }
+                            break;
                         }
+                    }
+                }
 //                    redisDataTable.setValueAt(valueColumnBean, selectRow, 2);
 //                    redisDataTable.setValueAt(scoreField.getText(), selectRow, 1);
 //                    removeSimpleRow(selectRow, model,2,t->valueArea.getText().equals(t.getValue()));
-                        break;
+                break;
 
-                    default:
+            default:
 
-                        break;
+                break;
 
+        }
+    }
+    private void saveKeyInfo(MouseEvent evt) {
+        //新增保存确认 2019-11-20
+        int conform = SwingTools.showConfirmDialogYNC(LarkFrame.frame, "是否确认保存？", "保存确认");
+        if(conform != JOptionPane.YES_OPTION){
+                return ;
+        }
+        /*
+         * 解决产生死锁 2019-11-17
+         * at javax.swing.text.JTextComponent.setEditable(JTextComponent.java:1756)
+         *  at cn.org.tpeach.nosql.view.RedisTabbedPanel.reloadValueInfoPanel(RedisTabbedPanel.java:1737)
+         *  at cn.org.tpeach.nosql.view.RedisTabbedPanel.refreshTable(RedisTabbedPanel.java:2020)
+         */
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        StatePanel.showLoading(()->{
+            try {
+                RedisKeyInfo newKeyInfo = new RedisKeyInfo();
+                RedisKeyInfo oldKeyInfo = new RedisKeyInfo();
+                ResultRes<RedisKeyInfo> resultRes = sendSaveKeyInfoCommand(newKeyInfo, oldKeyInfo);
+                if (resultRes == null) {
+                    return;
                 }
-                setValueInfoLabelText(valueArea.getText().getBytes().length);
-                updatePageInfo();
-                refreshTable();
-                //            updateUI(treeNode, pageBean);
-            } else {
-                SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
+                if (resultRes.isRet()) {
+                    resetGuiKeyInfo(newKeyInfo, oldKeyInfo);
+                    //更新
+                    refreshTable();
+//                this.updateUI(treeNode,this.pageBean);
+                } else {
+                    SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
+                }
+            }finally {
+                countDownLatch.countDown();
             }
         },true,true);
+        try {
+            countDownLatch.await(65, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void removeSimpleRow(int selectRow, RTableModel model, int column, Predicate<TableColumnBean> predicate) {
+    @SuppressWarnings("unused")
+	private void removeSimpleRow(int selectRow, RTableModel model, int column, Predicate<TableColumnBean> predicate) {
         for(int i = redisDataTable.getRowCount() -1 ;i >= 0;i--){
             if(i != selectRow){
                 final Object temp = redisDataTable.getValueAt(i, column);
@@ -1641,7 +1682,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     private void pageMousePPressed(java.awt.event.MouseEvent evt, int page, int row) {
         this.pageBean.setPage(page);
         this.pageBean.setRows(row);
-        this.updateUI(this.treeNode, this.pageBean,true);
+        this.updateUI(this.treeNode, this.pageBean);
     }
 
     private void pageMousePPressed(int page) {
@@ -1750,12 +1791,12 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     }
 
     private void reloadValueInfoPanel() {
-        valueArea.setEditable(false);
-        fieldArea.setEditable(false);
-        scoreField.setEditable(false);
         valueArea.setText(null);
         fieldArea.setText(null);
         scoreField.setText(null);
+        valueArea.setEditable(false);
+        fieldArea.setEditable(false);
+        scoreField.setEditable(false);
         setFieldInfoLabelText(0);
         setValueInfoLabelText(0);
     }
@@ -1769,7 +1810,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         if(this.redisKeyInfo != null){
             this.redisKeyInfo.clearBaseInfo();
         }
-        this.updateUI(this.treeNode, this.pageBean,true);
+        this.updateUI(this.treeNode, this.pageBean);
     }
 
     //---------------------------------------------------bottom page  panl end---------------------------------------------------------------------
@@ -1781,10 +1822,10 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
 
         gridLabel.setToolTipText("show grid result");
-        gridLabel.setIcon(PublicConstant.Image.grid);
+        gridLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.grid));
         addStrutVerticalPanel(leftTablePanel, gridLabel, true, 10, false, null);
         textLabel.setToolTipText("show text result");
-        textLabel.setIcon(PublicConstant.Image.text);
+        textLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.text));
         addStrutVerticalPanel(leftTablePanel, textLabel, true, 2, false, null);
 
 
@@ -1815,7 +1856,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         });
     }
 
-    private String getTableText(RedisKeyInfo redisKeyInfo){
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	private String getTableText(RedisKeyInfo redisKeyInfo){
         Vector[] tableContext = getTableContext(redisKeyInfo);
         Vector<String> titleVector = tableContext[0];
         String[] title = new String[titleVector.size()-2];
@@ -1890,7 +1932,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
 
     }
 
-    private void getKeyInfo(Consumer<ResultRes<RedisKeyInfo>> resultResConsumer) {
+    private void getKeyInfo(Consumer<ResultRes<RedisKeyInfo>> resultResConsumer,boolean isNeedGlassPanl,boolean isLoading) {
         if (this.treeNode == null) {
             return;
         }
@@ -1907,7 +1949,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             cursor = redisKeyInfo.getCursor();
         }
         String pattern =  searchTextField == null? null:searchTextField.getText();
-        ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.getRedisKeyInfo(item.getId(), item.getDb(), item.getKey(),cursor,pattern, pageBean,redisKeyInfo));
+        ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.getRedisKeyInfo(item.getId(), item.getDb(), item.getKey(),cursor,pattern, pageBean,redisKeyInfo),isNeedGlassPanl,isLoading);
         if (resultRes.isRet()) {
             redisKeyInfo = resultRes.getData();
             if(RedisType.LIST.equals(redisKeyInfo.getType())){
@@ -1924,11 +1966,13 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         resultResConsumer.accept(resultRes);
     }
 
-    private void updateUI(RTreeNode treeNode, PageBean pageBean,boolean loading) {
-        this.updateUI(treeNode, this.tree, pageBean, false,loading);
+    private void updateUI(RTreeNode treeNode, PageBean pageBean,boolean isLoad ) {
+        this.updateUI(treeNode, this.tree, pageBean, false,isLoad,isLoad);
     }
-
-    public  void updateUI(RTreeNode treeNode, JTree tree, PageBean pageBean, final boolean isNewNode,boolean loading) {
+    private void updateUI(RTreeNode treeNode, PageBean pageBean ) {
+        this.updateUI(treeNode,  pageBean,  true);
+    }
+    public synchronized   void updateUI(RTreeNode treeNode, JTree tree, PageBean pageBean, final boolean isNewNode,boolean isNeedGlassPanl,boolean isLoad ) {
         //修复修改页数切换key卡死问题 2019-10-18
         if(!updateStatus.get()){
             return;
@@ -1942,7 +1986,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             }
             this.redisKeyInfo.clearBaseInfo();
         }
-       StatePanel.showLoading(()->{
+       StatePanel.showLoading(isLoad,()->{
            try {
                PageBean oldPageBean = this.pageBean;
                RTreeNode oldTreeNode = this.treeNode;
@@ -1987,7 +2031,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                    } finally {
                        countDownLatch.countDown();
                    }
-               });
+               },isNeedGlassPanl,isLoad);
                try {
                    countDownLatch.await();
                    if (!isSuccess.get()) {
@@ -1996,16 +2040,17 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                } catch (InterruptedException e) {
                    e.printStackTrace();
                }
-               if (isNewNode) {
 
+               if (isNewNode) {
                    tableScrollPanel.setViewportView(redisDataTable);
                    tableScrollPanel.getViewport().setViewPosition(new Point(0, 0));
                }
+               //刷新表格
+               refreshTable();
                updateBasePanel();
                //更新值显示
                togglevalueInfo();
-               //刷新表格
-               refreshTable();
+
                JTabbedPane parent = (JTabbedPane) this.getParent();
                RTabbedPane.ButtonClose buttonClose = (RTabbedPane.ButtonClose) parent.getTabComponentAt(parent.getSelectedIndex());
                if (buttonClose != null) {
@@ -2016,17 +2061,26 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                super.updateUI();
            }finally {
                updateStatus.set(true);
+
            }
-       });
+       },isNeedGlassPanl,false,StatePanel.DEFAULTTIMEOUT,null);
     }
 
-    private void refreshTable(){
+    private synchronized void  refreshTable(){
+        redisDataTable.clearSelection();
         RTableModel model = (RTableModel) redisDataTable.getModel();
+        TableColumnModel columnModel = redisDataTable.getColumnModel();
+        int columnCount = model.getColumnCount()-1;
+        while (columnCount >= 0){
+            TableColumn tableColumn = columnModel.getColumn(columnCount);
+            columnModel.removeColumn(tableColumn);
+            model.setColumnCount(columnCount);
+            columnCount = model.getColumnCount()-1;
+        }
         tableContext = getTableContext(redisKeyInfo);
         model.setDataVector(tableContext[1], tableContext[0]);
         updateTableStyle();
         updatePageInfo();
-        redisDataTable.clearSelection();
         reloadValueInfoPanel();
         saveLabel.setEnabled(false);
         cancelLabel.setEnabled(false);

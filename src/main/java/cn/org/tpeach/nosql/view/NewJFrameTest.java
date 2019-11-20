@@ -12,6 +12,10 @@ package cn.org.tpeach.nosql.view;
 public class NewJFrameTest extends javax.swing.JFrame {
 
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1978891600059495592L;
+	/**
      * Creates new form NewJFrameTest
      */
     public NewJFrameTest() {

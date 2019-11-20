@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 public class RedisLarkFactory {
 	final static Logger logger = LoggerFactory.getLogger(RedisLarkFactory.class);
 	private IRedisConfigService redisConfigService = BeanContext.getBean("redisConfigService",IRedisConfigService.class);
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public <K, V> RedisLarkContext  connectRedis(String id) {
 		RedisStructure redisStructure = null;
 		RedisConnectInfo conn = null;

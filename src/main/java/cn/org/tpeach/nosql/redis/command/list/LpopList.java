@@ -3,8 +3,6 @@ package cn.org.tpeach.nosql.redis.command.list;
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author tyz
@@ -15,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @since 1.0.0
  */
 public class LpopList extends JedisDbCommand<byte[]> {
-    private static final Logger logger = LoggerFactory.getLogger(LpopList.class);
+
     private byte[] key;
 
     /**

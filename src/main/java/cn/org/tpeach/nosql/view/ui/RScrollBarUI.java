@@ -169,7 +169,7 @@ public class RScrollBarUI extends javax.swing.plaf.metal.MetalScrollBarUI {
                             gp = new GradientPaint(0, 0, new Color(218, 218, 218), getWidth(), 0, new Color(218, 218, 218));
                         }
 
-                        arrowImg = PublicConstant.Image.arrow_down_scroll.getImage();
+                        arrowImg = PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_down_scroll).getImage();
                         break;
                     case BasicArrowButton.EAST:
 //                        gp = new GradientPaint(0, 0, new Color(242, 222, 198), 0, getHeight(), new Color(207, 190, 164));
@@ -178,7 +178,7 @@ public class RScrollBarUI extends javax.swing.plaf.metal.MetalScrollBarUI {
                         }else{
                             gp = new GradientPaint(0, 0, new Color(240,240,240), 0, getHeight(), new Color(240,240,240));
                         }
-                    arrowImg = PublicConstant.Image.arrow_right_scroll.getImage();
+                    arrowImg = PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_right_scroll).getImage();
                     break;
                     default:
                         break;
@@ -209,7 +209,7 @@ public class RScrollBarUI extends javax.swing.plaf.metal.MetalScrollBarUI {
                             gp = new GradientPaint(0, 0, new Color(218, 218, 218), getWidth(), 0, new Color(218, 218, 218));
                         }
 
-                        arrowImg = PublicConstant.Image.arrow_up_scroll.getImage();
+                        arrowImg = PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_up_scroll).getImage();
                         break;
                     case BasicArrowButton.WEST:
 
@@ -220,7 +220,7 @@ public class RScrollBarUI extends javax.swing.plaf.metal.MetalScrollBarUI {
                         }else{
                             gp = new GradientPaint(0, 0, new Color(240, 240, 240), 0, getHeight(), new Color(240, 240, 240));
                         }
-                        arrowImg = PublicConstant.Image.arrow_left_scroll.getImage();
+                        arrowImg = PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_left_scroll).getImage();
                         break;
                     default:
                         break;

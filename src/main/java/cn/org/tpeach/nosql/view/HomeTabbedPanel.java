@@ -44,7 +44,7 @@ public class HomeTabbedPanel extends javax.swing.JPanel {
 					topPanel.removeComponentListener(this);
 					return;
 				}
-				imageIcon.setImage(PublicConstant.Image.logo.getImage().getScaledInstance(topPanel.getHeight(), topPanel.getHeight(),
+				imageIcon.setImage(PublicConstant.Image.getImageIcon(PublicConstant.Image.logo).getImage().getScaledInstance(topPanel.getHeight(), topPanel.getHeight(),
 						Image.SCALE_DEFAULT));
 				topPanel.updateUI();
 				index++;

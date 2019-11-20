@@ -171,6 +171,7 @@ public enum ConfigParser {
 			mapper.put(ConfigConstant.APPEND_TEXT_NUMBER, ConfigMapper.builder().value("10000").comment("单次加载数量").build());
 			mapper.put(ConfigConstant.APPEND_TEXT_WAITTIME, ConfigMapper.builder().value("1000").comment("单次加载渲染时间（毫秒）").build());
 			mapper.put(ConfigConstant.MEMORY_FIXEDRATE_PERIOD, ConfigMapper.builder().value("5").comment("获取内存间隔").build());
+			mapper.put(ConfigConstant.LOADING_GLOBEL_TIMEOGT_ENABLED, ConfigMapper.builder().value("5").comment("loading全局超時設置為1時所有超時設置失效").build());
 			entries.put(ConfigConstant.Section.EXPERIMENT, mapper);
 
 			writhConfigFile();
@@ -208,6 +209,7 @@ public enum ConfigParser {
 				mapper.put(ConfigConstant.APPEND_TEXT_NUMBER, ConfigMapper.builder().value("10000").comment("单次加载数量").build());
 				mapper.put(ConfigConstant.APPEND_TEXT_WAITTIME, ConfigMapper.builder().value("1000").comment("单次加载渲染时间（毫秒）").build());
 				mapper.put(ConfigConstant.MEMORY_FIXEDRATE_PERIOD, ConfigMapper.builder().value("5").comment("获取内存间隔").build());
+				mapper.put(ConfigConstant.LOADING_GLOBEL_TIMEOGT_ENABLED, ConfigMapper.builder().value("5").comment("loading全局超時設置為1時所有超時設置失效").build());
 				entries.put(ConfigConstant.Section.EXPERIMENT, mapper);
 				newMapper.put(ConfigConstant.Section.EXPERIMENT, mapper);
 				IOUtil.fileAppendFW(file, parseWrite(newMapper));

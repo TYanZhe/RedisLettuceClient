@@ -1,10 +1,11 @@
 package cn.org.tpeach.nosql;
 
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import cn.org.tpeach.nosql.annotation.ComponentScan;
 import cn.org.tpeach.nosql.annotation.JFrameMain;
 import cn.org.tpeach.nosql.framework.LarkFrame;
-
-import javax.swing.*;
 
 /**
  * @author tyz

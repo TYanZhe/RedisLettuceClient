@@ -5,13 +5,12 @@
  */
 package cn.org.tpeach.nosql.redis.command.set;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import lombok.extern.slf4j.Slf4j;
-
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 /**
  * @author tyz
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
  * @date 2019-09-04 14:40
  * @since 1.0.0
  */
-@Slf4j
+
 public class SremSet extends JedisDbCommand<Long>{
     private byte[] key;
     private byte[][] members;

@@ -1,8 +1,6 @@
 package cn.org.tpeach.nosql.redis.bean;
 
 import cn.org.tpeach.nosql.enums.RedisType;
-import cn.org.tpeach.nosql.redis.command.JedisCommand;
-import cn.org.tpeach.nosql.tools.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

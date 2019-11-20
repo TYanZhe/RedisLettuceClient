@@ -1,37 +1,8 @@
 package cn.org.tpeach.nosql.view;
 
-import bsh.util.JConsole;
-import cn.org.tpeach.nosql.constant.ConfigConstant;
-import cn.org.tpeach.nosql.constant.PublicConstant;
-import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
-import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.ConfigParser;
-import cn.org.tpeach.nosql.tools.ReflectUtil;
-import cn.org.tpeach.nosql.tools.StringUtils;
-import cn.org.tpeach.nosql.view.component.EasyJSP;
-import cn.org.tpeach.nosql.view.component.RTabbedPane;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.CodecException;
-import io.netty.handler.codec.redis.*;
-import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.CharsetUtil;
-import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.GenericFutureListener;
-import lombok.Getter;
-import lombok.Setter;
-
-import javax.swing.*;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -43,8 +14,60 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+
+import bsh.util.JConsole;
+import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
+import cn.org.tpeach.nosql.tools.CollectionUtils;
+import cn.org.tpeach.nosql.tools.ReflectUtil;
+import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.view.component.EasyJSP;
+import cn.org.tpeach.nosql.view.component.RTabbedPane;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.CodecException;
+import io.netty.handler.codec.redis.ArrayRedisMessage;
+import io.netty.handler.codec.redis.ErrorRedisMessage;
+import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
+import io.netty.handler.codec.redis.IntegerRedisMessage;
+import io.netty.handler.codec.redis.RedisArrayAggregator;
+import io.netty.handler.codec.redis.RedisBulkStringAggregator;
+import io.netty.handler.codec.redis.RedisDecoder;
+import io.netty.handler.codec.redis.RedisEncoder;
+import io.netty.handler.codec.redis.RedisMessage;
+import io.netty.handler.codec.redis.SimpleStringRedisMessage;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.CharsetUtil;
+import io.netty.util.ReferenceCountUtil;
+import io.netty.util.concurrent.DefaultThreadFactory;
+import io.netty.util.concurrent.GenericFutureListener;
+import lombok.Getter;
+import lombok.Setter;
+
 class RConsole extends JConsole{
-    private JTextPane jTextPane;
+ 
+	private static final long serialVersionUID = -153718123686705388L;
+	private JTextPane jTextPane;
     @Override
     public void setBackground(Color bg) {
         super.setBackground(bg);
@@ -70,7 +93,9 @@ class RConsole extends JConsole{
 
 
 public class ConsolePanel extends JPanel {
-    RConsole console;
+ 
+	private static final long serialVersionUID = -8169836025497910563L;
+	RConsole console;
     @Getter
     @Setter
     private String prompt;
@@ -81,7 +106,7 @@ public class ConsolePanel extends JPanel {
     private RedisConnectInfo connectInfo;
     private  BufferedReader bufInput;
     static  SimpleAttributeSet attrs = new SimpleAttributeSet();
-    static EventLoopGroup group = new NioEventLoopGroup();
+    static EventLoopGroup group = new NioEventLoopGroup(4, new DefaultThreadFactory("client", true));
     static {
         StyleConstants.setForeground(attrs, Color.WHITE);
     }
@@ -215,7 +240,8 @@ public class ConsolePanel extends JPanel {
         }catch (InterruptedIOException e){
 
         } catch (Exception e){
-            e.printStackTrace();
+//            bye();
+                e.printStackTrace();
         }finally {
 
             try {
@@ -259,7 +285,6 @@ class RedisClientHandler extends ChannelDuplexHandler {
      */
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
-        String encoding = ConfigParser.getInstance().getString(ConfigConstant.Section.CHARACTER_ENCODING, ConfigConstant.CHARACTER, PublicConstant.CharacterEncoding.UTF_8);
         String s = ((String) msg);
         if(s.toUpperCase().contains("SELECT")){
             selectComand = s;
@@ -416,7 +441,6 @@ class RedisClientHandler extends ChannelDuplexHandler {
     }
 
     private void printArray(LinkedList<ArrayRedisMessage> linkedList, ArrayRedisMessage arrayRedisMessage,String prefix) {
-        RedisMessage msg;
         final List<RedisMessage> children = arrayRedisMessage.children();
         if(CollectionUtils.isNotEmpty(children)) {
             for (int i = 0; i < children.size(); i++) {

@@ -73,7 +73,8 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 		box.add(label);
 		leftPanel.add(box);
 
-		label = new JLabel(new ImageIcon(PublicConstant.Image.logo.getImage().getScaledInstance(220, 220, Image.SCALE_SMOOTH)));
+//		label = new JLabel(new ImageIcon(PublicConstant.Image.logo.getImage().getScaledInstance(220, 220, Image.SCALE_SMOOTH)));
+		label = new JLabel(PublicConstant.Image.getImageIcon( PublicConstant.Image.logo,220, 220)) ;
 		box = Box.createHorizontalBox();
 		box.add(label);
 		leftPanel.add(box);
@@ -107,14 +108,14 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 
 		Box donateImageBox = Box.createHorizontalBox();
 
-		JLabel donateImageLabel = new JLabel(PublicConstant.Image.donate);
+		JLabel donateImageLabel = new JLabel(PublicConstant.Image.getImageIcon(PublicConstant.Image.donate));
 		donateImageBox.add(donateImageLabel);
 		rightPanel.add(donateImageBox);
 
 		Box payImageBox = Box.createHorizontalBox();
 		payImageBox.setVisible(false);
-		JLabel wechatLabel = new JLabel(PublicConstant.Image.wechatpay);
-		JLabel alipayLabel = new JLabel(PublicConstant.Image.alipay);
+		JLabel wechatLabel = new JLabel(PublicConstant.Image.getImageIcon(PublicConstant.Image.wechatpay,150,150));
+		JLabel alipayLabel = new JLabel(PublicConstant.Image.getImageIcon(PublicConstant.Image.alipay,150,150));
 		alipayLabel.setText("wechat");
 		wechatLabel.setText("alipay");
 		wechatLabel.setVerticalTextPosition(SwingConstants.TOP);
@@ -164,7 +165,7 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 		LinkLabel label = new LinkLabel("Github","https://github.com/TYanZhe/RedisLark");
 		Font font = new Font("黑体", Font.PLAIN, 14);
 		label.setFont(font);
-		label.setIcon(PublicConstant.Image.github);
+		label.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.github));
 		btnbox.add(btnHorizontalStrut());
 		btnbox.add(label);
 		label = new LinkLabel("Changelog");
@@ -187,7 +188,7 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 			}
 		});
 		label.setFont(font);
-		label.setIcon(PublicConstant.Image.changeLog);
+		label.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.changeLog));
 		btnbox.add(btnHorizontalStrut());
 		btnbox.add(label);
 		btnbox.add(Box.createHorizontalGlue());

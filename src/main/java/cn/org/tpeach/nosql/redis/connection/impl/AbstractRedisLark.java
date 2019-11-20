@@ -251,7 +251,8 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.pubsubChannels(channel), u -> u.pubsubChannels(channel));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Map<K, Long> pubsubNumsub(K... channels) {
         return executeCommand(c -> c.pubsubNumsub(channels), u -> u.pubsubNumsub(channels));
     }
@@ -352,7 +353,8 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.bitpos(key, state, start, end), u -> u.bitpos(key, state, start, end));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long bitopAnd(K destination, K... keys) {
         return executeCommand(c -> c.bitopAnd(destination, keys), u -> u.bitopAnd(destination, keys));
     }
@@ -362,12 +364,14 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.bitopNot(destination, source), u -> u.bitopNot(destination, source));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long bitopOr(K destination, K... keys) {
         return executeCommand(c -> c.bitopOr(destination, keys), u -> u.bitopOr(destination, keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long bitopXor(K destination, K... keys) {
         return executeCommand(c -> c.bitopXor(destination, keys), u -> u.bitopXor(destination, keys));
     }
@@ -417,12 +421,14 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.incrbyfloat(key, amount), u -> u.incrbyfloat(key, amount));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public List<KeyValue<K, V>> mget(K... keys) {
         return executeCommand(c -> c.mget(keys), u -> u.mget(keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long mget(KeyValueStreamingChannel<K, V> channel, K... keys) {
         return executeCommand(c -> c.mget(channel, keys), u -> u.mget(channel, keys));
     }
@@ -477,12 +483,14 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
     }
     //------------------------------------------------------RedisListCommands-----------------------------------------------------
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public KeyValue<K, V> blpop(long timeout, K... keys) {
         return executeCommand(c -> c.blpop(timeout, keys), u -> u.blpop(timeout, keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public KeyValue<K, V> brpop(long timeout, K... keys) {
         return executeCommand(c -> c.brpop(timeout, keys), u -> u.brpop(timeout, keys));
     }
@@ -512,12 +520,14 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.lpop(key), u -> u.lpop(key));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long lpush(K key, V... values) {
         return executeCommand(c -> c.lpush(key, values), u -> u.lpush(key, values));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long lpushx(K key, V... values) {
         return executeCommand(c -> c.lpushx(key, values), u -> u.lpushx(key, values));
     }
@@ -557,18 +567,21 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.rpoplpush(source, destination), u -> u.rpoplpush(source, destination));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long rpush(K key, V... values) {
         return executeCommand(c -> c.rpush(key, values), u -> u.rpush(key, values));
     }
 
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long rpushx(K key, V... values) {
         return executeCommand(c -> c.rpushx(key, values), u -> u.rpushx(key, values));
     }
     //------------------------------------------------------RedisHashCommands-----------------------------------------------------
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long hdel(K key, K... fields) {
         return executeCommand(c -> c.hdel(key, fields), u -> u.hdel(key, fields));
     }
@@ -618,12 +631,14 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.hlen(key), u -> u.hlen(key));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public List<KeyValue<K, V>> hmget(K key, K... fields) {
         return executeCommand(c -> c.hmget(key, fields), u -> u.hmget(key, fields));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long hmget(KeyValueStreamingChannel<K, V> channel, K key, K... fields) {
         return executeCommand(c -> c.hmget(channel, key, fields), u -> u.hmget(channel, key, fields));
     }
@@ -699,7 +714,8 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
     }
     //------------------------------------------------------RedisSetCommands-----------------------------------------------------
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long sadd(K key, V... members) {
         return executeCommand(c -> c.sadd(key, members), u -> u.sadd(key, members));
     }
@@ -709,32 +725,38 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.scard(key), u -> u.scard(key));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Set<V> sdiff(K... keys) {
         return executeCommand(c -> c.sdiff(keys), u -> u.sdiff(keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long sdiff(ValueStreamingChannel<V> channel, K... keys) {
         return executeCommand(c -> c.sdiff(channel, keys), u -> u.sdiff(channel,keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long sdiffstore(K destination, K... keys) {
         return executeCommand(c -> c.sdiffstore(destination, keys), u -> u.sdiffstore(destination, keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Set<V> sinter(K... keys) {
         return executeCommand(c -> c.sinter(keys), u -> u.sinter(keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long sinter(ValueStreamingChannel<V> channel, K... keys) {
         return executeCommand(c -> c.sinter(channel, keys), u -> u.sinter(channel, keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long sinterstore(K destination, K... keys) {
         return executeCommand(c -> c.sinterstore(destination, keys), u -> u.sinterstore(destination, keys));
     }
@@ -784,22 +806,26 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.srandmember(channel, key, count), u -> u.srandmember(channel, key, count));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long srem(K key, V... members) {
         return executeCommand(c -> c.srem(key, members), u -> u.srem(key, members));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Set<V> sunion(K... keys) {
         return executeCommand(c -> c.sunion(keys), u -> u.sunion(keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long sunion(ValueStreamingChannel<V> channel, K... keys) {
         return executeCommand(c -> c.sunion(channel, keys), u -> u.sunion(channel, keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long sunionstore(K destination, K... keys) {
         return executeCommand(c -> c.sunionstore(destination, keys), u -> u.sunionstore(destination, keys));
     }
@@ -844,12 +870,14 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.sscan(channel, key, scanCursor), u -> u.sscan(channel, key, scanCursor));
     }
     //------------------------------------------------------RedisSortedSetCommands-----------------------------------------------------
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public KeyValue<K, ScoredValue<V>> bzpopmin(long timeout, K... keys) {
         return executeCommand(c -> c.bzpopmin(timeout, keys), u -> u.bzpopmin(timeout, keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public KeyValue<K, ScoredValue<V>> bzpopmax(long timeout, K... keys) {
         return executeCommand(c -> c.bzpopmax(timeout, keys), u -> u.bzpopmax(timeout, keys));
     }
@@ -864,7 +892,8 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zadd(key, scoresAndValues), u -> u.zadd(key, scoresAndValues));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long zadd(K key, ScoredValue<V>... scoredValues) {
         return executeCommand(c -> c.zadd(key, scoredValues), u -> u.zadd(key, scoredValues));
     }
@@ -879,7 +908,8 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zadd(key, zAddArgs, scoresAndValues), u -> u.zadd(key, zAddArgs, scoresAndValues));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long zadd(K key, ZAddArgs zAddArgs, ScoredValue<V>... scoredValues) {
         return executeCommand(c -> c.zadd(key, zAddArgs, scoredValues), u -> u.zadd(key, zAddArgs, scoredValues));
     }
@@ -899,12 +929,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zcard(key), u -> u.zcard(key));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+	 @Deprecated
     public Long zcount(K key, double min, double max) {
         return executeCommand(c -> c.zcount(key, min, max), u -> u.zcount(key, min, max));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+	 @Deprecated
     public Long zcount(K key, String min, String max) {
         return executeCommand(c -> c.zcount(key, min, max), u -> u.zcount(key, min, max));
     }
@@ -919,17 +953,21 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zincrby(key, amount, member), u -> u.zincrby(key, amount, member));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long zinterstore(K destination, K... keys) {
         return executeCommand(c -> c.zinterstore(destination, keys), u -> u.zinterstore(destination, keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long zinterstore(K destination, ZStoreArgs storeArgs, K... keys) {
         return executeCommand(c -> c.zinterstore(destination, storeArgs, keys), u -> u.zinterstore(destination, storeArgs, keys));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zlexcount(K key, String min, String max) {
         return executeCommand(c -> c.zlexcount(key, min, max), u -> u.zlexcount(key, min, max));
     }
@@ -979,7 +1017,9 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrangeWithScores(channel, key, start, stop), u -> u.zrangeWithScores(channel, key, start, stop));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+	 @Deprecated
     public List<V> zrangebylex(K key, String min, String max) {
         return executeCommand(c -> c.zrangebylex(key, min, max), u -> u.zrangebylex(key, min, max));
     }
@@ -989,7 +1029,9 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrangebylex(key, range), u -> u.zrangebylex(key, range));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public List<V> zrangebylex(K key, String min, String max, long offset, long count) {
         return executeCommand(c -> c.zrangebylex(key, min, max, offset, count), u -> u.zrangebylex(key, min, max, offset, count));
     }
@@ -999,12 +1041,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrangebylex(key, range, limit), u -> u.zrangebylex(key, range, limit));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+	 @Deprecated
     public List<V> zrangebyscore(K key, double min, double max) {
         return executeCommand(c -> c.zrangebyscore(key, min, max), u -> u.zrangebyscore(key, min, max));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+	 @Deprecated
     public List<V> zrangebyscore(K key, String min, String max) {
         return executeCommand(c -> c.zrangebyscore(key, min, max), u -> u.zrangebyscore(key, min, max));
     }
@@ -1014,12 +1060,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrangebyscore(key, range), u -> u.zrangebyscore(key, range));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public List<V> zrangebyscore(K key, double min, double max, long offset, long count) {
         return executeCommand(c -> c.zrangebyscore(key, min, max, offset, count), u -> u.zrangebyscore(key, min, max, offset, count));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public List<V> zrangebyscore(K key, String min, String max, long offset, long count) {
         return executeCommand(c -> c.zrangebyscore(key, min, max, offset, count), u -> u.zrangebyscore(key, min, max, offset, count));
     }
@@ -1029,12 +1079,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrangebyscore(key, range, limit), u -> u.zrangebyscore(key, range, limit));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zrangebyscore(ValueStreamingChannel<V> channel, K key, double min, double max) {
         return executeCommand(c -> c.zrangebyscore(channel, key, min, max), u -> u.zrangebyscore(channel, key, min, max));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zrangebyscore(ValueStreamingChannel<V> channel, K key, String min, String max) {
         return executeCommand(c -> c.zrangebyscore(channel, key, min, max), u -> u.zrangebyscore(channel, key, min, max));
     }
@@ -1044,12 +1098,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrangebyscore(channel, key, range), u -> u.zrangebyscore(channel, key, range));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zrangebyscore(ValueStreamingChannel<V> channel, K key, double min, double max, long offset, long count) {
         return executeCommand(c -> c.zrangebyscore(channel, key, min, max, offset, count), u -> u.zrangebyscore(channel, key, min, max, offset, count));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zrangebyscore(ValueStreamingChannel<V> channel, K key, String min, String max, long offset, long count) {
         return executeCommand(c -> c.zrangebyscore(channel, key, min, max, offset, count), u -> u.zrangebyscore(channel, key, min, max, offset, count));
     }
@@ -1059,12 +1117,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrangebyscore(channel, key, range, limit), u -> u.zrangebyscore(channel, key, range, limit));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public List<ScoredValue<V>> zrangebyscoreWithScores(K key, double min, double max) {
         return executeCommand(c -> c.zrangebyscoreWithScores(key, min, max), u -> u.zrangebyscoreWithScores(key, min, max));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public List<ScoredValue<V>> zrangebyscoreWithScores(K key, String min, String max) {
         return executeCommand(c -> c.zrangebyscoreWithScores(key, min, max), u -> u.zrangebyscoreWithScores(key, min, max));
     }
@@ -1074,12 +1136,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrangebyscoreWithScores(key,range), u -> u.zrangebyscoreWithScores(key,range));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public List<ScoredValue<V>> zrangebyscoreWithScores(K key, double min, double max, long offset, long count) {
         return executeCommand(c -> c.zrangebyscoreWithScores(key, min, max, offset, count), u -> u.zrangebyscoreWithScores(key, min, max, offset, count));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public List<ScoredValue<V>> zrangebyscoreWithScores(K key, String min, String max, long offset, long count) {
         return executeCommand(c -> c.zrangebyscoreWithScores(key, min, max, offset, count), u -> u.zrangebyscoreWithScores(key, min, max, offset, count));
     }
@@ -1089,12 +1155,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrangebyscoreWithScores(key, range, limit), u -> u.zrangebyscoreWithScores(key, range, limit));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, double min, double max) {
         return executeCommand(c -> c.zrangebyscoreWithScores(channel, key, min, max), u -> u.zrangebyscoreWithScores(channel, key, min, max));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, String min, String max) {
         return executeCommand(c -> c.zrangebyscoreWithScores(channel, key, min, max), u -> u.zrangebyscoreWithScores(channel, key, min, max));
     }
@@ -1104,12 +1174,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrangebyscoreWithScores(channel, key, range), u -> u.zrangebyscoreWithScores(channel, key, range));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, double min, double max, long offset, long count) {
         return executeCommand(c -> c.zrangebyscoreWithScores(channel, key, min, max, offset, count), u -> u.zrangebyscoreWithScores(channel, key, min, max, offset, count));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, String min, String max, long offset, long count) {
         return executeCommand(c -> c.zrangebyscoreWithScores(channel, key, min, max, offset, count), u -> u.zrangebyscoreWithScores(channel, key, min, max, offset, count));
     }
@@ -1124,12 +1198,15 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrank(key, member), u -> u.zrank(key, member));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long zrem(K key, V... members) {
         return executeCommand(c -> c.zrem(key, members), u -> u.zrem(key, members));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zremrangebylex(K key, String min, String max) {
         return executeCommand(c -> c.zremrangebylex(key, min, max), u -> u.zremrangebylex(key, min, max));
     }
@@ -1144,12 +1221,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zremrangebyrank(key, start, stop), u -> u.zremrangebyrank(key, start, stop));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zremrangebyscore(K key, double min, double max) {
         return executeCommand(c -> c.zremrangebyscore(key, min, max), u -> u.zremrangebyscore(key, min, max));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public Long zremrangebyscore(K key, String min, String max) {
         return executeCommand(c -> c.zremrangebyscore(key, min, max), u -> u.zremrangebyscore(key, min, max));
     }
@@ -1189,12 +1270,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrevrangebylex(key, range, limit), u -> u.zrevrangebylex(key, range, limit));
     }
 
-    @Override
+    @SuppressWarnings({ "deprecation" })
+	@Override
+    @Deprecated
     public List<V> zrevrangebyscore(K key, double max, double min) {
         return executeCommand(c -> c.zrevrangebyscore(key, max, min), u -> u.zrevrangebyscore(key, max, min));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public List<V> zrevrangebyscore(K key, String max, String min) {
         return executeCommand(c -> c.zrevrangebyscore(key, max, min), u -> u.zrevrangebyscore(key, max, min));
     }
@@ -1204,12 +1289,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrevrangebyscore(key, range), u -> u.zrevrangebyscore(key, range));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public List<V> zrevrangebyscore(K key, double max, double min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscore(key, max, min, offset, count), u -> u.zrevrangebyscore(key, max, min, offset, count));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+    @Deprecated
     public List<V> zrevrangebyscore(K key, String max, String min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscore(key, max, min, offset, count), u -> u.zrevrangebyscore(key, max, min, offset, count));
     }
@@ -1219,12 +1308,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrevrangebyscore(key, range, limit), u -> u.zrevrangebyscore(key, range, limit));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+    @Deprecated
+	@Override
     public Long zrevrangebyscore(ValueStreamingChannel<V> channel, K key, double max, double min) {
         return executeCommand(c -> c.zrevrangebyscore(channel, key, max, min), u -> u.zrevrangebyscore(channel, key, max, min));
     }
 
     @Override
+    @SuppressWarnings("deprecation")
+    @Deprecated
     public Long zrevrangebyscore(ValueStreamingChannel<V> channel, K key, String max, String min) {
         return executeCommand(c -> c.zrevrangebyscore(channel, key, max, min), u -> u.zrevrangebyscore(channel, key, max, min));
     }
@@ -1234,12 +1327,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrevrangebyscore(channel, key, range), u -> u.zrevrangebyscore(channel, key, range));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+    @Deprecated
+	@Override
     public Long zrevrangebyscore(ValueStreamingChannel<V> channel, K key, double max, double min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscore(channel, key, max, min, offset, count), u -> u.zrevrangebyscore(channel, key, max, min, offset, count));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+	@Deprecated
     public Long zrevrangebyscore(ValueStreamingChannel<V> channel, K key, String max, String min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscore(channel, key, max, min, offset, count), u -> u.zrevrangebyscore(channel, key, max, min, offset, count));
     }
@@ -1249,12 +1346,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrevrangebyscore(channel, key, range, limit), u -> u.zrevrangebyscore(channel, key, range, limit));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+	 @Deprecated
     public List<ScoredValue<V>> zrevrangebyscoreWithScores(K key, double max, double min) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(key, max, min), u -> u.zrevrangebyscoreWithScores(key, max, min));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
+	 @Deprecated
     public List<ScoredValue<V>> zrevrangebyscoreWithScores(K key, String max, String min) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(key, max, min), u -> u.zrevrangebyscoreWithScores(key, max, min));
     }
@@ -1264,13 +1365,15 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(key, range), u -> u.zrevrangebyscoreWithScores(key, range));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     @Deprecated
     public List<ScoredValue<V>> zrevrangebyscoreWithScores(K key, double max, double min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(key, max, min, offset, count), u -> u.zrevrangebyscoreWithScores(key, max, min, offset, count));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     @Deprecated
     public List<ScoredValue<V>> zrevrangebyscoreWithScores(K key, String max, String min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(key, max, max, offset, count), u -> u.zrevrangebyscoreWithScores(key, max, min, offset, count));
@@ -1281,13 +1384,15 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(key, range, limit), u -> u.zrevrangebyscoreWithScores(key, range, limit));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     @Deprecated
     public Long zrevrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, double max, double min) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(channel, key, max, min), u -> u.zrevrangebyscoreWithScores(channel, key, max, min));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     @Deprecated
     public Long zrevrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, String max, String min) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(channel, key, max, min), u -> u.zrevrangebyscoreWithScores(channel, key, max, min));
@@ -1299,14 +1404,16 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(channel, key, range), u -> u.zrevrangebyscoreWithScores(channel, key, range));
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     @Deprecated
     public Long zrevrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, double max, double min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(channel,key, max, min, offset, count), u -> u.zrevrangebyscoreWithScores(channel,key, max, min, offset, count));
     }
 
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     @Deprecated
     public Long zrevrangebyscoreWithScores(ScoredValueStreamingChannel<V> channel, K key, String max, String min, long offset, long count) {
         return executeCommand(c -> c.zrevrangebyscoreWithScores(channel,key, max, min, offset, count), u -> u.zrevrangebyscoreWithScores(channel,key, max, min, offset, count));
@@ -1367,22 +1474,26 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.zscore(key, member), u -> u.zscore(key, member));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long zunionstore(K destination, K... keys) {
         return executeCommand(c -> c.zunionstore(destination, keys), u -> u.zunionstore(destination, keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long zunionstore(K destination, ZStoreArgs storeArgs, K... keys) {
         return executeCommand(c -> c.zunionstore(destination, storeArgs, keys), u -> u.zunionstore(destination, storeArgs, keys));
     }
     //------------------------------------------------------RedisKeyCommands-----------------------------------------------------
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long del(K... keys) {
         return executeCommand(c -> c.del(keys), u -> u.del(keys));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long unlink(K... keys) {
         return executeCommand(c -> c.unlink(keys), u -> u.unlink(keys));
     }
@@ -1392,7 +1503,8 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.dump(key), u -> u.dump(key));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long exists(K... keys) {
         return executeCommand(c -> c.exists(keys), u -> u.exists(keys));
     }
@@ -1497,7 +1609,8 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
 
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Boolean renamenx(K key, K newKey) {
         return executeCommand(c -> c.renamenx(key, newKey), u -> {
 //			return u.renamenx(key, newKey);
@@ -1551,7 +1664,8 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         return executeCommand(c -> c.sortStore(key, sortArgs, destination), u -> u.sortStore(key, sortArgs, destination));
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Long touch(K... keys) {
         return executeCommand(c -> c.touch(keys), u -> u.touch(keys));
     }
@@ -1841,7 +1955,8 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         });
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public String watch(K... keys) {
         return executeCommand(c -> c.watch(keys),  u ->  {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -1859,7 +1974,7 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
 	@Override
 	public TransactionResult execMulti(Consumer<RedisCommands<K, V>> statement ) throws UnsupportedOperationException{
 		return executeCommand(c -> {
-			String multi = c.multi();
+			c.multi();
 			statement.accept(c);
 			TransactionResult exec = c.exec();
 			return exec;

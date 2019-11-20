@@ -142,7 +142,7 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 			text.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
 			this.setMaximumSize(new Dimension(tabWidth,24));
 //			this.setPreferredSize(new Dimension(tabWidth+5,24));
-			JLabel close = new JLabel(PublicConstant.Image.close);
+			JLabel close = new JLabel(PublicConstant.Image.getImageIcon(PublicConstant.Image.close));
 			close.addMouseListener(e);
 
 			hbox.add(Box.createHorizontalStrut(5));

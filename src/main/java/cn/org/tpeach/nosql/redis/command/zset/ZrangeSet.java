@@ -1,12 +1,10 @@
 package cn.org.tpeach.nosql.redis.command.zset;
 
+import java.util.List;
+
 import cn.org.tpeach.nosql.enums.RedisVersion;
 import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * @author tyz
@@ -17,7 +15,6 @@ import java.util.List;
  * @since 1.0.0
  */
 public class ZrangeSet extends JedisDbCommand<List<byte[]>> {
-    private static final Logger logger = LoggerFactory.getLogger(ZrangeSet.class);
     private byte[] key;
     private long start;
     private long stop;

@@ -1,7 +1,6 @@
 package cn.org.tpeach.nosql.redis.command;
 
 import cn.org.tpeach.nosql.redis.command.connection.SelectCommand;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author tyz
@@ -11,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2019-07-06 20:36
  * @since 1.0.0
  */
-@Slf4j
 public abstract class JedisDbCommand<T> extends JedisCommand<T> {
 	protected int db;
 	public JedisDbCommand(String id,int db) {

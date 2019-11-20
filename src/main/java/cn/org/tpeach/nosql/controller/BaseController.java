@@ -23,12 +23,13 @@ import java.util.function.Supplier;
 @Slf4j
 public abstract class BaseController {
     public static <T, R> ResultRes<R> dispatcher(T params, Function<T, R> function) {
-        return dispatcher(params,function,true);
+        return dispatcher(params,function,true,true);
     }
-    public static <T, R> ResultRes<R> dispatcher(T params, Function<T, R> function,boolean isNeedGlassPanl) {
-        ResultRes[] res = new ResultRes[1];
+    public static <T, R> ResultRes<R> dispatcher(T params, Function<T, R> function,boolean isNeedGlassPanl,boolean isLoad){
+        @SuppressWarnings("unchecked")
+		ResultRes<R>[] res = new ResultRes[1];
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        StatePanel.showLoading(()->{
+        StatePanel.showLoading(isLoad,()->{
             try {
                 //成功返回
                 res[0] = new ResultRes<R>(true, function.apply(params), null);
@@ -54,13 +55,14 @@ public abstract class BaseController {
         return res[0];
     }
     public static <T> ResultRes<T> dispatcher(Supplier<T> function ) {
-       return dispatcher(function,true);
+       return dispatcher(function,true,true);
     }
 
-    public static <T> ResultRes<T> dispatcher(Supplier<T> function,boolean isNeedGlassPanl) {
-        ResultRes[] res = new ResultRes[1];
+    public static <T> ResultRes<T> dispatcher(Supplier<T> function,boolean isNeedGlassPanl,boolean isLoad) {
+        @SuppressWarnings("unchecked")
+		ResultRes<T>[] res = new ResultRes[1];
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        StatePanel.showLoading(()->{
+        StatePanel.showLoading(isLoad,()->{
             try {
                 //成功返回
                 T t = function.get();

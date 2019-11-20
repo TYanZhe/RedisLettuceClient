@@ -1,26 +1,15 @@
 package cn.org.tpeach.nosql.view;
 
-import cn.org.tpeach.nosql.constant.ConfigConstant;
-import cn.org.tpeach.nosql.constant.PublicConstant;
-import cn.org.tpeach.nosql.constant.RedisInfoKeyConstant;
-import cn.org.tpeach.nosql.framework.LarkFrame;
-import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
-import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
-import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.*;
-import cn.org.tpeach.nosql.view.component.PrefixTextLabel;
-import cn.org.tpeach.nosql.view.component.RButton;
-import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Font;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.text.DecimalFormat;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Vector;
@@ -29,20 +18,53 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.stream.IntStream;
+
+import javax.swing.Box;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+
+import cn.org.tpeach.nosql.constant.ConfigConstant;
+import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.constant.RedisInfoKeyConstant;
+import cn.org.tpeach.nosql.framework.LarkFrame;
+import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
+import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
+import cn.org.tpeach.nosql.service.ServiceProxy;
+import cn.org.tpeach.nosql.tools.ConfigParser;
+import cn.org.tpeach.nosql.tools.MapUtils;
+import cn.org.tpeach.nosql.tools.MathUtils;
+import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.view.component.PrefixTextLabel;
+import cn.org.tpeach.nosql.view.component.RButton;
+import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
 @Slf4j
 public class StatePanel extends JPanel {
-    private  JLabel connectStateLabel;
+ 
+	private static final long serialVersionUID = -962162242158879466L;
+	private  JLabel connectStateLabel;
     private JLabel redisServerVersionLabel;
     private JLabel clientCountLabel,loadingLabel;
     private RedisTreeItem currentRedisItem;
     private JPanel loadingGlassPane;
+    private RButton loadingGlassbutton;
     @Getter
     private MonitorDialog monitorDialog;
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
     private static DecimalFormat df = new DecimalFormat("0.00");
+    private List<Integer> loadingQueue = new Vector<>(5);
+    //五分鐘
+    public static final int DEFAULTTIMEOUT = 300000;
     @Getter
     @Setter
     private static class LoadingData{
@@ -52,17 +74,17 @@ public class StatePanel extends JPanel {
         private Thread timeouThread;
         private Thread requestThread;
         private boolean isNeedGlassPanl;
-        public Double getTime(){
+        public Double getSecondTime(){
             if(startTime == null){
                 return 0D;
             }
             return Double.valueOf(MathUtils.divide(2,(System.currentTimeMillis() - startTime)+"","1000"));
         }
     }
-    private static ConcurrentLinkedDeque<String> hiddenDeque = new ConcurrentLinkedDeque();
-    private static ConcurrentLinkedDeque<LoadingData> loadingDataDeque = new ConcurrentLinkedDeque();
-    private static Vector<Future> loadingTextVector = new Vector(1);
-    private static ConcurrentLinkedDeque<String> showGlassQueue =  new ConcurrentLinkedDeque();
+    private static ConcurrentLinkedDeque<String> hiddenDeque = new ConcurrentLinkedDeque<>();
+    private static ConcurrentLinkedDeque<LoadingData> loadingDataDeque = new ConcurrentLinkedDeque<>();
+	private static Vector<Future<?>> loadingTextVector = new Vector<>(1);
+    private static ConcurrentLinkedDeque<String> showGlassQueue =  new ConcurrentLinkedDeque<>();
     public StatePanel(MonitorDialog monitorDialog) {
         this.monitorDialog = monitorDialog;
         this.connectStateLabel = getLable();
@@ -72,7 +94,7 @@ public class StatePanel extends JPanel {
         this.connectStateLabel.setForeground(new java.awt.Color(255, 0, 51));
         this.connectStateLabel.setText("未连接到服务");
         this.loadingLabel = new JLabel();
-        this.loadingLabel.setIcon(PublicConstant.Image.loading_o);
+        this.loadingLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.loading_o,16,16));
         loadingLabel.setVisible(false);
         loadingLabel.setText(LoadingData.defaultTime);
 
@@ -95,7 +117,7 @@ public class StatePanel extends JPanel {
         LarkFrame.executorService.scheduleAtFixedRate(()->{
             long used = bean.getHeapMemoryUsage().getUsed();
             userMemoryLabel.setText(StringUtils.getLengthHummanText(used));
-            if(used > 100 * 1024 * 1024){
+            if(used > 200 * 1024 * 1024){
                 System.gc();
             }
         },period,period,TimeUnit.SECONDS);
@@ -110,31 +132,78 @@ public class StatePanel extends JPanel {
         this.add(comp);
 
     }
+
+    /**
+     * 图片来源
+     * https://blog.csdn.net/weixin_42735261/article/details/99844390
+     * http://www.woshipm.com/pd/2141507.html
+     * https://mp.weixin.qq.com/s?__biz=MjM5MDMxOTE5NA==&mid=402703079&idx=2&sn=2fcc6746a866dcc003c68ead9b68e595&scene=2&srcid=0302A7p723KK8E5gSzLKb2ZL&from=timeline&isappinstalled=0#wechat_redirect
+     * @return
+     */
+    private ImageIcon getLoadingIcon(){
+        int index;
+        if(!loadingQueue.isEmpty()){
+            index = loadingQueue.remove(loadingQueue.size() - 1);
+        }else{
+            String loadingGifIndex = LarkFrame.APPLICATION_VALUE.getProperty("loading.gif.max.index");
+            index = (int) (Math.random() * Integer.valueOf(loadingGifIndex));
+            IntStream.range(0,5).forEach(i->loadingQueue.add(index));
+        }
+        ImageIcon imageIcon ;
+        String path = String.format(PublicConstant.Image.loading_g, index);
+        if(PublicConstant.Image.catchContainsKey(path)){
+            imageIcon = PublicConstant.Image.getImageIcon(path);
+        }else{
+            imageIcon = PublicConstant.Image.getImageIcon(path);
+            int width = imageIcon.getIconWidth()/2;
+            int height = imageIcon.getIconHeight()/2;
+            imageIcon = PublicConstant.Image.getImageIcon(path,width,height);
+            PublicConstant.Image.removeImageCatch(path,width,height);
+            PublicConstant.Image.replaceImageCatch(path,imageIcon);
+        }
+        return imageIcon;
+    }
+
     private JPanel getLoadingGlassPane(){
         JPanel loadingGlassPane = new JPanel();
-        RButton button = new RButton();
-        button.setText("Loading data, please wait...");
-        button.setIcon(PublicConstant.Image.loading_g);
-        button.setVerticalTextPosition(SwingConstants.BOTTOM);
-        button.setHorizontalTextPosition(SwingConstants.CENTER);
-        button.setFocusPainted(false);
-        button.setOpaque(false);
+        loadingGlassbutton = new RButton();
+//        button.setText("Loading data, please wait...");
+
+        loadingGlassbutton.setIcon( getLoadingIcon());
+        loadingGlassbutton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        loadingGlassbutton.setHorizontalTextPosition(SwingConstants.CENTER);
+        loadingGlassbutton.setFocusPainted(false);
+        loadingGlassbutton.setOpaque(false);
 //        button.setFont(new Font("新宋体", Font.ITALIC, 16));
-        button.setForeground(new Color(94,70,116));
+        loadingGlassbutton.setForeground(new Color(94,70,116));
         loadingGlassPane.setLayout(new BorderLayout());
 
-        loadingGlassPane.add(button);
+        loadingGlassPane.add(loadingGlassbutton);
 // Transparent
         loadingGlassPane.setOpaque(false);
         return loadingGlassPane;
     }
     public static synchronized void showLoading(Runnable doInBackground){
-        showLoading(doInBackground,true,false,-1);
+        showLoading(true,doInBackground);
+    }
+    public static synchronized void showLoading(boolean isLoad,Runnable doInBackground){
+        showLoading(isLoad,doInBackground,true,false );
     }
     public static synchronized void showLoading(Runnable doInBackground,boolean isNeedGlassPanl,boolean rightNow ){
-        showLoading(doInBackground,isNeedGlassPanl,rightNow,-1);
+        showLoading(true,doInBackground,isNeedGlassPanl,rightNow);
     }
-    public static synchronized void showLoading(Runnable doInBackground,boolean isNeedGlassPanl,boolean rightNow,long delayHiddenMs){
+    public static synchronized void showLoading(boolean isLoad,Runnable doInBackground,boolean isNeedGlassPanl,boolean rightNow ){
+        showLoading(isLoad,doInBackground,isNeedGlassPanl,rightNow,DEFAULTTIMEOUT,null);
+    }
+    public static synchronized void showLoading(boolean isLoad, Runnable doInBackground, boolean isNeedGlassPanl, boolean rightNow, int timeOut){
+        showLoading(isLoad,doInBackground,isNeedGlassPanl,rightNow,timeOut,null);
+    }
+
+    public static synchronized void showLoading(boolean isLoad, Runnable doInBackground, boolean isNeedGlassPanl, boolean rightNow, int timeOut, BiConsumer<String,Double> hiddenLister){
+        if(!isLoad){
+            doInBackground.run();
+            return;
+        }
         boolean release = PublicConstant.ProjectEnvironment.RELEASE.equals(LarkFrame.getProjectEnv());
         Optional<RedisMainWindow> frame = Optional.ofNullable((RedisMainWindow)LarkFrame.frame) ;
         if(frame.isPresent()){
@@ -146,29 +215,36 @@ public class StatePanel extends JPanel {
             loadingData.setLoadId(loadId);
             loadingData.setStartTime(System.currentTimeMillis());
             loadingData.setNeedGlassPanl(isNeedGlassPanl);
-            CountDownLatch countDownLatch = new CountDownLatch(1);
             hiddenDeque.add(loadId);
             loadingDataDeque.add(loadingData);
-            LarkFrame.executorService.execute(()->{
-                try{
-                    loadingData.setTimeouThread(Thread.currentThread());
-                    countDownLatch.countDown();
-                    TimeUnit.MINUTES.sleep(5);
-                    Optional.ofNullable(loadingData.getRequestThread()).ifPresent(t->t.interrupt());
-                }catch (Exception e){}finally {
-                    loadingData.setTimeouThread(null);
+            String globalTimeOutFlag = ConfigParser.getInstance().getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.LOADING_GLOBEL_TIMEOGT_ENABLED, "0");
+
+            if(timeOut > 0 && !"1".equals(globalTimeOutFlag)) {
+                CountDownLatch countDownLatch = new CountDownLatch(1);
+                LarkFrame.executorService.execute(() -> {
+                    try {
+                        loadingData.setTimeouThread(Thread.currentThread());
+                        countDownLatch.countDown();
+                        TimeUnit.MILLISECONDS.sleep(timeOut);
+                        Optional.ofNullable(loadingData.getRequestThread()).ifPresent(t -> t.interrupt());
+                    } catch (Exception e) {
+                    } finally {
+                        loadingData.setTimeouThread(null);
+                    }
+                });
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            });
-            try {
-                countDownLatch.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
+
             if(!release){
                 log.debug("显示loading:{}",loadId);
             }
+            //耗時統計
             if(loadingTextVector.isEmpty()){
-                Future future = LarkFrame.executorService.scheduleAtFixedRate(()->{
+                Future<?> future = LarkFrame.executorService.scheduleAtFixedRate(()->{
                     try {
                         if(!release){
                             log.debug("耗时统计线程:{},{}",Thread.currentThread(),statePanel.loadingLabel.isVisible());
@@ -177,35 +253,23 @@ public class StatePanel extends JPanel {
                         if (StringUtils.isNotBlank(text)) {
                             try {
                                 Double s = Double.valueOf(text.replace("s", ""));
-                                if (s > loadingData.getTime()) {
+                                if (s > loadingData.getSecondTime()) {
                                     return;
                                 }
                             } catch (Exception e) {
                                 return;
                             }
                         }
-                        Double time = 0.00;
-                        Iterator<LoadingData> iterator = loadingDataDeque.iterator();
-                        while (iterator.hasNext()) {
-                            LoadingData next = iterator.next();
-                            if (next.getTime() > time) {
-                                time = next.getTime();
-                            }
-                        }
+                        Double time = maxLoadingTime();
 
                         statePanel.loadingLabel.setText(df.format(time) + "s");
                     }catch (Exception e){
                         e.printStackTrace();
                     }
                 },300,300,TimeUnit.MILLISECONDS);
-                try {
-                    countDownLatch.await();
-                } catch (InterruptedException e) {
-
-                }
                 loadingTextVector.add(future);
             }
-
+            //開始請求
             if(statePanel != null){
                 AtomicBoolean isFinish = new AtomicBoolean(false);
                 SwingTools.swingWorkerExec(() -> {
@@ -214,6 +278,7 @@ public class StatePanel extends JPanel {
                         if(isNeedGlassPanl){
                             showGlassQueue.add(loadId);
                             statePanel.loadingGlassPane.setVisible(true);
+                            statePanel.loadingGlassbutton.setIcon( statePanel.getLoadingIcon());
                             statePanel.loadingGlassPane.setCursor(new Cursor(Cursor.WAIT_CURSOR));
                         }
                         statePanel.loadingLabel.setVisible(true);
@@ -239,12 +304,16 @@ public class StatePanel extends JPanel {
                     return "OK";
                 },()->{
                     isFinish.set(true);
+                    Double time =  maxLoadingTime();
                     hiddenDeque.remove(loadId);
                     loadingDataDeque.remove(loadingData);
                     Optional.ofNullable(loadingData.getTimeouThread()).ifPresent(t->t.interrupt());
                     showGlassQueue.remove(loadId);
+                    if(hiddenLister != null){
+                        hiddenLister.accept(loadId,loadingData.getSecondTime());
+                    }
                     if(hiddenDeque.isEmpty()){
-                        Iterator<Future> iterator = loadingTextVector.iterator();
+                        Iterator<Future<?>> iterator = loadingTextVector.iterator();
                         while (iterator.hasNext()){
                             iterator.next().cancel(true);
                             iterator.remove();
@@ -252,17 +321,10 @@ public class StatePanel extends JPanel {
                         statePanel.loadingLabel.setVisible(false);
                         statePanel.loadingLabel.setText(LoadingData.defaultTime);
                         if(!release){
-                            log.debug("隐藏loading:{}",loadId);
+                            log.info("隐藏loading:{},耗時：{}s",loadId,df.format(time));
                         }
                     }
                     if(showGlassQueue.isEmpty() && statePanel.loadingGlassPane.isVisible()){
-   /*                     if(delayHiddenMs > 0){
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(delayHiddenMs);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }*/
                         statePanel.loadingGlassPane.setVisible(false);
                         statePanel.loadingGlassPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                         if(!release){
@@ -275,6 +337,18 @@ public class StatePanel extends JPanel {
         }else{
             doInBackground.run();
         }
+    }
+
+    private static Double maxLoadingTime() {
+        Double time = 0.00;
+        Iterator<LoadingData> iterator = loadingDataDeque.iterator();
+        while (iterator.hasNext()) {
+            LoadingData next = iterator.next();
+            if (next.getSecondTime() > time) {
+                time = next.getSecondTime();
+            }
+        }
+        return time;
     }
 
     private JLabel getLable(){

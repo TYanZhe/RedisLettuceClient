@@ -5,9 +5,7 @@ import cn.org.tpeach.nosql.redis.command.AbstractScanCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import io.lettuce.core.MapScanCursor;
 import io.lettuce.core.ScanCursor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class HscanHash extends AbstractScanCommand<MapScanCursor<byte[], byte[]>> {
     /**
      * hscan key cursor match pattern COUNT count

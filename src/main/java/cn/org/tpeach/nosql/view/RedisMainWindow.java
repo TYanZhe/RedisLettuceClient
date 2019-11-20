@@ -5,6 +5,37 @@
  */
 package cn.org.tpeach.nosql.view;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.dnd.DnDConstants;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.function.Consumer;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JToolBar;
+import javax.swing.PopupFactory;
+import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
+
 import cn.org.tpeach.nosql.constant.ConfigConstant;
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
@@ -18,29 +49,26 @@ import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.*;
+import cn.org.tpeach.nosql.tools.CollectionUtils;
+import cn.org.tpeach.nosql.tools.ConfigParser;
+import cn.org.tpeach.nosql.tools.DateUtils;
+import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.tools.SwingTools;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.EasyJSP;
 import cn.org.tpeach.nosql.view.component.NonRectanglePopupFactory;
 import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
-import cn.org.tpeach.nosql.view.jtree.*;
+import cn.org.tpeach.nosql.view.jtree.RTreeNode;
+import cn.org.tpeach.nosql.view.jtree.RedisTreeModel;
+import cn.org.tpeach.nosql.view.jtree.RedisTreeRenderer;
+import cn.org.tpeach.nosql.view.jtree.TreeDragSource;
+import cn.org.tpeach.nosql.view.jtree.TreeDropTarget;
+import cn.org.tpeach.nosql.view.jtree.TreeNodeBuilder;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 import cn.org.tpeach.nosql.view.ui.RScrollBarUI;
 import sun.font.FontDesignMetrics;
-
-import javax.swing.*;
-import javax.swing.plaf.ColorUIResource;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-import java.awt.*;
-import java.awt.dnd.DnDConstants;
-import java.awt.event.*;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * https://docs.oracle.com/javase/7/docs/api/javax/swing/plaf/basic/package-summary.html
@@ -54,6 +82,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
     private final int INIT_HEIGHT = 720;
 
     private RedisTreeRenderer redisTreeRenderer = new RedisTreeRenderer();
+    private RToolBar rToolBar;
     //初始化宽度占总屏幕宽度百分比
     private float SIZE_PERCENT = 0.60F;
     //窗口宽度
@@ -68,7 +97,8 @@ public class RedisMainWindow extends javax.swing.JFrame {
     final int statePanelheight = 28;
 
 //    final double dataBgDividerLocation = 0.8;
-    private double treeDataDividerLocation = 0.2;
+    @SuppressWarnings("unused")
+	private double treeDataDividerLocation = 0.2;
 
     public final RTreeNode root = new RTreeNode(new RedisTreeItem(
             StringUtils.getUUID(),null,null,null,"Root","Root",null,"","Root"
@@ -89,13 +119,13 @@ public class RedisMainWindow extends javax.swing.JFrame {
          */
         PopupFactory.setSharedInstance(new NonRectanglePopupFactory());
         //https://www.cnblogs.com/weisuoc/p/uimanager-properties-list.html
-        UIManager.put("Tree.collapsedIcon", PublicConstant.Image.arrow_right_blue);
-        UIManager.put("Tree.expandedIcon", PublicConstant.Image.arrow_down_blue);
+        UIManager.put("Tree.collapsedIcon", PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_right_blue,12,12));
+        UIManager.put("Tree.expandedIcon", PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_down_blue,12,12));
         UIManager.put("MenuItem.acceleratorFont", new java.awt.Font("宋体", 0, 14));
         UIManager.put("MenuItem.acceleratorForeground", Color.black);
         UIManager.put("MenuItem.acceleratorDelimiter", "+");
 //        UIManager.put("MenuItem.arrowIcon",PublicConstant.Image.arrow_right_gray_20);
-        UIManager.put("Menu.arrowIcon", PublicConstant.Image.arrow_right_blue);
+        UIManager.put("Menu.arrowIcon", PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_right_blue,12,12));
         UIManager.put("MenuItem.selectionBackground", PublicConstant.RColor.menuItemSelectionBackground);
 //        UIManager.put("MenuItem.selectionForeground",new Color(156,206,248));
         UIManager.put("ScrollBarUI", RScrollBarUI.class.getName());
@@ -157,7 +187,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         treePanelWidth = width * treePanelWidth / INIT_WIDTH;
 //        System.out.println("计算后的宽度：" + width + ",高度：" + height + ">>>>>treePanelWidth:" + treePanelWidth);
         initUiManager();
-        this.setIconImage(PublicConstant.Image.logo.getImage());
+        this.setIconImage(PublicConstant.Image.getImageIcon(PublicConstant.Image.logo).getImage());
         this.setTitle(LarkFrame.APPLICATION_VALUE.getProperty("project.name") + " "+LarkFrame.APPLICATION_VALUE.getProperty("version"));
         initComponents();
        ((RTabbedPane) redisDataTabbedPane).addRemoveLister(new Consumer<Object>() {
@@ -181,7 +211,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         //去掉树线条
         redisTree.putClientProperty("JTree.lineStyle", "None");
 
-        ((RTabbedPane) redisDataTabbedPane).addTab(LarkFrame.getI18nUpText(I18nKey.RedisResource.HOME), PublicConstant.Image.home, new HomeTabbedPanel(), false);
+        ((RTabbedPane) redisDataTabbedPane).addTab(LarkFrame.getI18nUpText(I18nKey.RedisResource.HOME), PublicConstant.Image.getImageIcon(PublicConstant.Image.home), new HomeTabbedPanel(), false);
 
         // 居中
         this.setLocationRelativeTo(null);
@@ -233,7 +263,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         jPanel.setBackground(Color.WHITE);
         jPanel.add( LarkFrame.logArea.getJsp(),BorderLayout.CENTER);
         ((RTabbedPane) logTabbedPane).setMouseWheelMoved(false);
-        ((RTabbedPane) logTabbedPane).addTab(LarkFrame.getI18nText(I18nKey.RedisResource.LOG), PublicConstant.Image.logo_16, jPanel, false);
+        ((RTabbedPane) logTabbedPane).addTab(LarkFrame.getI18nText(I18nKey.RedisResource.LOG), PublicConstant.Image.getImageIcon(PublicConstant.Image.logo_16,16,16), jPanel, false);
         ((RTabbedPane) logTabbedPane).addRemoveLister(new Consumer<Object>() {
             @Override
             public void accept(Object o) {
@@ -296,8 +326,11 @@ public class RedisMainWindow extends javax.swing.JFrame {
     //------------------------------------------------------toolbar start-------------------------------------------
 
 
-    private JToolBar getToolBar() {
-        return new RToolBar(jToolBarHeight,redisTree, (StatePanel) statePanel,(RTabbedPane) redisDataTabbedPane,monitorDialog);
+    public JToolBar getToolBar() {
+        if(rToolBar == null){
+            rToolBar = new RToolBar(jToolBarHeight,redisTree, (StatePanel) statePanel,(RTabbedPane) redisDataTabbedPane,monitorDialog);
+        }
+        return rToolBar;
     }
     //------------------------------------------------------toolbar end-------------------------------------------
 
@@ -331,7 +364,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
         }else{
             newOne = RTreeNode.copyNode(orig);
         }
-        Enumeration enm = orig.children();
+        Enumeration<?> enm = orig.children();
         while(enm.hasMoreElements()){
             RTreeNode child = (RTreeNode) enm.nextElement();
             newOne.add(copyNode(child));
@@ -373,7 +406,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 
         JPopupMenu connectPopMenu = menuManager.getConnectPopMenu(redisTree);
         JPopupMenu serverTreePopMenu = menuManager.getServerTreePopMenu(redisTree,(RTabbedPane) redisDataTabbedPane, (StatePanel) statePanel,(RTabbedPane) logTabbedPane);
-        JPopupMenu dbTreePopMenu = menuManager.getDBTreePopMenu(redisTree,(RTabbedPane) redisDataTabbedPane,keyFilterField);
+        JPopupMenu dbTreePopMenu = menuManager.getDBTreePopMenu(redisTree,(RTabbedPane) redisDataTabbedPane,(RTabbedPane) logTabbedPane,keyFilterField);
         JPopupMenu keyTreePopMenu = menuManager.getKeyTreePopMenu(redisTree, (RTabbedPane) redisDataTabbedPane);
         JPopupMenu keyNameSpaceTreePopMenu = menuManager.getKeyNameSpaceTreePopMenu(redisTree);
         // JTree上没有任何项被选中

@@ -79,7 +79,7 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 //						icon = PublicConstant.Image.redis_server;
 //					} else {
 //						icon = PublicConstant.Image.redis_server;
-////					icon = PublicConstant.Image.redis_db;
+////					icon = PublicConstant.Image.getImageIcon(PublicConstant.Image.redis_db,16,16);
 //					}
 //
 //				} else if (paths.length == 3) {
@@ -97,16 +97,16 @@ public class RedisTreeRenderer extends DefaultTreeCellRenderer {
 				if(redisTreeItem.getType() != null) {
 					switch (redisTreeItem.getType()) {
 						case SERVER:
-							icon = PublicConstant.Image.redis_server;
+							icon = PublicConstant.Image.getImageIcon(PublicConstant.Image.redis_server);
 							break;
 						case DATABASE:
-							icon = PublicConstant.Image.database;
+							icon = PublicConstant.Image.getImageIcon(PublicConstant.Image.database);
 							break;
 						case KEY:
-							icon = PublicConstant.Image.key_icon;
+							icon = PublicConstant.Image.getImageIcon(PublicConstant.Image.key_icon);
 							break;
 						case KEY_NAMESPACE:
-							icon = PublicConstant.Image.folder_database;
+							icon = PublicConstant.Image.getImageIcon(PublicConstant.Image.folder_database);
 							break;
 						default:
 					}

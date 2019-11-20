@@ -33,9 +33,9 @@ public class RComboBoxUI extends BasicComboBoxUI {
 	@Override
 	protected JButton createArrowButton() {
 		arrow = new JButton();
-		arrow.setIcon(PublicConstant.Image.arrow_down_blue);
+		arrow.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_right_blue));
 		arrow.setRolloverEnabled(true);
-		arrow.setRolloverIcon(PublicConstant.Image.arrow_down_blue);
+		arrow.setRolloverIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.arrow_down_blue,12,12));
 		arrow.setBorder(null);
 		arrow.setBackground(Color.WHITE);
 		arrow.setOpaque(true);

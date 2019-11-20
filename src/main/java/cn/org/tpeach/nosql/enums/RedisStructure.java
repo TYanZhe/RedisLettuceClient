@@ -92,7 +92,6 @@ public enum RedisStructure {
 		}
 		String[] split = this.redisConnectInfoField.split(",");
 		Object[] obj = new Object[split.length];
-		Class<RedisConnectInfo> c = RedisConnectInfo.class;
 		ArraysUtil.each(split, (index,item)->{
 			if(StringUtils.isBlank(item)) {
 				obj[index] = null;

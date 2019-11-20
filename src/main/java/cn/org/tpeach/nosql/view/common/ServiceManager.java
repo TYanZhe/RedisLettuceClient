@@ -172,7 +172,7 @@ public class ServiceManager {
 		RedisLarkPool.connectMap.put(treeNode,connectId);
 		treeNode.incrConnecting(1);
 		SwingTools.addLoadingTreeNode(redisTree,treeNode,redisTreeItem,
-				()->BaseController.dispatcher(() -> redisConnectService.getDbAmountAndSize(redisTreeItem.getId()),false),
+				()->BaseController.dispatcher(() -> redisConnectService.getDbAmountAndSize(redisTreeItem.getId()),false,true),
 				res ->{
 					treeNode.incrConnecting(-1);
 					if(RedisLarkPool.connectMap.get(treeNode) != null && connectId.equals(RedisLarkPool.connectMap.get(treeNode))){
@@ -196,7 +196,7 @@ public class ServiceManager {
 		treeNode.incrConnecting(1);
 		((RTreeNode) treeNode.getParent()).incrConnecting(1);
 		SwingTools.addLoadingTreeNode(redisTree,treeNode,redisTreeItem,
-				()->BaseController.dispatcher(() ->  redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyFilterField.getText() ,false),false) ,
+				()->BaseController.dispatcher(() ->  redisConnectService.getKeys(redisTreeItem.getId(), redisTreeItem.getDb(),keyFilterField.getText() ,false),false,true) ,
 				resDatabase ->{
 					treeNode.incrConnecting(-1);
 					((RTreeNode) treeNode.getParent()).incrConnecting(-1);

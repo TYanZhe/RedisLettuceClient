@@ -1,5 +1,21 @@
 package cn.org.tpeach.nosql.redis.command;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import cn.org.tpeach.nosql.constant.RedisInfoKeyConstant;
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.enums.RedisVersion;
@@ -11,21 +27,19 @@ import cn.org.tpeach.nosql.tools.ArraysUtil;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.MapUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
-import io.lettuce.core.*;
+import io.lettuce.core.KeyScanCursor;
+import io.lettuce.core.KeyValue;
+import io.lettuce.core.MapScanCursor;
+import io.lettuce.core.ScanArgs;
+import io.lettuce.core.ScanCursor;
+import io.lettuce.core.ScanIterator;
+import io.lettuce.core.ScoredValue;
+import io.lettuce.core.ScoredValueScanCursor;
+import io.lettuce.core.TransactionResult;
+import io.lettuce.core.ValueScanCursor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.nio.charset.Charset;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -57,7 +71,8 @@ public class RedisLarkContext<K,V> {
         this.redisConnectInfo = redisConnectInfo;
     }
 
-    protected Class<V> getValueTpye(){
+    @SuppressWarnings("unchecked")
+	protected Class<V> getValueTpye(){
         Type type = getClass().getGenericSuperclass();
         if( type instanceof ParameterizedType){
             ParameterizedType pType = (ParameterizedType)type;
@@ -217,7 +232,7 @@ public class RedisLarkContext<K,V> {
      * @param keys
      * @return
      */
-    public List<KeyValue<K, V>> mget(final K... keys) {
+    public List<KeyValue<K, V>> mget(@SuppressWarnings("unchecked") final K... keys) {
         return redisLark.mget(keys);
     }
 
@@ -238,7 +253,7 @@ public class RedisLarkContext<K,V> {
         return redisLark.hget(key, field);
     }
 
-    public List<KeyValue<K, V>> hmget(final K key, final K... fields) {
+    public List<KeyValue<K, V>> hmget(final K key, @SuppressWarnings("unchecked") final K... fields) {
         return redisLark.hmget(key, fields);
     }
 
@@ -246,7 +261,7 @@ public class RedisLarkContext<K,V> {
         return redisLark.hgetall(key);
     }
 
-    public Long hdel(final K key, final K... fields) {
+    public Long hdel(final K key, @SuppressWarnings("unchecked") final K... fields) {
         return redisLark.hdel(key, fields);
     }
 
@@ -279,19 +294,23 @@ public class RedisLarkContext<K,V> {
 
     //-------------list-------------
 
-    public Long rpush(final K key, final V... strings) {
+    @SuppressWarnings("unchecked")
+	public Long rpush(final K key, final V... strings) {
         return redisLark.rpush(key, strings);
     }
 
-    public Long lpush(final K key, final V... strings) {
+    @SuppressWarnings("unchecked")
+	public Long lpush(final K key, final V... strings) {
         return redisLark.lpush(key, strings);
     }
 
-    public Long rpushx(final K key, final V... strings) {
+    @SuppressWarnings("unchecked")
+	public Long rpushx(final K key, final V... strings) {
         return redisLark.rpushx(key, strings);
     }
 
-    public Long lpushx(final K key, final V... strings) {
+    @SuppressWarnings("unchecked")
+	public Long lpushx(final K key, final V... strings) {
         return redisLark.lpushx(key, strings);
     }
 
@@ -320,7 +339,8 @@ public class RedisLarkContext<K,V> {
     	return redisLark.lset(key, index, value);
     }
 
-    public void ldelRow(final K key, final int index,boolean pringLog) {
+    @SuppressWarnings("unchecked")
+	public void ldelRow(final K key, final int index,boolean pringLog) {
         String s = "$"+StringUtils.getUUID()+"&"+StringUtils.getUUID()+"$";
         V uuid ;
         if(key instanceof byte[]){
@@ -388,7 +408,8 @@ public class RedisLarkContext<K,V> {
     //--------------list end------------
     //--------------set start------------
 
-    public Long sadd(K key, V... members) {
+    @SuppressWarnings("unchecked")
+	public Long sadd(K key, V... members) {
         return redisLark.sadd(key, members);
     }
 
@@ -400,7 +421,8 @@ public class RedisLarkContext<K,V> {
         return redisLark.smembers(key);
     }
 
-    public Long srem(K key, V... members) {
+    @SuppressWarnings("unchecked")
+	public Long srem(K key, V... members) {
         return redisLark.srem(key, members);
     }
     public ValueScanCursor<V> sscan(K key, ScanCursor scanCursor, ScanArgs scanArgs) {
@@ -421,7 +443,8 @@ public class RedisLarkContext<K,V> {
     public Long zadd(K key, double score, V member) {
         return redisLark.zadd(key, score, member);
     }
-    public Long zadd(K key, ScoredValue<V>... scoredValues) {
+    @SuppressWarnings("unchecked")
+	public Long zadd(K key, ScoredValue<V>... scoredValues) {
         return redisLark.zadd(key, scoredValues);
     }
     public List<V> zrange(final K key, final long start, final long stop) {
@@ -436,7 +459,8 @@ public class RedisLarkContext<K,V> {
         return redisLark.zcard(key);
     }
 
-    public Long zrem(K key, V... members) {
+    @SuppressWarnings("unchecked")
+	public Long zrem(K key, V... members) {
         return redisLark.zrem(key, members);
     }
 
@@ -483,7 +507,8 @@ public class RedisLarkContext<K,V> {
         return redisLark.expire(key, seconds);
     }
 
-    public Long exists(final K key) {
+    @SuppressWarnings("unchecked")
+	public Long exists(final K key) {
         return redisLark.exists(key);
     }
 
@@ -517,7 +542,8 @@ public class RedisLarkContext<K,V> {
         return redisLark.dbsize();
     }
 
-    public Long del(K... keys) {
+    @SuppressWarnings("unchecked")
+	public Long del(K... keys) {
         return redisLark.del(keys);
     }
 
@@ -554,7 +580,8 @@ public class RedisLarkContext<K,V> {
     public String clientList(){
         return redisLark.clientList();
     }
-    public List<SlowLogBo> slowlogGet(Integer count){
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public List<SlowLogBo> slowlogGet(Integer count){
         List<Object> list;
         if(count != null){
             list = redisLark.slowlogGet(count);

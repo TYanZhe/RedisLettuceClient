@@ -5,8 +5,6 @@ import cn.org.tpeach.nosql.redis.command.JedisDbCommand;
 import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.tools.ArraysUtil;
 import io.lettuce.core.ScoredValue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author tyz
@@ -17,7 +15,6 @@ import org.slf4j.LoggerFactory;
  * @since 1.0.1
  */
 public class ZmAddSet extends JedisDbCommand<Long> {
-    private static final Logger logger = LoggerFactory.getLogger(ZmAddSet.class);
     private byte[] key;
     private  ScoredValue<byte[]>[] scoredValues;
 
@@ -28,7 +25,8 @@ public class ZmAddSet extends JedisDbCommand<Long> {
      * @param key
      * @param scoredValues
      */
-    public ZmAddSet(String id, int db, byte[] key, ScoredValue<byte[]> ... scoredValues) {
+    @SuppressWarnings("unchecked")
+	public ZmAddSet(String id, int db, byte[] key, ScoredValue<byte[]> ... scoredValues) {
         super(id, db);
         this.key = key;
         this.scoredValues = scoredValues;

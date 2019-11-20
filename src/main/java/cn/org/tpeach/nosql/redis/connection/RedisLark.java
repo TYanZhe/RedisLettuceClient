@@ -24,7 +24,8 @@ public interface RedisLark<K, V> extends BaseRedisCommands<K, V>, RedisStringCom
         RedisHashCommands<K, V>, RedisSetCommands<K, V>, RedisSortedSetCommands<K, V>,
         RedisKeyCommands<K, V>, RedisServerCommands<K, V>, RedisTransactionalCommands<K, V> {
 
-    default Class<K> getKeyTpye(){
+    @SuppressWarnings("unchecked")
+	default Class<K> getKeyTpye(){
         Type type = getClass().getGenericSuperclass();
         if( type instanceof ParameterizedType){
             ParameterizedType pType = (ParameterizedType)type;

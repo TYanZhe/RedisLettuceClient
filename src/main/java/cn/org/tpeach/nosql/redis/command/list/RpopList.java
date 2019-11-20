@@ -15,7 +15,8 @@ import org.slf4j.LoggerFactory;
  * @since 1.0.0
  */
 public class RpopList extends JedisDbCommand<byte[]> {
-    private static final Logger logger = LoggerFactory.getLogger(RpopList.class);
+    @SuppressWarnings("unused")
+	private static final Logger logger = LoggerFactory.getLogger(RpopList.class);
     private byte[] key;
 
     /**

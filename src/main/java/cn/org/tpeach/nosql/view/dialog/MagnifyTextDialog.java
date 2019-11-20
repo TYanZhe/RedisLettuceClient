@@ -98,6 +98,8 @@ public class MagnifyTextDialog extends BaseDialog<String,String>{
         this.consumer = result;
         textArea.append(text);
         textArea.paintImmediately(textArea.getBounds());
+        BoundedRangeModel model = textArea.getJScrollPane().getVerticalScrollBar().getModel();
+        model.setValue(model.getMaximum());
         super.open();
     }
 

@@ -41,7 +41,8 @@ public abstract class JedisCommand<T> implements ICommand<T> {
     @Override
     public T execute() {
         RedisLarkFactory conn = BeanContext.getBean("redisLarkFactory", RedisLarkFactory.class);
-        final RedisLarkContext<byte[],byte[]> redisLarkContext = conn.connectRedis(id);
+        @SuppressWarnings("unchecked")
+		final RedisLarkContext<byte[],byte[]> redisLarkContext = conn.connectRedis(id);
         final RedisVersion redisVersion = redisLarkContext.getRedisVersion();
         final RedisVersion supportVersion = getSupportVersion();
         if(redisVersion == null) {

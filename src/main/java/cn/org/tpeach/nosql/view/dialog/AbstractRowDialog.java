@@ -78,37 +78,46 @@ public abstract class AbstractRowDialog<T,R> extends BaseDialog<T,R>{
 		rowPanel.setPreferredSize(new Dimension(rowPanel.getPreferredSize().width,rowHeight));
 		rowPanel.setMaximumSize(new Dimension(rowPanel.getPreferredSize().width,rowHeight));
 		rowPanel.setMinimumSize(new Dimension(rowPanel.getPreferredSize().width,rowHeight));
+		//使宽度100%
 		SwingTools.fillWidthPanel(parentComponent,rowPanel);
-		rowPanel.setLayout(new BorderLayout());
-		JPanel labelPanel = new JPanel();
-		labelPanel.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-		JPanel fieldPanel = new JPanel();
-		fieldPanel.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-		labelPanel.setLayout(new BoxLayout(labelPanel,BoxLayout.X_AXIS));
-		fieldPanel.setLayout(new BoxLayout(fieldPanel,BoxLayout.X_AXIS));
-		rowPanel.add(labelPanel,BorderLayout.WEST);
-		rowPanel.add(fieldPanel,BorderLayout.CENTER);
+		rowPanel.setLayout(new BoxLayout(rowPanel,BoxLayout.X_AXIS));
+		JPanel leftPanel = new JPanel();
+		JPanel rightPanel = new JPanel();
+		leftPanel.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+		rightPanel.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+		leftPanel.setLayout(new BoxLayout(leftPanel,BoxLayout.X_AXIS));
+		rightPanel.setLayout(new BoxLayout(rightPanel,BoxLayout.X_AXIS));
+		rowPanel.add(leftPanel);
+		rowPanel.add(rightPanel);
 		if(isLeftGlue){
-			labelPanel.add(Box.createHorizontalGlue());
+			leftPanel.add(Box.createHorizontalGlue());
 		}
-		labelPanel.add(leftConmponet);
-		labelPanel.add(Box.createHorizontalStrut(leftStrut));
-		fieldPanel.add(rightComponent);
-		fieldPanel.add(Box.createHorizontalStrut(rightStrut));
+		leftPanel.add(leftConmponet);
+		leftPanel.add(Box.createHorizontalStrut(leftStrut));
+		rightPanel.add(rightComponent);
+		rightPanel.add(Box.createHorizontalStrut(rightStrut));
 		rowPanel.setBackground(getPanelBgColor());
-		labelPanel.setBackground(getPanelBgColor());
-		fieldPanel.setBackground(getPanelBgColor());
-
+		leftPanel.setBackground(getPanelBgColor());
+		rightPanel.setBackground(getPanelBgColor());
 		rowPanel.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				int width = (int) (rowPanel.getWidth()*leftPercent);
-				Dimension preferredSize = labelPanel.getPreferredSize();
-				labelPanel.setPreferredSize(new Dimension(width,preferredSize.height));
-				labelPanel.setMinimumSize(new Dimension(width,preferredSize.height));
-				labelPanel.setMaximumSize(new Dimension(width,preferredSize.height));
-				leftConmponet.setMaximumSize(new Dimension(width,preferredSize.height));
-				labelPanel.updateUI();
+				//保存左边占的比例
+				Dimension preferredSize = leftPanel.getPreferredSize();
+				Dimension dimension = new Dimension(width, preferredSize.height);
+				leftPanel.setPreferredSize(dimension);
+				leftPanel.setMinimumSize(dimension);
+				leftPanel.setMaximumSize(dimension);
+				leftConmponet.setMaximumSize(dimension);
+				leftPanel.updateUI();
+				preferredSize = rightPanel.getPreferredSize();
+				dimension = new Dimension(rowPanel.getWidth() - width, preferredSize.height);
+				rightPanel.setPreferredSize(dimension);
+				rightPanel.setMinimumSize(dimension);
+				rightPanel.setMaximumSize(dimension);
+				rightComponent.setMaximumSize(dimension);
+				rightPanel.updateUI();
 			}
 		});
 

@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 public class RpushList extends JedisDbCommand<Long> {
-    private static final Logger logger = LoggerFactory.getLogger(RpushList.class);
+    @SuppressWarnings("unused")
+	private static final Logger logger = LoggerFactory.getLogger(RpushList.class);
     private byte[] key;
     private byte[][] values;
 

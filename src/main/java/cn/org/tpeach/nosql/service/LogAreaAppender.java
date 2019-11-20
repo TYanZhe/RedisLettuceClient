@@ -23,10 +23,14 @@ public class LogAreaAppender implements Observer {
             LarkLog larkLog = (LarkLog) o;
             LogMsg logMsg = larkLog.getLogMsg();
             Color  color = (Color) arg;
+            String msg = logMsg.getMsg();
+            if(msg != null && msg.length()>10*1024){
+                msg = msg.substring(0,10*1024)+"......(ignore:"+(msg.length()-10*1024)+")";
+            }
             if(logMsg.getReceiveTime() != null){
-                LarkFrame.logArea.println(logMsg.getReceiveTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))+" "+logMsg.getMsg(), color);
+                LarkFrame.logArea.println(logMsg.getReceiveTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))+" "+msg, color);
             }else{
-                LarkFrame.logArea.println(logMsg.getMsg(), color);
+                LarkFrame.logArea.println(msg, color);
             }
 
 //            if (logMsg != null) {
