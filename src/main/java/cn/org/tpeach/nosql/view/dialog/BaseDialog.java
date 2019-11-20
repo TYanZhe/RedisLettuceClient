@@ -90,7 +90,7 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	 *            是否模式窗体
 	 */
 	public BaseDialog(JFrame parent, boolean modal, Image icon, T t) {
-		super(parent, modal);
+		super(LarkFrame.frame, modal);
 		if (icon != null) {
 			this.icon = icon;
 		}
@@ -239,7 +239,7 @@ public abstract class BaseDialog<T,R> extends JDialog implements WindowListener 
 	public void after() {
 		this.setResizable(false);
 		// 居中
-		this.setLocationRelativeTo(null);
+		this.setLocationRelativeTo(LarkFrame.frame);
 		this.setIconImage(icon);
 	}
 
