@@ -1,8 +1,8 @@
-# RedisLark
+# RedisLettuceClient
 
 #### 项目介绍
 
-RedisLark是一款基于java swing的跨平台的Redis桌面管理工具，该软件支持单机、集群模式连接，RedisLark遵循GPL-3.0开源协议，禁止二次开发打包发布盈利，违反必究！。
+RedisLettuceClient是一款基于java swing的跨平台的Redis桌面管理工具，该软件支持单机、集群模式连接，RedisLettuceClient遵循GPL-3.0开源协议，禁止二次开发打包发布盈利，违反必究！。
 
 ![key信息](./uploads/2019-10-05-00829.jpg)
 
@@ -59,7 +59,7 @@ mvn clean install 	-Dmaven.test.skip=true -P release
 执行命令
 
 ```java
-java -jar redisLark-x.y.z.jar
+java -jar Redis-Lettuce-Client-x.y.z.jar
 ```
 
 x.y.z为版本号
