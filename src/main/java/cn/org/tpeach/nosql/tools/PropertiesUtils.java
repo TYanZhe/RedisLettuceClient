@@ -3,10 +3,6 @@ package cn.org.tpeach.nosql.tools;
 import java.io.*;
 import java.util.Properties;
 
-/**
- * 读取配置文件工具类
- * @author hushuang
- */
 public class PropertiesUtils {
 
     /**

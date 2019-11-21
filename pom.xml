@@ -4,7 +4,7 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cn.org.tpeach.nosql</groupId>
-	<artifactId>RedisLark</artifactId>
+	<artifactId>Redis-Lettuce-Client</artifactId>
 	<version>1.1.2</version>
 	<packaging>jar</packaging>
 
@@ -20,7 +20,7 @@
 		<gson.version>2.3</gson.version>
 		<dom4j.version>1.6.1</dom4j.version>
 		<!--填寫0或者loading_g*.gif 最大下標 當前loading_g20.gif 最大下標為20 避免jar文件過大-->
-		<loading.gif.max.index>20</loading.gif.max.index>
+		<loading.gif.max.index>0</loading.gif.max.index>
 	</properties>
 
 	<repositories>
@@ -117,7 +117,6 @@
 			<version>1.18.8</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/io.lettuce/lettuce-core -->
 		<dependency>
 			<groupId>io.lettuce</groupId>
 			<artifactId>lettuce-core</artifactId>
@@ -128,7 +127,6 @@
 			<artifactId>commons-pool2</artifactId>
 			<version>2.6.2</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.jfree/jfreechart -->
 		<dependency>
 			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
@@ -200,265 +198,18 @@
 							<tasks>
 								<!--这句很重要，ant会加载antcontrib.properties中定义的标签
 								ant的task列表总览：http://ant.apache.org/manual/tasksoverview.html
-								http://ant-contrib.sourceforge.net/tasks/tasks/
+								http://ant-contrib.sourceforge.net/tasks/tasks/more_conditions.html
 								-->
 								<taskdef resource="net/sf/antcontrib/antcontrib.properties"
 										 classpathref="maven.runtime.classpath" />
-								<switch value="${loading.gif.max.index}">
-									<case value="0">
-										<delete file="${project.build.directory}/classes/image/base/loading_g1.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g2.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g3.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g4.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g5.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g6.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g7.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g8.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g9.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g10.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g11.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="1">
-										<delete file="${project.build.directory}/classes/image/base/loading_g2.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g3.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g4.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g5.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g6.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g7.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g8.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g9.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g10.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g11.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="2">
-										<delete file="${project.build.directory}/classes/image/base/loading_g3.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g4.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g5.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g6.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g7.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g8.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g9.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g10.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g11.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="3">
-										<delete file="${project.build.directory}/classes/image/base/loading_g4.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g5.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g6.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g7.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g8.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g9.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g10.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g11.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="4">
-										<delete file="${project.build.directory}/classes/image/base/loading_g5.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g6.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g7.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g8.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g9.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g10.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g11.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="5">
-										<delete file="${project.build.directory}/classes/image/base/loading_g6.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g7.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g8.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g9.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g10.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g11.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="6">
-										<delete file="${project.build.directory}/classes/image/base/loading_g7.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g8.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g9.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g10.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g11.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="7">
-										<delete file="${project.build.directory}/classes/image/base/loading_g8.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g9.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g10.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g11.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="8">
-										<delete file="${project.build.directory}/classes/image/base/loading_g9.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g10.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g11.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="9">
-										<delete file="${project.build.directory}/classes/image/base/loading_g10.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g11.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="10">
-										<delete file="${project.build.directory}/classes/image/base/loading_g11.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="11">
-										<delete file="${project.build.directory}/classes/image/base/loading_g12.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="12">
-										<delete file="${project.build.directory}/classes/image/base/loading_g13.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="13">
-										<delete file="${project.build.directory}/classes/image/base/loading_g14.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="14">
-										<delete file="${project.build.directory}/classes/image/base/loading_g15.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="15">
-										<delete file="${project.build.directory}/classes/image/base/loading_g16.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="16">
-										<delete file="${project.build.directory}/classes/image/base/loading_g17.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="17">
-										<delete file="${project.build.directory}/classes/image/base/loading_g18.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="18">
-										<delete file="${project.build.directory}/classes/image/base/loading_g19.gif" />
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<case value="19">
-										<delete file="${project.build.directory}/classes/image/base/loading_g20.gif" />
-									</case>
-									<default>
+								<property name="63b59ac171ad4fc299c576cd497a35cb" value="${loading.gif.max.index}"/>
 
-									</default>
-								</switch>
+								<taskdef name="deleteLoadingImage"
+										 classname="cn.org.tpeach.nosql.tools.DeleteLoadingImage"
+										 classpath="${project.build.directory}/classes" />
+
+								<deleteLoadingImage  loadingMaxNum="20" loadingMaxIndex="${loading.gif.max.index}" buildDirectory="${project.build.directory}">
+								</deleteLoadingImage>
 							</tasks>
 						</configuration>
 					</execution>

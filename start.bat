@@ -3,12 +3,12 @@
 set curdir=%~dp0
 set Program=%curdir%start.bat
 ::设置快捷方式名称（必选）
-set LnkName=RedisLark
+set LnkName=RedisLettuceClient
 ::设置程序的工作路径，一般为程序主目录，此项若留空，脚本将自行分析路径
 set WorkDir=
 ::设置快捷方式显示的说明（可选）
 set Desc=RedisClient
-set SoftFile=RedisLark-1.1.2
+set SoftFile=Redis-Lettuce-Client-1.1.2
 
 if  exist %USERPROFILE%\Desktop\%LnkName%.lnk (
 	del /f /q %USERPROFILE%\Desktop\%LnkName%.lnk
@@ -44,7 +44,7 @@ if "%isExist%"=="1" (
 
 ) else (
 	cd /d %curdir%
-	start javaw -jar ./RedisLark-1.1.2.jar
+	start javaw -jar ./Redis-Lettuce-Client-1.1.2.jar
 	exit
 )
 

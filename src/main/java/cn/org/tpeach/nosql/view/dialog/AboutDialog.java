@@ -162,7 +162,7 @@ public class AboutDialog extends BaseDialog<Object, Object>{
 		btnPanel.setLayout(new BoxLayout(btnPanel,BoxLayout.X_AXIS));
 //		btnPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 0, new Color(173, 173, 173)));
 		btnPanel.setBackground(Color.white);
-		LinkLabel label = new LinkLabel("Github","https://github.com/TYanZhe/RedisLark");
+		LinkLabel label = new LinkLabel("Github","https://github.com/TYanZhe/RedisLettuceClient");
 		Font font = new Font("黑体", Font.PLAIN, 14);
 		label.setFont(font);
 		label.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.github));

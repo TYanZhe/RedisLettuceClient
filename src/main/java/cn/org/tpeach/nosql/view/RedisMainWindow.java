@@ -5,37 +5,6 @@
  */
 package cn.org.tpeach.nosql.view;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Point;
-import java.awt.dnd.DnDConstants;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.function.Consumer;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JToolBar;
-import javax.swing.PopupFactory;
-import javax.swing.UIManager;
-import javax.swing.plaf.ColorUIResource;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-
 import cn.org.tpeach.nosql.constant.ConfigConstant;
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
@@ -49,26 +18,29 @@ import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.ConfigParser;
-import cn.org.tpeach.nosql.tools.DateUtils;
-import cn.org.tpeach.nosql.tools.StringUtils;
-import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.EasyJSP;
 import cn.org.tpeach.nosql.view.component.NonRectanglePopupFactory;
 import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
-import cn.org.tpeach.nosql.view.jtree.RTreeNode;
-import cn.org.tpeach.nosql.view.jtree.RedisTreeModel;
-import cn.org.tpeach.nosql.view.jtree.RedisTreeRenderer;
-import cn.org.tpeach.nosql.view.jtree.TreeDragSource;
-import cn.org.tpeach.nosql.view.jtree.TreeDropTarget;
-import cn.org.tpeach.nosql.view.jtree.TreeNodeBuilder;
+import cn.org.tpeach.nosql.view.jtree.*;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 import cn.org.tpeach.nosql.view.ui.RScrollBarUI;
 import sun.font.FontDesignMetrics;
+
+import javax.swing.*;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.event.*;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * https://docs.oracle.com/javase/7/docs/api/javax/swing/plaf/basic/package-summary.html
@@ -188,7 +160,7 @@ public class RedisMainWindow extends javax.swing.JFrame {
 //        System.out.println("计算后的宽度：" + width + ",高度：" + height + ">>>>>treePanelWidth:" + treePanelWidth);
         initUiManager();
         this.setIconImage(PublicConstant.Image.getImageIcon(PublicConstant.Image.logo).getImage());
-        this.setTitle(LarkFrame.APPLICATION_VALUE.getProperty("project.name") + " "+LarkFrame.APPLICATION_VALUE.getProperty("version"));
+        this.setTitle(LarkFrame.APPLICATION_VALUE.getProperty("project.name").replaceAll("-"," ") + " "+LarkFrame.APPLICATION_VALUE.getProperty("version"));
         initComponents();
        ((RTabbedPane) redisDataTabbedPane).addRemoveLister(new Consumer<Object>() {
             @Override
