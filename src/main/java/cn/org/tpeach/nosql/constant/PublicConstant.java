@@ -1,6 +1,7 @@
 package cn.org.tpeach.nosql.constant;
 
 import cn.org.tpeach.nosql.bean.DicBean;
+import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.GsonUtil;
 import cn.org.tpeach.nosql.tools.IOUtil;
@@ -82,6 +83,8 @@ public class PublicConstant {
         public final static String home = "image/base/home.png";
         //https://www.easyicon.net/1211616-github_media_social_icon.html
         public final static String github = "image/base/github@2x.png";
+
+        public final static String gitee = "image/base/gitee@1.5x.png";
         public final static String changeLog = "image/base/changeLog@2x.png";
         public final static String logo = "image/base/logo.png";
         public final static String logo_16 = "image/base/logo.png" ;
@@ -271,7 +274,8 @@ public class PublicConstant {
         }
     }
 //    public final static String REDIS_CONFIG_PATH = System.getProperty("user.home") + File.separatorChar + ".RedisLark.conf";
-    public final static String REDIS_CONFIG_PATH = ServiceManager.getInstance().getPath() + File.separatorChar + ".RedisLettuceClient.conf";
+    public final static String REDIS_CONFIG_PATH = ServiceManager.getInstance().getPath() + File.separatorChar +"."+
+        LarkFrame.APPLICATION_VALUE.getProperty("project.name").replaceAll("-","")+".conf";
 
     public final static class RColor {
 

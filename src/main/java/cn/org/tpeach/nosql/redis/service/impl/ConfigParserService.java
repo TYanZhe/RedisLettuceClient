@@ -66,6 +66,7 @@ public class ConfigParserService implements IRedisConfigService {
 		redisConnectInfo.setTimeout(configParser.getLong(configMapper, ConfigConstant.Section.SERVER, "timeout",  RedisURI.DEFAULT_TIMEOUT));
 		redisConnectInfo.setDbAmount(configParser.getInt(configMapper, ConfigConstant.Section.SERVER, "dbAmount", RedisConnectInfo.DEFAULT_DBAMOUNT));
 		redisConnectInfo.setNameSpaceSepartor(configParser.getString(configMapper, ConfigConstant.Section.SERVER, "nameSpaceSepartor", PublicConstant.NAMESPACE_SPLIT));
+//		System.out.println(redisConnectInfo.getName()+">>>密码:"+redisConnectInfo.getAuth()+"|end");
 		return redisConnectInfo;
 	}
 	
@@ -86,6 +87,7 @@ public class ConfigParserService implements IRedisConfigService {
 		connConfig.put("timeout", ConfigMapper.builder().value(StringUtils.defaultEmptyToString(conn.getTimeout())).build());
 		connConfig.put("dbAmount", ConfigMapper.builder().value(StringUtils.defaultEmptyToString(conn.getDbAmount())).build());
 		connConfig.put("nameSpaceSepartor", ConfigMapper.builder().value(StringUtils.defaultEmptyToString(conn.getNameSpaceSepartor())).build());
+//		System.out.println("密码："+conn.getAuth());
 		return connConfig;
 	}
 
@@ -174,6 +176,7 @@ public class ConfigParserService implements IRedisConfigService {
 		}
 		Map<String, ConfigMapper> mapper = getConfigMapperById(conn.getId());
 		if(mapper != null){
+//			System.out.println("更新密码："+conn.getAuth());
 			setValue(mapper,"id",conn.getId());
 			setValue(mapper,"name",StringUtils.defaultEmptyToString(conn.getName()));
 			setValue(mapper,"auth",AESUtil.encrypt(StringUtils.defaultEmptyToString(conn.getAuth())));
