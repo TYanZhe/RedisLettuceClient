@@ -31,6 +31,7 @@ import java.util.Enumeration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -535,22 +536,27 @@ public class SwingTools {
 		});
 	}
 
+
 	/**
 	 * 使宽度与parentComponent保持一致
 	 * @param parentComponent
 	 * @param panel
 	 */
 	public static  void fillWidthPanel(JComponent parentComponent,JComponent panel ){
+		fillWidthPanel(parentComponent,(width,height)->{
+			Dimension preferredSize = panel.getPreferredSize();
+			panel.setPreferredSize(new Dimension(width,preferredSize.height));
+			panel.setMinimumSize(new Dimension(width,preferredSize.height));
+			panel.setMaximumSize(new Dimension(width,preferredSize.height));
+			panel.updateUI();
+		});
 
+	}
+	public static  void fillWidthPanel(JComponent parentComponent, BiConsumer<Integer, Integer> parentWidth){
 		parentComponent.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
-				int width = parentComponent.getWidth();
-				Dimension preferredSize = panel.getPreferredSize();
-				panel.setPreferredSize(new Dimension(width,preferredSize.height));
-				panel.setMinimumSize(new Dimension(width,preferredSize.height));
-				panel.setMaximumSize(new Dimension(width,preferredSize.height));
-				panel.updateUI();
+				parentWidth.accept(parentComponent.getWidth(),parentComponent.getHeight());
 			}
 		});
 	}

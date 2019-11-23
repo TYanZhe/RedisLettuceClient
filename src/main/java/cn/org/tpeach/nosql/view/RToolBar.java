@@ -1,11 +1,8 @@
 package cn.org.tpeach.nosql.view;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,13 +14,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiConsumer;
 
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JToolBar;
-import javax.swing.JTree;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
@@ -49,9 +40,11 @@ import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.AboutDialog;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import cn.org.tpeach.nosql.view.dialog.SettingDialog;
+import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 import io.lettuce.core.ScoredValue;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author tyz
@@ -67,7 +60,12 @@ public class RToolBar extends JToolBar {
     private List<RButton> rButtonList = new ArrayList<>();
     private MonitorDialog monitorDialog;
     @Getter
-    private RButton testBatch,selectButton;
+    private RButton toolButton,selectButton;
+    @Getter
+    @Setter
+    private boolean testMenuShow;
+
+    MenuManager menuManager = MenuManager.getInstance();
     IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
     public RToolBar(int jToolBarHeight, JTree redisTree, StatePanel statePanel, RTabbedPane tabbedPane, MonitorDialog monitorDialog) {
@@ -156,7 +154,7 @@ public class RToolBar extends JToolBar {
         RButton settingsButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.SETTING), PublicConstant.Image.getImageIcon(PublicConstant.Image.settings));
         RButton helpButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.HELP), PublicConstant.Image.getImageIcon(PublicConstant.Image.help));
         RButton aboutButton = getToolBarButton(LarkFrame.getI18nText(I18nKey.RedisResource.ABOUT), PublicConstant.Image.getImageIcon(PublicConstant.Image.about));
-        testBatch = getToolBarButton("测试工具", PublicConstant.Image.getImageIcon("image/base/gogogo.png"));
+        toolButton = getToolBarButton("工具", PublicConstant.Image.getImageIcon(PublicConstant.Image.tool));
         rButtonList.add(newButton);
         rButtonList.add(serverButton);
         rButtonList.add(monitorButton);
@@ -210,27 +208,61 @@ public class RToolBar extends JToolBar {
             }
             aboutDialog.open();
         });
-        testBatch.addActionListener(e->testBatchString());
-
+        SwingTools.addMouseClickedListener(toolButton,e->tooleMenu(e));
         this.add(newButton);
         this.add(serverButton);
 //        this.add(configButton);
         this.add(monitorButton);
         this.add(settingsButton);
 //        jToolBar.add(helpButton);
-        this.add(testBatch);
-        boolean textToolBarShow = false;
-        if(PublicConstant.ProjectEnvironment.TEST.equals(LarkFrame.getProjectEnv())){
-            textToolBarShow = true;
-        }else if(PublicConstant.ProjectEnvironment.RELEASE.equals(LarkFrame.getProjectEnv())|| PublicConstant.ProjectEnvironment.BETA.equals(LarkFrame.getProjectEnv())){
-            this.add(aboutButton);
+        this.add(toolButton);
+        boolean textToolBarShow = true;
+        switch (LarkFrame.getProjectEnv()){
+            case PublicConstant.ProjectEnvironment.BETA:
+                textToolBarShow = false;
+                break;
+            case PublicConstant.ProjectEnvironment.TEST:
+                this.setTestMenuShow(true);
+                break;
+            case PublicConstant.ProjectEnvironment.RELEASE:
+            case PublicConstant.ProjectEnvironment.DEV:
+                this.setTestMenuShow(true);
+                this.add(aboutButton);
+                break;
+            default:
+                break;
+
         }
-        testBatch.setVisible(textToolBarShow);
+        toolButton.setVisible(textToolBarShow);
         this.putClientProperty("JToolBar.isRollover", Boolean.TRUE);
     }
+    private void tooleMenu(MouseEvent event){
+        JPopupMenu popMenu = new JRedisPopupMenu();
+        if(testMenuShow){
+            JMenuItem batchItem = menuManager.getJMenuItem("  批量插入  ", PublicConstant.Image.getImageIcon(PublicConstant.Image.batchImport));
+            batchItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
+            batchItem.addActionListener(e -> testBatchString());
+            popMenu.add(batchItem);
+        }
 
+        JMenuItem toolItem = menuManager.getJMenuItem("  常用工具集合  ", PublicConstant.Image.getImageIcon(PublicConstant.Image.tool_web));
+        toolItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        toolItem.addActionListener(e -> addJBrowerPanelToTab(tabbedPane));
+        popMenu.add(toolItem);
+        popMenu.show((Component) event.getSource(),event.getX()+10,event.getY() );
+    }
+    public void addJBrowerPanelToTab(RTabbedPane tabbedPane) {
+        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+            Component componect = tabbedPane.getComponentAt(i);
+            if (componect instanceof JBrowerPanel) {
+                tabbedPane.setSelectedIndex(i);
+                return;
+            }
+        }
+        tabbedPane.addTab("工具 " ,  PublicConstant.Image.getImageIcon(PublicConstant.Image.tool_web), new JBrowerPanel() , "常用工具集合");
+    }
     @SuppressWarnings("unchecked")
-	public void testBatchString(){
+	private void testBatchString(){
         try {
             String string = SwingTools.showInputDialog(null, "请输入批量操作参数(类型[string,zset,set,hash,list],key(可不填,string忽略),db,数量,线程数,Host,Password)",
                     "批量插入测试数据", "string,,0,1000,1,127.0.0.1:6379,");

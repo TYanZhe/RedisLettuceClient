@@ -5,12 +5,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cn.org.tpeach.nosql</groupId>
 	<artifactId>Redis-Lettuce-Client</artifactId>
-	<version>1.1.2</version>
+	<version>1.1.3</version>
 	<packaging>jar</packaging>
 
 
 	<properties>
-		<release.data>2019-11-15</release.data>
+		<release.data>2019-11-23</release.data>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -157,6 +157,8 @@
 			<version>1.0b3</version>
 			<scope>compile</scope>
 		</dependency>
+
+
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}-${project.version}</finalName>

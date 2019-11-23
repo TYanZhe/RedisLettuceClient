@@ -6,6 +6,7 @@
 package cn.org.tpeach.nosql.view;
 
 import cn.org.tpeach.nosql.constant.PublicConstant;
+import cn.org.tpeach.nosql.tools.SwingTools;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +23,6 @@ public class HomeTabbedPanel extends javax.swing.JPanel {
 	private int index = 0;
 
 	public HomeTabbedPanel() {
-
 		this.setLayout(new GridLayout(2,1));
 		JPanel topPanel = new JPanel();
 		JPanel textPanel = new JPanel();

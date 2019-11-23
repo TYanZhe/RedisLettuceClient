@@ -63,7 +63,7 @@ public enum MenuManager {
     IRedisConfigService redisConfigService = ServiceProxy.getBeanProxy("redisConfigService", IRedisConfigService.class);
     IRedisConnectService redisConnectService = ServiceProxy.getBeanProxy("redisConnectService", IRedisConnectService.class);
 
-    private void putPopMenuItem(JPopupMenu menu,JComponent... items){
+    public void putPopMenuItem(JPopupMenu menu,JComponent... items){
         if(items != null && items.length > 0){
             for (JComponent item : items) {
                 if(item !=null){
@@ -77,7 +77,6 @@ public enum MenuManager {
         if (componet instanceof JTree) {
             JTree tree = (JTree) componet;
             JMenuItem addConnectItem = getJMenuItem(I18nKey.RedisResource.NEW, PublicConstant.Image.getImageIcon(PublicConstant.Image.redis_server));
-            popMenu.add(addConnectItem);
             addConnectItem.addActionListener(e -> newConnectConfig(tree));
             putPopMenuItem(popMenu,addConnectItem);
         }

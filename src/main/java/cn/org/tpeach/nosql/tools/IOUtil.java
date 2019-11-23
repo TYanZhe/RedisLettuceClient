@@ -1,5 +1,6 @@
 package cn.org.tpeach.nosql.tools;
 
+import cn.org.tpeach.nosql.constant.PublicConstant;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -21,7 +22,7 @@ public class IOUtil {
 
 	public static byte[] getByteArray(String path) throws IOException {
 		try (InputStream resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
-				ByteArrayOutputStream swapStream = new ByteArrayOutputStream();) {
+			 ByteArrayOutputStream swapStream = new ByteArrayOutputStream();) {
 			if (resourceAsStream == null) {
 				throw new FileNotFoundException(path + "不存在");
 			}
@@ -43,11 +44,35 @@ public class IOUtil {
 	public static ImageIcon getImageIcon(String path) {
 		try {
 			ImageIcon ii = new ImageIcon(IOUtil.class.getClassLoader().getResource(path));
-			return ii;	
+			return ii;
 		}catch(Exception e) {
 			return null;
 		}
-	
+
+	}
+	public static  String getString(String strPath) throws IOException {
+		return getString(strPath,null);
+	}
+	public static  String getString(String strPath,String charsetName) throws IOException {
+		try(InputStream inputStream = getInputStream(strPath); BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StringUtils.isBlank(charsetName)? PublicConstant.CharacterEncoding.UTF_8 :charsetName));  ){
+			String s;
+			StringBuilder sb = new StringBuilder();
+			while ((s = reader.readLine()) != null) {
+				sb.append(s);
+			}
+			return sb.toString();
+		}
+	}
+	public static  InputStream getInputStream(String strPath) throws IOException {
+		InputStream in = null;
+		File file = new File(strPath);
+		if (file.canRead()) {
+			in = new BufferedInputStream(new FileInputStream(file));
+//          从当前路径中获取文件流
+		} else {
+			in = IOUtil.class.getClassLoader().getResourceAsStream(strPath);
+		}
+		return in;
 	}
 	public static File getFile(String strPath) throws IOException {
 		File file = new File(strPath);
@@ -88,41 +113,41 @@ public class IOUtil {
 		byte[] bytes = new byte[BUFFER_SIZE];
 		int index;
 		try(FileOutputStream fileOutputStream = new FileOutputStream(file)){
-			 while ((index = inputStream.read(bytes)) != -1){
-				 fileOutputStream.write(bytes, 0, index);
-				 fileOutputStream.flush();
-			 }
+			while ((index = inputStream.read(bytes)) != -1){
+				fileOutputStream.write(bytes, 0, index);
+				fileOutputStream.flush();
+			}
 		}
 
 
 	}
-    /**
-     * 覆盖原内容
-     * @param content
-     * @param fileName
-     * @return
-     * @throws IOException 
-     * @throws Exception
-     */
-    public static void writeConfigFile(String content,File file) throws IOException{
+	/**
+	 * 覆盖原内容
+	 * @param content
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 * @throws Exception
+	 */
+	public static void writeConfigFile(String content,File file) throws IOException{
 		try(FileOutputStream fileOutputStream = new FileOutputStream(file);){
 			fileOutputStream.write(content.getBytes("UTF-8"));
 		}
-    }
+	}
 
-    /**
-     * 追加写入
-     * @param filePath
-     * @param content
-     * @throws IOException 
-     */
-    public static void fileAppendFW(File file, String content) throws IOException {
-        //构造函数中的第二个参数true表示以追加形式写文件
-        FileWriter fw = new FileWriter(file,true);
-        fw.write(content);
-        fw.close();
-    
-    }
+	/**
+	 * 追加写入
+	 * @param file
+	 * @param content
+	 * @throws IOException
+	 */
+	public static void fileAppendFW(File file, String content) throws IOException {
+		//构造函数中的第二个参数true表示以追加形式写文件
+		FileWriter fw = new FileWriter(file,true);
+		fw.write(content);
+		fw.close();
+
+	}
 
 
 	public static void close(Closeable... closeableList) {

@@ -143,7 +143,7 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         testSettingPanel.setLayout(new BoxLayout(testSettingPanel,BoxLayout.X_AXIS));
         experimentValuePanl.add(createRow(panel, globalLoadingTimeOutPanel, testSettingPanel, 20, 0.5,0,0,false));
         globalLoadingTimeOutPanel.add(createRow(globalLoadingTimeOutPanel, getLightGrayLabel("Loading超时失效:"), globalLoadingTimeOutCheckBox, 20, 0.7,10,10,true));
-        if(!PublicConstant.ProjectEnvironment.DEV.equals(LarkFrame.getProjectEnv())){
+        if(!PublicConstant.ProjectEnvironment.BETA.equals(LarkFrame.getProjectEnv())){
             testSettingPanel.add(createRow(testSettingPanel, getLightGrayLabel("测试数据工具:"), testToolBarShowCheckBox, 20, 0.8,10,10,true));
         }
 
@@ -201,7 +201,7 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
             globalLoadingTimeOutCheckBox.setSelected(false);
         }
         RToolBar toolBar = (RToolBar) ((RedisMainWindow) LarkFrame.frame).getToolBar();
-        testToolBarShowCheckBox.setSelected(toolBar.getTestBatch().isVisible());
+        testToolBarShowCheckBox.setSelected(toolBar.isTestMenuShow());
         appendTextWaittime.setText(append_text_waittime);
         appendTextNumber.setText(append_text_number);
 
@@ -239,7 +239,7 @@ public class SettingDialog extends AbstractRowDialog<Object, Object>{
         configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.MAGNIFYTEXT_DIALOG_SWITH, magnifyTextDialogCheckBox.isSelected()?"1":"0");
         configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.LOADING_GLOBEL_TIMEOGT_ENABLED, globalLoadingTimeOutCheckBox.isSelected()?"1":"0");
         RToolBar toolBar = (RToolBar) ((RedisMainWindow) LarkFrame.frame).getToolBar();
-        toolBar.getTestBatch().setVisible(testToolBarShowCheckBox.isSelected());
+        toolBar.setTestMenuShow(testToolBarShowCheckBox.isSelected());
         if (StringUtils.isNotBlank(appendTextWaittime.getText())) {
             configParser.safePutMapperData(ConfigConstant.Section.EXPERIMENT,ConfigConstant.APPEND_TEXT_WAITTIME,appendTextWaittime.getText());
         }

@@ -109,7 +109,7 @@ public class Layer {
      */
     public static synchronized void showLoading_v2(boolean isloading,boolean rightNow, int timeout,Runnable doInBackground) {
         if(isloading) {
-            if(PublicConstant.ProjectEnvironment.DEV.equals(LarkFrame.getProjectEnv())) {
+            if(PublicConstant.ProjectEnvironment.BETA.equals(LarkFrame.getProjectEnv())) {
                 SwingTools.swingWorkerExec(()->doInBackground.run());
                 return;
             }

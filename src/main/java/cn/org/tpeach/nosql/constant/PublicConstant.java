@@ -178,7 +178,9 @@ public class PublicConstant {
         public final static String loading_g = "image/base/loading_g%s.gif";
         public final static String  command = "image/base/command.png";
         public final static String loading_o = "image/base/o_loading.gif";
-
+        public final static String tool = "image/base/tool.png" ;
+        public final static String tool_web = "image/base/toolweb.png" ;
+        public final static String batchImport = "image/base/batchImport.png" ;
         public static synchronized ImageIcon getImageIcon(String path){
             return  getImageIcon(path,null,null);
         }

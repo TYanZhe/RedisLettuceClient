@@ -1,4 +1,5 @@
 @echo off
+https://www.cnblogs.com/cjdty/p/9057845.html
 ::设置程序或文件的完整路径（必选）
 set curdir=%~dp0
 set Program=%curdir%start.bat
@@ -8,7 +9,7 @@ set LnkName=RedisLettuceClient
 set WorkDir=
 ::设置快捷方式显示的说明（可选）
 set Desc=RedisClient
-set SoftFile=Redis-Lettuce-Client-1.1.2
+set SoftFile=Redis-Lettuce-Client-1.1.3
 
 if  exist %USERPROFILE%\Desktop\%LnkName%.lnk (
 	del /f /q %USERPROFILE%\Desktop\%LnkName%.lnk
@@ -44,7 +45,7 @@ if "%isExist%"=="1" (
 
 ) else (
 	cd /d %curdir%
-	start javaw -jar ./Redis-Lettuce-Client-1.1.2.jar
+	start javaw -jar ./Redis-Lettuce-Client-1.1.3.jar
 	exit
 )
 
