@@ -271,7 +271,7 @@ public class PublicConstant {
         }
     }
 //    public final static String REDIS_CONFIG_PATH = System.getProperty("user.home") + File.separatorChar + ".RedisLark.conf";
-    public final static String REDIS_CONFIG_PATH = ServiceManager.getInstance().getPath() + File.separatorChar + ".RedisLark.conf";
+    public final static String REDIS_CONFIG_PATH = ServiceManager.getInstance().getPath() + File.separatorChar + ".RedisLettuceClient.conf";
 
     public final static class RColor {
 

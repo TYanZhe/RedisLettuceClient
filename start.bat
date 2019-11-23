@@ -1,5 +1,4 @@
 @echo off
-https://www.cnblogs.com/cjdty/p/9057845.html
 ::设置程序或文件的完整路径（必选）
 set curdir=%~dp0
 set Program=%curdir%start.bat
