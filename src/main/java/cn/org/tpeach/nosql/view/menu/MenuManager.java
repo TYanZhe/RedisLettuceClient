@@ -503,16 +503,9 @@ public enum MenuManager {
     public void openTabbedPane(JTree tree, RTabbedPane topTabbedPane, RTreeNode node) {
         StatePanel.showLoading(()-> {
             //获取数量
-            int count = topTabbedPane.getTabCount();
             RedisTreeItem item = (RedisTreeItem) node.getUserObject();
-            if (count == 0) {
-                topTabbedPane.addTab(item.getName(), PublicConstant.Image.getImageIcon(PublicConstant.Image.key_icon), new RedisTabbedPanel(node, tree));
-            } else {
-                int selectedIndex = topTabbedPane.getSelectedIndex();
-                topTabbedPane.add(item.getName(), selectedIndex + 1, PublicConstant.Image.getImageIcon(PublicConstant.Image.key_icon), new RedisTabbedPanel(node, tree));
-//			topTabbedPane.remove(selectedIndex+1);
-            }
-
+            topTabbedPane.addTab(item.getName(), PublicConstant.Image.getImageIcon(PublicConstant.Image.key_icon), new RedisTabbedPanel(node, tree));
+            topTabbedPane.setSelectedIndex(topTabbedPane.getTabCount()-1);
         });
     }
 
@@ -542,29 +535,25 @@ public enum MenuManager {
 
     private void replaceTabbedPane(JTree tree, RTabbedPane topTabbedPane, RTreeNode node, RedisTreeItem item, int selectedIndex) {
         Component componect = topTabbedPane.getComponentAt(selectedIndex);
+        RedisTabbedPanel redisTabbedPanel = null;
         if (componect instanceof RedisTabbedPanel) {
-            RedisTabbedPanel redisTabbedPanel = (RedisTabbedPanel) componect;
+            redisTabbedPanel  = (RedisTabbedPanel) componect;
+        } else {
+            for (int i = topTabbedPane.getTabCount() - 1; i > 0; i--) {
+                componect = topTabbedPane.getComponentAt(i);
+                if (topTabbedPane.getComponentAt(i) instanceof RedisTabbedPanel) {
+                    redisTabbedPanel = (RedisTabbedPanel) componect;
+                    selectedIndex = i;
+                    break;
+                }
+            }
+        }
+        if(redisTabbedPanel != null){
             topTabbedPane.setSelectedIndex(selectedIndex);
             redisTabbedPanel.updateUI(node, tree, new PageBean(), true,true,true);
-        } else {
-            if (componect instanceof ServiceInfoPanel) {
-                int count = topTabbedPane.getTabCount();
-                for (int i = count - 1; i > 0; i--) {
-                    if (topTabbedPane.getComponentAt(i) instanceof RedisTabbedPanel) {
-                        topTabbedPane.add(StringUtils.showHexStringValue(item.getKey()), i, PublicConstant.Image.getImageIcon(PublicConstant.Image.key_icon), new RedisTabbedPanel(node, tree));
-                        topTabbedPane.remove(i + 1);
-                        topTabbedPane.setSelectedIndex(i);
-                        return;
-                    }
-                }
-                topTabbedPane.addTab(StringUtils.showHexStringValue(item.getKey()), PublicConstant.Image.getImageIcon(PublicConstant.Image.key_icon), new RedisTabbedPanel(node, tree));
-                topTabbedPane.setSelectedIndex(selectedIndex + 1);
-            } else {
-
-                topTabbedPane.add(StringUtils.showHexStringValue(item.getKey()), selectedIndex, PublicConstant.Image.getImageIcon(PublicConstant.Image.key_icon), new RedisTabbedPanel(node, tree));
-                topTabbedPane.remove(selectedIndex + 1);
-            }
-
+        }else{
+            topTabbedPane.addTab(StringUtils.showHexStringValue(item.getKey()), PublicConstant.Image.getImageIcon(PublicConstant.Image.key_icon), new RedisTabbedPanel(node, tree));
+            topTabbedPane.setSelectedIndex(selectedIndex + 1);
         }
     }
 

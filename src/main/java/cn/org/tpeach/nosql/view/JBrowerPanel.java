@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
 
@@ -504,35 +505,38 @@ class BrowerTab extends Tab{
 }
 
 public class JBrowerPanel extends JFXPanel {
-
+    private static final class SingleHolder{
+        private static JBrowerPanel instance = new JBrowerPanel();
+    }
+    public static JBrowerPanel getInstance() {
+        return JBrowerPanel.SingleHolder.instance;
+    }
     private static final String url = "https://redis.readthedocs.io/en/2.4/";
     @Getter
     List<HBox> bookmarkBoxList = new ArrayList<>();
+    List<Thread> threadList = new Vector<>();
     @Getter
     TabPane tabPane  ;
     public JBrowerPanel( ) {
-        this(url);
-    }
-    public JBrowerPanel(String href) {
-        init(href);
+        init();
     }
 
-    private JBrowerPanel init(final String url) {
-
+    private JBrowerPanel init() {
+        threadList.forEach(t->t.interrupt());
         CountDownLatch countDownLatch = new CountDownLatch(1);
+        Group root = new Group();
+        Scene scene = new Scene(root);
+        JBrowerPanel.this.setScene(scene);
+        root.setAutoSizeChildren(true);
+        tabPane = new TabPane();
+        AnchorPane.setLeftAnchor(tabPane, 0D);
+        AnchorPane.setRightAnchor(tabPane, 0D);
+        AnchorPane.setBottomAnchor(tabPane, 0D);
+        AnchorPane.setTopAnchor(tabPane, 0D);
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.SELECTED_TAB);
         Platform.runLater(()-> {
             try {
-                Group root = new Group();
-               Scene scene = new Scene(root);
-                JBrowerPanel.this.setScene(scene);
-                root.setAutoSizeChildren(true);
-                tabPane = new TabPane();
-
-                AnchorPane.setLeftAnchor(tabPane, 0D);
-                AnchorPane.setRightAnchor(tabPane, 0D);
-                AnchorPane.setBottomAnchor(tabPane, 0D);
-                AnchorPane.setTopAnchor(tabPane, 0D);
-                tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.SELECTED_TAB);
+                threadList.add(Thread.currentThread());
                 tabPane.getTabs().add(BrowerTab.build(JBrowerPanel.this,null));
                 root.getChildren().addAll(tabPane);
             }finally {

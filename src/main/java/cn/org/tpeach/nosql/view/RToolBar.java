@@ -219,7 +219,7 @@ public class RToolBar extends JToolBar {
         boolean textToolBarShow = true;
         switch (LarkFrame.getProjectEnv()){
             case PublicConstant.ProjectEnvironment.BETA:
-                textToolBarShow = false;
+//                textToolBarShow = false;
                 break;
             case PublicConstant.ProjectEnvironment.TEST:
                 this.setTestMenuShow(true);
@@ -259,7 +259,8 @@ public class RToolBar extends JToolBar {
                 return;
             }
         }
-        tabbedPane.addTab("工具 " ,  PublicConstant.Image.getImageIcon(PublicConstant.Image.tool_web), new JBrowerPanel() , "常用工具集合");
+
+        tabbedPane.addTab("工具 " ,  PublicConstant.Image.getImageIcon(PublicConstant.Image.tool_web),  JBrowerPanel.getInstance() , false);
     }
     @SuppressWarnings("unchecked")
 	private void testBatchString(){
