@@ -35,6 +35,13 @@ public class RedisLarkPool {
 
 	}
 
+	public static void closePubSub(String id){
+		RedisLarkContext redisLarkContext = pool.get(id);
+		if(redisLarkContext != null){
+			LarkFrame.executorService.execute(()->{try{redisLarkContext.closePubSub();}catch (Exception e){}});
+		}
+	}
+
 	public static boolean addRedisLarkContext(String id, RedisLarkContext redisLark) {
 		if (redisLark == null || StringUtils.isBlank(id)) {
 			throw new RuntimeException("redisLark或者id不能为空");

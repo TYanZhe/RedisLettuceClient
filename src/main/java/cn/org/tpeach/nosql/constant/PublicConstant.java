@@ -3,19 +3,17 @@ package cn.org.tpeach.nosql.constant;
 import cn.org.tpeach.nosql.bean.DicBean;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.GsonUtil;
 import cn.org.tpeach.nosql.tools.IOUtil;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -129,6 +127,7 @@ public class PublicConstant {
         public final static String cmd_console = "image/menu/cmd_console.png";
         public final static String object_add = "image/menu/add_key.png";
         public final static String active_data = "image/menu/active_data.png";
+        public final static String subscribe = "image/menu/subscribe.png";
 
 
         //详情页面

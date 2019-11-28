@@ -3,6 +3,7 @@ package cn.org.tpeach.nosql.redis.connection.impl;
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.exception.ServiceException;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
+import cn.org.tpeach.nosql.redis.command.AbstractLarkRedisPubSubListener;
 import cn.org.tpeach.nosql.redis.connection.RedisLark;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import io.lettuce.core.*;
@@ -11,16 +12,23 @@ import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
+import io.lettuce.core.cluster.models.partitions.RedisClusterNode;
+import io.lettuce.core.cluster.pubsub.RedisClusterPubSubListener;
+import io.lettuce.core.cluster.pubsub.StatefulRedisClusterPubSubConnection;
+import io.lettuce.core.cluster.pubsub.api.sync.RedisClusterPubSubCommands;
 import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.output.*;
 import io.lettuce.core.protocol.CommandArgs;
 import io.lettuce.core.protocol.CommandType;
 import io.lettuce.core.protocol.ProtocolKeyword;
+import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
+import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -39,9 +47,11 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
     String redisUrlFormat = "redis://%s%s:%s";
     protected RedisClient client;
     protected RedisClusterClient cluster;
-    protected StatefulRedisConnection<K,V> clentConnection;
+    protected StatefulRedisConnection<K,V> clientConnection;
+    protected StatefulRedisPubSubConnection<K,V> clientPubSubConnection;
     protected StatefulRedisClusterConnection<K,V> clusterConnection;
-
+    protected StatefulRedisClusterPubSubConnection<K,V> clustePubSubConnection;
+    private Set<String> listerSet = new  ConcurrentSkipListSet();
     protected RedisCodec<K, V> redisCodec;
 
     public AbstractRedisLark(RedisConnectInfo connectInfo, RedisCodec<K, V> redisCodec) {
@@ -62,7 +72,7 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
                 redisURI.setTimeout(Duration.ofSeconds(connectInfo.getTimeout()));
             }
             this.client = RedisClient.create(redisURI);
-            this.clentConnection = client.connect(redisCodec);
+            this.clientConnection = client.connect(redisCodec);
         }else if(redisStructure == RedisStructure.CLUSTER) {
             auth = connectInfo.getAuth();
             if (StringUtils.isBlank(auth)) {
@@ -107,8 +117,10 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         final RedisURI build = RedisURI.Builder.redis(host, port).withPassword(auth).withDatabase(0).build();
         this.client = RedisClient.create(build);
 //        this.client = RedisClient.create(String.format(redisUrlFormat, auth, host, port));
+        this.clientConnection = client.connect(redisCodec);
 
-        this.clentConnection = client.connect(redisCodec);
+
+
     }
 
 
@@ -146,8 +158,8 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
     protected <R> R executeCommand(Function<RedisCommands<K,V>, R> clientFun,
                                  Function<RedisAdvancedClusterCommands<K,V>, R> clusterFun) {
         R apply = null;
-        if (clentConnection != null) {
-            RedisCommands<K,V> commands = clentConnection.sync();
+        if (clientConnection != null) {
+            RedisCommands<K,V> commands = clientConnection.sync();
             apply = clientFun.apply(commands);
         } else if (clusterConnection != null) {
             RedisAdvancedClusterCommands<K,V> commands = clusterConnection.sync();
@@ -158,6 +170,9 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
 
         return apply;
     }
+
+
+
     /**
      *
      * @param clientConsumer
@@ -1982,4 +1997,135 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
 			throw new UnsupportedOperationException("Not supported yet.");
 		});
 	}
+	private void initPubSubConnect(){
+        if (clientConnection != null) {
+            if(clientPubSubConnection == null) {
+                clientPubSubConnection = client.connectPubSub(redisCodec);
+            }
+        } else if (clusterConnection != null) {
+            if(clustePubSubConnection == null) {
+                clustePubSubConnection = cluster.connectPubSub(redisCodec);
+            }
+        } else {
+            throw new ServiceException("RedisLarkLettuce实例化失败");
+        }
+    }
+
+
+
+    //发布订阅使用异步
+    @Override
+    public void addListener(AbstractLarkRedisPubSubListener<K, V> listener) {
+        if(listener == null || listerSet.contains(listener.getId())){
+            return;
+        }
+
+        initPubSubConnect();
+        if(clientPubSubConnection != null) {
+            clientPubSubConnection.addListener(listener);
+        }else if(clustePubSubConnection != null) {
+            RedisClusterPubSubListener redisClusterPubSubListener =  new RedisClusterPubSubListener<K, V>() {
+                @Override
+                public void message(RedisClusterNode node, K channel, V message) {
+                    listener.message(node,channel,message);
+                }
+
+                @Override
+                public void message(RedisClusterNode node, K pattern, K channel, V message) {
+                    listener.message(node,pattern,channel,message);
+                }
+
+                @Override
+                public void subscribed(RedisClusterNode node, K channel, long count) {
+                    listener.subscribed(node,channel,count);
+                }
+
+                @Override
+                public void psubscribed(RedisClusterNode node, K pattern, long count) {
+                    listener.psubscribed(node,pattern,count);
+                }
+
+                @Override
+                public void unsubscribed(RedisClusterNode node, K channel, long count) {
+                    listener.unsubscribed(node,channel,count);
+                }
+
+                @Override
+                public void punsubscribed(RedisClusterNode node, K pattern, long count) {
+                    listener.punsubscribed(node,pattern,count);
+                }
+            };
+            listener.setRedisClusterPubSubListener(redisClusterPubSubListener);
+            clustePubSubConnection.addListener(redisClusterPubSubListener);
+        }else {
+            throw new ServiceException("发布订阅连接失败");
+        }
+        listerSet.add(listener.getId());
+    }
+
+    @Override
+    public void removeListener(AbstractLarkRedisPubSubListener<K, V> listener) {
+        if(listener == null ){
+            return;
+        }
+        initPubSubConnect();
+        if(clientPubSubConnection != null) {
+            clientPubSubConnection.removeListener(listener);
+        }else if(clustePubSubConnection != null) {
+            if(listener.getRedisClusterPubSubListener() == null){
+                return;
+            }
+            clustePubSubConnection.removeListener(listener.getRedisClusterPubSubListener());
+        }else {
+            throw new ServiceException("发布订阅连接失败");
+        }
+        listerSet.remove(listener.getId());
+    }
+    protected void executePubSubCommandConsumer(Consumer<RedisPubSubCommands<K, V> > clientFun,
+                                          Consumer<RedisClusterPubSubCommands<K, V> > clusterFun){
+        initPubSubConnect();
+
+        if(clientPubSubConnection != null) {
+            RedisPubSubCommands<K, V> sync = clientPubSubConnection.sync();
+             clientFun.accept(sync);
+        }else if(clustePubSubConnection != null) {
+            RedisClusterPubSubCommands<K, V> sync = clustePubSubConnection.sync();
+             clusterFun.accept(sync);
+        }else {
+            throw new ServiceException("发布订阅连接失败");
+        }
+
+    }
+
+    @Override
+    public void psubscribe(K... patterns) {
+        executePubSubCommandConsumer(c -> c.psubscribe(patterns), u -> u.psubscribe(patterns));
+
+    }
+
+    @Override
+    public void punsubscribe(K... patterns) {
+        executePubSubCommandConsumer(c->c.punsubscribe(patterns),u->u.punsubscribe(patterns));
+    }
+
+    @Override
+    public void subscribe(K... channels) {
+        executePubSubCommandConsumer(c->c.subscribe(channels),u->u.subscribe(channels));
+    }
+
+    @Override
+    public void unsubscribe(K... channels) {
+        executePubSubCommandConsumer(c->c.unsubscribe(channels),u->u.unsubscribe(channels));
+    }
+
+    @Override
+    public void closePubSub() {
+        if(clientPubSubConnection != null) {
+            clientPubSubConnection.close();
+            clientPubSubConnection = null;
+        }else if(clustePubSubConnection != null) {
+            clustePubSubConnection.close();
+            clustePubSubConnection= null;
+        }
+    }
 }

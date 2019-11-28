@@ -1,20 +1,5 @@
 package cn.org.tpeach.nosql.redis.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.stream.IntStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.org.tpeach.nosql.annotation.Component;
 import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.enums.RedisStructure;
@@ -25,35 +10,18 @@ import cn.org.tpeach.nosql.redis.bean.RedisClientBo;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.bean.SlowLogBo;
+import cn.org.tpeach.nosql.redis.command.AbstractLarkRedisPubSubListener;
 import cn.org.tpeach.nosql.redis.command.AbstractScanCommand;
 import cn.org.tpeach.nosql.redis.command.connection.PingCommand;
 import cn.org.tpeach.nosql.redis.command.connection.SelectCommand;
-import cn.org.tpeach.nosql.redis.command.hash.HdelHash;
-import cn.org.tpeach.nosql.redis.command.hash.HlenHash;
-import cn.org.tpeach.nosql.redis.command.hash.HscanHash;
-import cn.org.tpeach.nosql.redis.command.hash.HsetHash;
-import cn.org.tpeach.nosql.redis.command.hash.HsetnxHash;
-import cn.org.tpeach.nosql.redis.command.key.DelKeysCommand;
-import cn.org.tpeach.nosql.redis.command.key.ExpireCommand;
-import cn.org.tpeach.nosql.redis.command.key.ObjectIdletime;
-import cn.org.tpeach.nosql.redis.command.key.PersistCommand;
-import cn.org.tpeach.nosql.redis.command.key.RenameNxCommand;
-import cn.org.tpeach.nosql.redis.command.key.ScanCommand;
-import cn.org.tpeach.nosql.redis.command.key.ScanIteratorCommand;
-import cn.org.tpeach.nosql.redis.command.key.TTLCommand;
-import cn.org.tpeach.nosql.redis.command.key.TypeCommand;
-import cn.org.tpeach.nosql.redis.command.list.LdelRowList;
-import cn.org.tpeach.nosql.redis.command.list.LlenList;
-import cn.org.tpeach.nosql.redis.command.list.LpushList;
-import cn.org.tpeach.nosql.redis.command.list.LrangeList;
-import cn.org.tpeach.nosql.redis.command.list.LsetList;
-import cn.org.tpeach.nosql.redis.command.list.RpushList;
-import cn.org.tpeach.nosql.redis.command.server.ClientListCommand;
-import cn.org.tpeach.nosql.redis.command.server.DbSizeCommand;
-import cn.org.tpeach.nosql.redis.command.server.FlushDbCommand;
-import cn.org.tpeach.nosql.redis.command.server.InfoCommand;
-import cn.org.tpeach.nosql.redis.command.server.RedisStructureCommand;
-import cn.org.tpeach.nosql.redis.command.server.SlowlogGetCommand;
+import cn.org.tpeach.nosql.redis.command.hash.*;
+import cn.org.tpeach.nosql.redis.command.key.*;
+import cn.org.tpeach.nosql.redis.command.list.*;
+import cn.org.tpeach.nosql.redis.command.pubsub.PsubscribeCommand;
+import cn.org.tpeach.nosql.redis.command.pubsub.PubSubListenerComand;
+import cn.org.tpeach.nosql.redis.command.pubsub.PublishCommand;
+import cn.org.tpeach.nosql.redis.command.pubsub.PunsubscribeCommand;
+import cn.org.tpeach.nosql.redis.command.server.*;
 import cn.org.tpeach.nosql.redis.command.set.SAddSet;
 import cn.org.tpeach.nosql.redis.command.set.ScardSet;
 import cn.org.tpeach.nosql.redis.command.set.SremSet;
@@ -69,18 +37,14 @@ import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.redis.service.BaseRedisService;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
-import cn.org.tpeach.nosql.tools.ArraysUtil;
-import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.MapUtils;
-import cn.org.tpeach.nosql.tools.ReflectUtil;
-import cn.org.tpeach.nosql.tools.StringUtils;
-import io.lettuce.core.KeyScanCursor;
-import io.lettuce.core.MapScanCursor;
-import io.lettuce.core.ScanCursor;
-import io.lettuce.core.ScanIterator;
-import io.lettuce.core.ScoredValue;
-import io.lettuce.core.ScoredValueScanCursor;
-import io.lettuce.core.ValueScanCursor;
+import cn.org.tpeach.nosql.tools.*;
+import io.lettuce.core.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.stream.IntStream;
 
 
 /**
@@ -104,9 +68,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
             connectInfo.setId(uuid);
             connectInfo.setTest(true);
             RedisLarkPool.addOrUpdateConnectInfo(connectInfo);
-            PingCommand pingCommand = new PingCommand(uuid);
-            pingCommand.setPrintLog(false);
-            String ping = super.executeJedisCommand(pingCommand);
+            String ping = this.ping(uuid);
             if(!"PONG".equals(ping)){
                 throw new ServiceException("Ping命令执行失败");
             }
@@ -826,8 +788,45 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         slowlogGetCommand.setPrintLog(printLog);
         return super.executeJedisCommand(slowlogGetCommand);
     }
+
+
     @Override
     public List<SlowLogBo> slowlogGet(String id){
         return slowlogGet(id,true);
+    }
+
+    @Override
+    public void addListener(String id, AbstractLarkRedisPubSubListener listener) {
+        PubSubListenerComand pubSubListenerComand = new PubSubListenerComand(id,listener);
+        pubSubListenerComand.execute();
+    }
+
+    @Override
+    public void removeListener(String id, AbstractLarkRedisPubSubListener listener) {
+        PubSubListenerComand pubSubListenerComand = new PubSubListenerComand(id,listener,true);
+        pubSubListenerComand.execute();
+    }
+
+    @Override
+    public Long publish(String id, byte[] channel, byte[] message) {
+        return super.executeJedisCommand(  new PublishCommand(id,channel,message));
+    }
+
+    @Override
+    public void psubscribe(String id, byte[]... patterns) {
+         super.executeJedisCommand(  new PsubscribeCommand(id,patterns));
+    }
+
+    @Override
+    public void punsubscribe(String id, byte[]... patterns) {
+        super.executeJedisCommand(  new PunsubscribeCommand(id,patterns));
+    }
+
+    @Override
+    public String ping(String id) {
+        PingCommand pingCommand = new PingCommand(id);
+        pingCommand.setPrintLog(false);
+        String ping = super.executeJedisCommand(pingCommand);
+        return ping;
     }
 }

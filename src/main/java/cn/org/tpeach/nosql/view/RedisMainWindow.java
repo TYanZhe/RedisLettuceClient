@@ -165,9 +165,14 @@ public class RedisMainWindow extends javax.swing.JFrame {
        ((RTabbedPane) redisDataTabbedPane).addRemoveLister(new Consumer<Object>() {
             @Override
             public void accept(Object o) {
-                if(o != null && o instanceof RedisTabbedPanel){
-                    RedisTabbedPanel panel = (RedisTabbedPanel) o;
-                    panel.close();
+                if(o != null){
+                    if(o instanceof RedisTabbedPanel){
+                        RedisTabbedPanel panel = (RedisTabbedPanel) o;
+                        panel.close();
+                    }else if(o instanceof PubSubPanel){
+                        PubSubPanel panel = (PubSubPanel) o;
+                        panel.close();
+                    }
                 }
             }
         });
@@ -406,60 +411,72 @@ public class RedisMainWindow extends javax.swing.JFrame {
         } else if (evt.getButton() == MouseEvent.BUTTON3) {//右键
             if (path.length == 2) {
                 serverTreePopMenu.show(redisTree, x, y);
+                JMenuItem connect = menuManager.getJMenuItemByMenuName(serverTreePopMenu, LarkFrame.getI18nText(I18nKey.RedisResource.CONNECT));
+                JMenuItem menuDisconnect = menuManager.getJMenuItemByMenuName(serverTreePopMenu, LarkFrame.getI18nText(I18nKey.RedisResource.MENU_DISCONNECT));
+                JMenuItem activate = menuManager.getJMenuItemByMenuName(serverTreePopMenu, LarkFrame.getI18nText(I18nKey.RedisResource.ACTIVATE));
+                JMenuItem serverinfo = menuManager.getJMenuItemByMenuName(serverTreePopMenu, LarkFrame.getI18nText(I18nKey.RedisResource.SERVERINFO));
+                JMenuItem menuEdit = menuManager.getJMenuItemByMenuName(serverTreePopMenu, LarkFrame.getI18nText(I18nKey.RedisResource.MENU_EDIT));
+                JMenuItem menuReload = menuManager.getJMenuItemByMenuName(serverTreePopMenu, LarkFrame.getI18nText(I18nKey.RedisResource.MENU_RELOAD));
+                JMenuItem menuConsole = menuManager.getJMenuItemByMenuName(serverTreePopMenu, LarkFrame.getI18nText(I18nKey.RedisResource.MENU_CONSOLE));
+                JMenuItem menudel = menuManager.getJMenuItemByMenuName(serverTreePopMenu, LarkFrame.getI18nText(I18nKey.RedisResource.MENU_DEL));
+                JMenuItem pubsub = menuManager.getJMenuItemByMenuName(serverTreePopMenu, LarkFrame.getI18nText(I18nKey.RedisResource.PUB_SUB));
                 if(childCount > 0 ){
                     //连接中或者loading不能操作
                 	if(treeNode.isConnecting() || (childCount == 1 && RedisType.LOADING.equals(((RedisTreeItem)((RTreeNode) treeNode.getChildAt(0)).getUserObject()).getType()))) {
-                        serverTreePopMenu.getComponent(0).setEnabled(false);
-                        serverTreePopMenu.getComponent(1).setEnabled(!treeNode.isConnecting() && RedisType.SERVER == item.getType());
-                        serverTreePopMenu.getComponent(2).setEnabled(false);
-                        serverTreePopMenu.getComponent(3).setEnabled(false);
-                        serverTreePopMenu.getComponent(4).setEnabled(false);
-                        serverTreePopMenu.getComponent(5).setEnabled(false);
-                        serverTreePopMenu.getComponent(6).setEnabled(false);
-                        serverTreePopMenu.getComponent(7).setEnabled(false);
-                        serverTreePopMenu.getComponent(8).setEnabled(false);
+                        connect.setEnabled(false);
+                        menuDisconnect.setEnabled(!treeNode.isConnecting() && RedisType.SERVER == item.getType());
+                        activate.setEnabled(false);
+                        serverinfo.setEnabled(false);
+                        menuEdit.setEnabled(false);
+                        menuReload.setEnabled(false);
+                        menuConsole.setEnabled(false);
+                        menudel.setEnabled(false);
+                        pubsub.setEnabled(false);
                 	}else {
                         //连接
-                        serverTreePopMenu.getComponent(0).setEnabled(false);
+                        connect.setEnabled(false);
                         //断开连接
-                        serverTreePopMenu.getComponent(1).setEnabled(true);
+                        menuDisconnect.setEnabled(true);
+                        pubsub.setEnabled(true);
                          //设为活动节点
                         if(((StatePanel)statePanel).getCurrentRedisItem() != null && item.getId().equals(((StatePanel)statePanel).getCurrentRedisItem().getId()) ){
-                            serverTreePopMenu.getComponent(2).setEnabled(false);
+                            activate.setEnabled(false);
                         }else{
-                            serverTreePopMenu.getComponent(2).setEnabled(true);
+                            activate.setEnabled(true);
                         }
-
                         //服务信息
-                        serverTreePopMenu.getComponent(3).setEnabled(true);
+                        serverinfo.setEnabled(true);
                         //重新加载
-                        serverTreePopMenu.getComponent(5).setEnabled(true);
+                        menuReload.setEnabled(true);
                 	}
         
                 }else{
-                    serverTreePopMenu.getComponent(0).setEnabled(true);
-                    serverTreePopMenu.getComponent(1).setEnabled(false);
-                    serverTreePopMenu.getComponent(2).setEnabled(false);
-                    serverTreePopMenu.getComponent(3).setEnabled(false);
-                    serverTreePopMenu.getComponent(5).setEnabled(false);
+                    connect.setEnabled(true);
+                    menuDisconnect.setEnabled(false);
+                    activate.setEnabled(false);
+                    serverinfo.setEnabled(false);
+                    menuReload.setEnabled(false);
+                    pubsub.setEnabled(false);
+
                 }
                 //控制台
                 RedisConnectInfo connectInfo = redisConfigService.getRedisConfigById(item.getId());
                 if(RedisStructure.SINGLE.equals(RedisStructure.getRedisStructure(connectInfo.getStructure()))){
-                    serverTreePopMenu.getComponent(6).setEnabled(true);
+                    menuConsole.setEnabled(true);
                 }else{
-                    serverTreePopMenu.getComponent(6).setEnabled(false);
+                    menuConsole.setEnabled(false);
                 }
 
 
 
             } else if (path.length == 3) {
                 dbTreePopMenu.show(redisTree, x, y);
+                JMenuItem reload = menuManager.getJMenuItemByMenuName(dbTreePopMenu, LarkFrame.getI18nText(I18nKey.RedisResource.MENU_RELOAD));
                 if(!treeNode.isConnecting() && childCount > 0){
                     //重新加载
-                    dbTreePopMenu.getComponent(2).setEnabled(true);
+                    reload.setEnabled(true);
                 }else{
-                    dbTreePopMenu.getComponent(2).setEnabled(false);
+                    reload.setEnabled(false);
                 }
             } else if (path.length >= 4) {
                 if (item.getType().equals(RedisType.KEY)) {

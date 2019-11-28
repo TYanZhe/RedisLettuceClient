@@ -1,60 +1,21 @@
 package cn.org.tpeach.nosql.view;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-
-import javax.swing.JPanel;
-import javax.swing.JTextPane;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-
 import bsh.util.JConsole;
+import cn.org.tpeach.nosql.constant.ConfigConstant;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
-import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.ReflectUtil;
-import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.component.EasyJSP;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.CodecException;
-import io.netty.handler.codec.redis.ArrayRedisMessage;
-import io.netty.handler.codec.redis.ErrorRedisMessage;
-import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
-import io.netty.handler.codec.redis.IntegerRedisMessage;
-import io.netty.handler.codec.redis.RedisArrayAggregator;
-import io.netty.handler.codec.redis.RedisBulkStringAggregator;
-import io.netty.handler.codec.redis.RedisDecoder;
-import io.netty.handler.codec.redis.RedisEncoder;
-import io.netty.handler.codec.redis.RedisMessage;
-import io.netty.handler.codec.redis.SimpleStringRedisMessage;
+import io.netty.handler.codec.redis.*;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
@@ -63,6 +24,22 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.GenericFutureListener;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.swing.*;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 class RConsole extends JConsole{
  
@@ -221,7 +198,9 @@ public class ConsolePanel extends JPanel {
                     continue;
                 }
                 //发送
-                lastWriteFuture = channel.writeAndFlush(StringUtils.decodeUnicode(line));
+
+                String character = ConfigParser.getInstance().getString(ConfigConstant.Section.CHARACTER_ENCODING, ConfigConstant.CHARACTER, PublicConstant.CharacterEncoding.UTF_8);
+                lastWriteFuture = channel.writeAndFlush(new String(StringUtils.decodeUnicode(line).getBytes(character)));
                 lastWriteFuture.addListener(new GenericFutureListener<ChannelFuture>() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
@@ -478,7 +457,25 @@ class RedisClientHandler extends ChannelDuplexHandler {
         if (msg.isNull()) {
             return "(null)";
         }
-        return msg.content().toString(CharsetUtil.UTF_8);
+        String character = ConfigParser.getInstance().getString(ConfigConstant.Section.CHARACTER_ENCODING, ConfigConstant.CHARACTER, PublicConstant.CharacterEncoding.UTF_8);
+        ByteBuf buf = msg.content();
+        String str ;
+        if(buf.hasArray()) { // 处理堆缓冲区
+            str = new String(buf.array(), buf.arrayOffset() + buf.readerIndex(), buf.readableBytes());
+        } else { // 处理直接缓冲区以及复合缓冲区
+            byte[] bytes = new byte[buf.readableBytes()];
+            buf.getBytes(buf.readerIndex(), bytes);
+            try {
+                str = new String(bytes,character);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                str = buf.toString(Charset.forName(character));
+            }
+        }
+        System.out.println(str);
+        return msg.content().toString(Charset.forName(character));
     }
+
+
 
 }

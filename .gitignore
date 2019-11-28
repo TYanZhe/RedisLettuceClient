@@ -52,3 +52,4 @@ target
 .project
 .buildpath
 dependency-reduced-pom.xml
+.RedisLettuceClient.conf

@@ -96,6 +96,22 @@ public enum MenuManager {
         });
         d.open();
     }
+    public JMenuItem getJMenuItemByMenuName(JPopupMenu popMenu,String text){
+        if(popMenu == null || text == null){
+            return null;
+        }
+        int componentCount = popMenu.getComponentCount();
+        for (int i = 0; i < componentCount; i++) {
+            Component component = popMenu.getComponent(i);
+            if(component instanceof JMenuItem){
+                JMenuItem item = (JMenuItem) component;
+                if(text.equals(item.getText())) {
+                    return item;
+                }
+            }
+        }
+        return null;
+    }
 
     public JPopupMenu getServerTreePopMenu(JComponent componet, RTabbedPane topTabbedPane, StatePanel statePanel,RTabbedPane logTabbedPane) {
         JPopupMenu popMenu = new JRedisPopupMenu();// 菜单
@@ -110,8 +126,6 @@ public enum MenuManager {
             //控制台
             JMenuItem consoleItem = getJMenuItem(I18nKey.RedisResource.MENU_CONSOLE, PublicConstant.Image.getImageIcon(PublicConstant.Image.cmd_console,14,14));
             consoleItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
-            //属性
-            JMenuItem totalItem = getJMenuItem(I18nKey.RedisResource.MENU_ATTR, PublicConstant.Image.getImageIcon(PublicConstant.Image.attribute));
             //关闭连接
             JMenuItem disConnectItem = getJMenuItem(I18nKey.RedisResource.MENU_DISCONNECT, PublicConstant.Image.getImageIcon(PublicConstant.Image.disconnect));
             disConnectItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_MASK));
@@ -123,6 +137,7 @@ public enum MenuManager {
             //编辑
             JMenuItem activeItem = getJMenuItem(I18nKey.RedisResource.ACTIVATE,PublicConstant.Image.getImageIcon(PublicConstant.Image.active_data));
             JMenuItem copyItem = getJMenuItem(I18nKey.RedisResource.COPY, PublicConstant.Image.getImageIcon(PublicConstant.Image.copy));
+            JMenuItem pubsubItem = getJMenuItem(I18nKey.RedisResource.PUB_SUB, PublicConstant.Image.getImageIcon(PublicConstant.Image.subscribe));
             openItem.addActionListener(e -> {
                 RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
                 RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
@@ -193,11 +208,31 @@ public enum MenuManager {
                     }
                 }
             });
-            consoleItem.addActionListener(e -> openConsolePane(logTabbedPane, tree));
-            totalItem.setEnabled(false);
+            pubsubItem.addActionListener(e -> {
+                RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent(); // 获得右键选中的节点
+                RedisTreeItem item = (RedisTreeItem) node.getUserObject();
 
+                for (int i = 0; i < logTabbedPane.getTabCount(); i++) {
+                    Component componentAt = logTabbedPane.getComponentAt(i);
+                    if(componentAt instanceof PubSubPanel){
+                        PubSubPanel panel = (PubSubPanel) componentAt;
+                        if(item.getId().equals(panel.getConnectId())){
+                            topTabbedPane.setSelectedIndex(i);
+                            return;
+                        }
+                    }
+                }
+                PubSubPanel pubSubPanel = new PubSubPanel( node);
+//                if(pubSubPanel == null){
+//                    System.out.println("pubSubPanel");
+//                }
+                topTabbedPane.addTab(item.getName(), PublicConstant.Image.getImageIcon(PublicConstant.Image.subscribe),pubSubPanel);
+                topTabbedPane.setSelectedIndex(topTabbedPane.getTabCount()-1);
+
+            });
+            consoleItem.addActionListener(e -> openConsolePane(logTabbedPane, tree));
             //添加菜单需要修改cn.org.tpeach.nosql.view.RedisMainWindow.redisTreeMouseClicked 下标
-            putPopMenuItem(popMenu,openItem,disConnectItem,activeItem,serverInfoItem,editItem,reloadItem,consoleItem,totalItem,delItem,copyItem);
+            putPopMenuItem(popMenu,openItem,disConnectItem,pubsubItem,activeItem,serverInfoItem,editItem,reloadItem,consoleItem,delItem,copyItem);
         }
 
 
@@ -288,8 +323,7 @@ public enum MenuManager {
         } else {
             topTabbedPane.addTab("SERVER " + statePanel.getCurrentRedisItem().getParentName(),
                     PublicConstant.Image.getImageIcon(PublicConstant.Image.server16,16,16),
-                    new ServiceInfoPanel(statePanel.getCurrentRedisItem(), topTabbedPane, statePanel.getMonitorDialog()),
-                    "SERVER " + statePanel.getCurrentRedisItem().getParentName());
+                    new ServiceInfoPanel(statePanel.getCurrentRedisItem(), topTabbedPane, statePanel.getMonitorDialog()));
 
         }
     }
@@ -303,6 +337,7 @@ public enum MenuManager {
         DefaultTreeModel defaultModel = (DefaultTreeModel) tree.getModel();
         String itemId = redisTreeItem.getId();
         RedisLarkPool.connectMap.remove(node);
+        RedisLarkPool.destory(itemId);
         try {
             node.removeAllChildren();
             Optional.ofNullable(ServiceManager.getInstance().findoOriginalRedisTreeNode(tree, node)).ifPresent(r -> r.removeAllChildren());
@@ -317,6 +352,11 @@ public enum MenuManager {
                     RedisTabbedPanel redisTabbedPanel = (RedisTabbedPanel) componect;
                     RedisTreeItem treeItem = (RedisTreeItem) redisTabbedPanel.getTreeNode().getUserObject();
                     if (itemId.equals(treeItem.getId())) {
+                        jTabbedPane.remove(i);
+                    }
+                }else if (componect instanceof PubSubPanel) {
+                    PubSubPanel pubSubPanel = (PubSubPanel) componect;
+                    if (itemId.equals(pubSubPanel.getConnectId())) {
                         jTabbedPane.remove(i);
                     }
                 }

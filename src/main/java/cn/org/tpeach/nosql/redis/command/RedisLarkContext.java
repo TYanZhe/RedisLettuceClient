@@ -1,21 +1,5 @@
 package cn.org.tpeach.nosql.redis.command;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.nio.charset.Charset;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import cn.org.tpeach.nosql.constant.RedisInfoKeyConstant;
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.enums.RedisVersion;
@@ -27,19 +11,21 @@ import cn.org.tpeach.nosql.tools.ArraysUtil;
 import cn.org.tpeach.nosql.tools.CollectionUtils;
 import cn.org.tpeach.nosql.tools.MapUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
-import io.lettuce.core.KeyScanCursor;
-import io.lettuce.core.KeyValue;
-import io.lettuce.core.MapScanCursor;
-import io.lettuce.core.ScanArgs;
-import io.lettuce.core.ScanCursor;
-import io.lettuce.core.ScanIterator;
-import io.lettuce.core.ScoredValue;
-import io.lettuce.core.ScoredValueScanCursor;
-import io.lettuce.core.TransactionResult;
-import io.lettuce.core.ValueScanCursor;
+import io.lettuce.core.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -559,7 +545,9 @@ public class RedisLarkContext<K,V> {
     public void close() {
          redisLark.close();
     }
-
+    public void closePubSub() {
+        redisLark.closePubSub();
+    }
 
     public ScanIterator<K> scanIterator(int count, String pattren){
         return redisLark.scanIterator(count,pattren);
@@ -606,5 +594,36 @@ public class RedisLarkContext<K,V> {
         }
         Collections.sort(resultList, (o1,o2)-> o1.getId() - o2.getId() > 0 ? 1 : -1);
         return resultList;
+    }
+    //---------------------------发布订阅--------------------------------
+
+    public void psubscribe(K... patterns) {
+        redisLark.psubscribe(patterns);
+    }
+
+
+    public void  punsubscribe(K... patterns) {
+        redisLark.punsubscribe(patterns);
+    }
+
+
+    public void subscribe(K... channels) {
+        redisLark.subscribe(channels);
+    }
+    public void  unsubscribe(K... channels) {
+        redisLark.unsubscribe(channels);
+    }
+
+    public Long publish(K channel, V message){
+        return redisLark.publish(channel,message);
+    }
+
+    public void addListener(AbstractLarkRedisPubSubListener<K, V> listener){
+        redisLark.addListener(listener);
+    }
+
+
+    public void removeListener(AbstractLarkRedisPubSubListener<K, V> listener){
+        redisLark.removeListener(listener);
     }
 }

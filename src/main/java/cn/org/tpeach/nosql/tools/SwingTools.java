@@ -130,7 +130,7 @@ public class SwingTools {
 	public static void addTextCopyMenu(JTextComponent component ) {
 		addTextCopyMenu(component,null);
 	}
-	public static void enterPressesWhenFocused(JTextField textField,ActionListener actionListener) {
+	public static void enterPressesWhenFocused(JTextComponent textField,ActionListener actionListener) {
 	/*	textField.registerKeyboardAction(actionListener,
 				KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false),
 				JComponent.WHEN_FOCUSED);*/

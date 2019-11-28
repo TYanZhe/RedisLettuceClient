@@ -6,6 +6,7 @@ import cn.org.tpeach.nosql.redis.bean.RedisClientBo;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.bean.SlowLogBo;
+import cn.org.tpeach.nosql.redis.command.AbstractLarkRedisPubSubListener;
 import io.lettuce.core.KeyScanCursor;
 import io.lettuce.core.ScanCursor;
 
@@ -113,4 +114,15 @@ public interface IRedisConnectService {
     List<RedisClientBo> clientList(String id, boolean printLog);
 
     List<SlowLogBo> slowlogGet(String id, boolean printLog);
+
+    void addListener(String id,AbstractLarkRedisPubSubListener listener);
+
+    void removeListener(String id,AbstractLarkRedisPubSubListener listener);
+
+    Long publish(String id,byte[]  channel, byte[]  message);
+    void psubscribe(String id,byte[] ... patterns);
+    void  punsubscribe(String id,byte[] ... patterns);
+
+    String ping(String id);
+
 }

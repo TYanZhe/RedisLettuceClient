@@ -1,10 +1,8 @@
 package cn.org.tpeach.nosql.redis.connection;
 
 import cn.org.tpeach.nosql.enums.RedisStructure;
-import io.lettuce.core.KeyValue;
-import io.lettuce.core.ScanIterator;
-import io.lettuce.core.ScoredValue;
-import io.lettuce.core.TransactionResult;
+import cn.org.tpeach.nosql.redis.command.AbstractLarkRedisPubSubListener;
+import io.lettuce.core.*;
 import io.lettuce.core.api.sync.*;
 
 import java.lang.reflect.ParameterizedType;
@@ -61,5 +59,28 @@ public interface RedisLark<K, V> extends BaseRedisCommands<K, V>, RedisStringCom
     ScanIterator<V> sscanIterator(K key, int count, String pattren);
 
     ScanIterator<ScoredValue<V>> zscanIterator(K key, int count, String pattren);
+
+    void addListener(AbstractLarkRedisPubSubListener<K, V> listener);
+
+
+    void removeListener(AbstractLarkRedisPubSubListener<K, V> listener);
+
+
+    //------------------异步--------
+
+
+
+    void psubscribe(K... patterns);
+
+
+    void  punsubscribe(K... patterns);
+
+
+    void subscribe(K... channels);
+
+
+    void  unsubscribe(K... channels);
+
+    void closePubSub();
 
 }

@@ -79,6 +79,7 @@ public class I18nKey {
 		UN_KNOW,
 		EXCEPTION,
 		ACTIVATE,
+		PUB_SUB,
 		/**不支持的版本异常*/
 		VERSION_NOTSUPPORT;
 

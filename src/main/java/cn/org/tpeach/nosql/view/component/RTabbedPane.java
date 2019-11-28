@@ -212,25 +212,17 @@ public class RTabbedPane extends javax.swing.JTabbedPane {
 		super(tabPlacement);
 	}
 
-	@Override
-	public void addTab(String title, Icon icon, Component component, String tip) {
-		super.addTab(title, icon, component, tip);
-		int index = this.indexOfTab(title);
-		addCloseTag(title, icon,index,true,component);
-	}
 
 	@Override
 	public void addTab(String title, Icon icon, Component component) {
 		this.addTab(title, icon, component,true);
 	}
 	public void addTab(String title, Icon icon, Component component, boolean isCloseIcon) {
-		addTab(title,icon,component,null,isCloseIcon);
-	}
-	public void addTab(String title, Icon icon, Component component, String tip,boolean isCloseIcon) {
-		super.addTab(title, icon, component,tip);
+		super.addTab(title, icon, component);
 		int index = this.indexOfTab(title);
 		addCloseTag(title, icon,index,isCloseIcon,component);
 	}
+
 	@Override
 	public void addTab(String title, Component component) {
 		super.addTab(title, component);
