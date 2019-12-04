@@ -5,20 +5,24 @@ import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.exception.ServiceException;
 import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
+import cn.org.tpeach.nosql.redis.command.GetRedisLarkContextCommand;
+import cn.org.tpeach.nosql.redis.command.RedisLarkContext;
 import cn.org.tpeach.nosql.redis.command.RedisPubSubClientAdapt;
 import cn.org.tpeach.nosql.redis.command.connection.PingCommand;
 import cn.org.tpeach.nosql.redis.command.hash.HmSetHash;
 import cn.org.tpeach.nosql.redis.command.list.RpushList;
+import cn.org.tpeach.nosql.redis.command.pubsub.PsubscribeCommand;
 import cn.org.tpeach.nosql.redis.command.pubsub.PubSubListenerComand;
 import cn.org.tpeach.nosql.redis.command.pubsub.PublishCommand;
-import cn.org.tpeach.nosql.redis.command.pubsub.PsubscribeCommand;
 import cn.org.tpeach.nosql.redis.command.set.SAddSet;
 import cn.org.tpeach.nosql.redis.command.string.SetnxString;
 import cn.org.tpeach.nosql.redis.command.zset.ZmAddSet;
+import cn.org.tpeach.nosql.redis.connection.RedisLark;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.tools.DateUtils;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import io.lettuce.core.ScoredValue;
+import io.lettuce.core.api.StatefulRedisConnection;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,7 +56,7 @@ public class RedisTest {
 //            conn.setStructure(RedisStructure.CLUSTER.getCode());
 //            conn.setHost("127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003,127.0.0.1:7004,127.0.0.1:7005");
             conn.setStructure(RedisStructure.SINGLE.getCode());
-            conn.setHost("10.52.0.20");
+            conn.setHost("127.0.0.1");
             conn.setPort(6379);
             conn.setAuth("123456");
             RedisLarkPool.addOrUpdateConnectInfo(conn);
@@ -239,5 +243,12 @@ public class RedisTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void testGetConnect(){
+        RedisLarkContext<byte[], byte[]> larkContext = new GetRedisLarkContextCommand(id).execute();
+        RedisLark<byte[], byte[]> redisLark = larkContext.getRedisLark();
+        StatefulRedisConnection statefulConnection = (StatefulRedisConnection) redisLark.getStatefulConnection();
+
     }
 }

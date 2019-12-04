@@ -1,10 +1,7 @@
 package cn.org.tpeach.nosql.redis.connection.impl;
 
-import cn.org.tpeach.nosql.exception.ServiceException;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import io.lettuce.core.codec.ByteArrayCodec;
-
-import java.util.Arrays;
 
 /**
  * @author tyz
@@ -28,22 +25,5 @@ public class RedisLarkLettuceByte extends AbstractRedisLark<byte[], byte[]> {
         super(id, hostAndPort, auth,  ByteArrayCodec.INSTANCE);
     }
 
-    @Override
-    public Boolean renamenx(byte[] key, byte[] newKey) {
-        return executeCommand(c -> c.renamenx(key, newKey), u -> {
-//			return u.renamenx(key, newKey);
-            if(Arrays.equals(key,newKey)){
-                return true;
-            }
-            if(get(newKey) == null){
-                byte[] temp = get(key);
-                set(newKey, temp);
-                del(key);
-                return true;
-            }else{
-//					log.warn("renamenx:{} exists",newKey);
-                throw new ServiceException(newKey+"已存在");
-            }
-        });
-    }
+
 }

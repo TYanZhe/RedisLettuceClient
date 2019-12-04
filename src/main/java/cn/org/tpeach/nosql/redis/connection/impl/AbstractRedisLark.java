@@ -7,6 +7,7 @@ import cn.org.tpeach.nosql.redis.command.AbstractLarkRedisPubSubListener;
 import cn.org.tpeach.nosql.redis.connection.RedisLark;
 import cn.org.tpeach.nosql.tools.StringUtils;
 import io.lettuce.core.*;
+import io.lettuce.core.api.StatefulConnection;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.cluster.RedisClusterClient;
@@ -149,6 +150,12 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
         this.cluster = RedisClusterClient.create(list);
         this.clusterConnection = cluster.connect(redisCodec);
     }
+
+    @Override
+    public StatefulConnection getStatefulConnection() {
+        return clientConnection != null?clientConnection:clusterConnection;
+    }
+
     /**
      *
      * @param clientFun
@@ -1634,12 +1641,22 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
             }
             if(get(newKey) == null){
                 V temp = get(key);
-                set(newKey, temp);
-                del(key);
+                Long ttl = ttl(key);
+                //修复Redis 重命名 会重置过期时间问题  2019-12-05
+                if(ttl != null && ttl != -2  && ttl != 0 ){
+                    if(ttl > 0){
+                        setex(newKey,ttl,temp);
+                    }else{
+                        set(newKey, temp);
+                    }
+                    del(key);
+                }else{
+                    throw new ServiceException("Rename Failed: Key with new name already exist in database or original key was removed");
+                }
                 return true;
             }else{
 //					log.warn("renamenx:{} exists",newKey);
-                throw new ServiceException(newKey+"已存在");
+                throw new ServiceException("Rename Failed: Key with new name already exist in database or original key was removed");
             }
         });
     }

@@ -2,7 +2,11 @@ package cn.org.tpeach.nosql.redis.connection;
 
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.redis.command.AbstractLarkRedisPubSubListener;
-import io.lettuce.core.*;
+import io.lettuce.core.KeyValue;
+import io.lettuce.core.ScanIterator;
+import io.lettuce.core.ScoredValue;
+import io.lettuce.core.TransactionResult;
+import io.lettuce.core.api.StatefulConnection;
 import io.lettuce.core.api.sync.*;
 
 import java.lang.reflect.ParameterizedType;
@@ -34,6 +38,7 @@ public interface RedisLark<K, V> extends BaseRedisCommands<K, V>, RedisStringCom
         }
         return null;
     }
+    StatefulConnection getStatefulConnection();
 
     /**
      * Change the selected database for the current Commands.

@@ -1,62 +1,41 @@
 package cn.org.tpeach.nosql.framework;
 
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Locale;
-import java.util.Observer;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-
-import javax.swing.JFrame;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
 import cn.org.tpeach.nosql.annotation.Component;
 import cn.org.tpeach.nosql.annotation.ComponentScan;
 import cn.org.tpeach.nosql.annotation.JFrameMain;
 import cn.org.tpeach.nosql.constant.ConfigConstant;
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
-import cn.org.tpeach.nosql.tools.AnnotationUtil;
-import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.ConfigParser;
-import cn.org.tpeach.nosql.tools.PropertiesUtils;
-import cn.org.tpeach.nosql.tools.StringUtils;
+import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.component.OnlyReadTextPane;
 import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
 import lombok.extern.slf4j.Slf4j;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import sun.font.FontDesignMetrics;
+
+import javax.swing.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 /**
  * @author tyz
@@ -80,6 +59,7 @@ public class LarkFrame {
 	public static FontMetrics fm = FontDesignMetrics.getMetrics(new Font("Dialog", Font.PLAIN,16));
 	public static Properties APPLICATION_VALUE;
 	private static AtomicBoolean startInit = new AtomicBoolean(false);
+	public static boolean builtInJre = false;
 	static {
 		try {
 			APPLICATION_VALUE = PropertiesUtils.getProperties("application.properties");
@@ -93,6 +73,20 @@ public class LarkFrame {
 		return   LarkFrame.APPLICATION_VALUE.getProperty("project.environment");
 	}
 	public static  void run(Class<?> primarySource) {
+		try{
+			String jreHome = System.getProperty("java.home");
+			if(isWindows() && StringUtils.isNotBlank(jreHome)){
+				//判断使用的jre
+				String path = LarkFrame.class.getProtectionDomain().getCodeSource().getLocation().getPath().toLowerCase().replaceAll("/","").replaceAll("\\\\","");
+				jreHome = jreHome.toLowerCase().replaceAll("/","").replaceAll("\\\\","");
+				jreHome = jreHome.substring(0,jreHome.length()-3);
+				if(path.startsWith(jreHome)){
+					System.out.println("使用内置jre");
+					builtInJre = true;
+				}
+			}
+		}catch (Exception e){}
+
 		logArea.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -150,9 +144,14 @@ public class LarkFrame {
 				}
 			}
 		});
-
 	}
 
+
+
+
+	public static boolean isWindows() {
+		return System.getProperties().getProperty("os.name").toUpperCase().indexOf("WINDOWS") != -1;
+	}
 	/**
 	 *
 	 */

@@ -587,11 +587,13 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
             case STRING:
                 //修复Redis 更新(set) key值 会重置过期时间问题  2019-11-12
                 Long ttl = super.executeJedisCommand(new TTLCommand(id, db, key).setPrintLog(false));
-                String s;
-                if(ttl != null && ttl > 0){
-                    s = super.executeJedisCommand(new SetexString(id, db, key, ttl.intValue(), newKeyInfo.getValue()));
-                }else{
-                    s = super.executeJedisCommand(new SetString(id, db, key, newKeyInfo.getValue()));
+                String s = "key was removed";
+                if(ttl != null && ttl != -2  && ttl != 0 ){
+                    if(ttl > 0){
+                        s = super.executeJedisCommand(new SetexString(id, db, key, ttl.intValue(), newKeyInfo.getValue()));
+                    }else{
+                        s = super.executeJedisCommand(new SetString(id, db, key, newKeyInfo.getValue()));
+                    }
                 }
                 if(!"OK".equals(s)){
                     throw new ServiceException(s);

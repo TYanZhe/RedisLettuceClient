@@ -1,21 +1,5 @@
 package cn.org.tpeach.nosql.view;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.function.BiConsumer;
-
-import javax.swing.*;
-
 import cn.org.tpeach.nosql.constant.I18nKey;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.enums.RedisStructure;
@@ -45,6 +29,16 @@ import cn.org.tpeach.nosql.view.menu.MenuManager;
 import io.lettuce.core.ScoredValue;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.function.BiConsumer;
 
 /**
  * @author tyz
@@ -244,11 +238,12 @@ public class RToolBar extends JToolBar {
             batchItem.addActionListener(e -> testBatchString());
             popMenu.add(batchItem);
         }
-
-        JMenuItem toolItem = menuManager.getJMenuItem("  常用工具集合  ", PublicConstant.Image.getImageIcon(PublicConstant.Image.tool_web));
-        toolItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
-        toolItem.addActionListener(e -> addJBrowerPanelToTab(tabbedPane));
-        popMenu.add(toolItem);
+        if(!LarkFrame.builtInJre){
+            JMenuItem toolItem = menuManager.getJMenuItem("  常用工具集合  ", PublicConstant.Image.getImageIcon(PublicConstant.Image.tool_web));
+            toolItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+            toolItem.addActionListener(e -> addJBrowerPanelToTab(tabbedPane));
+            popMenu.add(toolItem);
+        }
         popMenu.show((Component) event.getSource(),event.getX()+10,event.getY() );
     }
     public void addJBrowerPanelToTab(RTabbedPane tabbedPane) {
