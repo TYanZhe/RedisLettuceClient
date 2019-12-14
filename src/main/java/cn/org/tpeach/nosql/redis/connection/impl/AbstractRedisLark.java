@@ -1,5 +1,6 @@
 package cn.org.tpeach.nosql.redis.connection.impl;
 
+import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.enums.RedisStructure;
 import cn.org.tpeach.nosql.exception.ServiceException;
 import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
@@ -27,6 +28,8 @@ import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -79,7 +82,12 @@ public abstract  class AbstractRedisLark<K,V> implements RedisLark<K,V> {
             if (StringUtils.isBlank(auth)) {
                 auth = "";
             } else {
-                auth = auth + "@";
+                try {
+                    auth = URLEncoder.encode(auth, PublicConstant.CharacterEncoding.UTF_8)+ "@";
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    auth = auth + "@";
+                }
             }
             ArrayList<RedisURI> list = new ArrayList<>();
             String[] hosts = connectInfo.getHost().split(",");
