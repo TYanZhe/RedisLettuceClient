@@ -526,7 +526,15 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                 Collections.sort(list,(o1, o2)->StringUtils.compareToLength(StringUtils.byteToStr(o1), StringUtils.byteToStr(o2)));
                 break;
             case ZSET:
-                redisKeyInfo.setValueZSet((List<ScoredValue<byte[]>>) zscanResultValues);
+                List<ScoredValue<byte[]>> zList = (List<ScoredValue<byte[]>>) zscanResultValues;
+                //优化：按照分数大小排序 2019-12-23
+                Collections.sort(zList,(o1,o2)->{
+                    if(o1.getScore() ==o2.getScore()){
+                        return 0;
+                    }
+                    return o1.getScore() > o2.getScore() ? 1 : -1;
+                });
+                redisKeyInfo.setValueZSet(zList);
                 break;
             default:
                 break;
