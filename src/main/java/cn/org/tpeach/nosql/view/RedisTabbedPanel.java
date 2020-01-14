@@ -5,71 +5,6 @@
  */
 package cn.org.tpeach.nosql.view;
 
-import static java.util.regex.Pattern.compile;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.text.DecimalFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoundedRangeModel;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
-import javax.swing.text.JTextComponent;
-
 import cn.org.tpeach.nosql.bean.DicBean;
 import cn.org.tpeach.nosql.bean.PageBean;
 import cn.org.tpeach.nosql.bean.TableColumnBean;
@@ -85,22 +20,9 @@ import cn.org.tpeach.nosql.redis.bean.RedisKeyInfo;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.ConfigParser;
-import cn.org.tpeach.nosql.tools.DateUtils;
-import cn.org.tpeach.nosql.tools.GsonUtil;
-import cn.org.tpeach.nosql.tools.MathUtils;
-import cn.org.tpeach.nosql.tools.ReflectUtil;
-import cn.org.tpeach.nosql.tools.StringUtils;
-import cn.org.tpeach.nosql.tools.SwingTools;
-import cn.org.tpeach.nosql.tools.TextForm;
+import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
-import cn.org.tpeach.nosql.view.component.EasyJSP;
-import cn.org.tpeach.nosql.view.component.OnlyReadArea;
-import cn.org.tpeach.nosql.view.component.PlaceholderTextField;
-import cn.org.tpeach.nosql.view.component.RButton;
-import cn.org.tpeach.nosql.view.component.RComboBox;
-import cn.org.tpeach.nosql.view.component.RTabbedPane;
-import cn.org.tpeach.nosql.view.component.RTextArea;
+import cn.org.tpeach.nosql.view.component.*;
 import cn.org.tpeach.nosql.view.dialog.AddRowDialog;
 import cn.org.tpeach.nosql.view.dialog.LoadingAssistDialog;
 import cn.org.tpeach.nosql.view.dialog.MagnifyTextDialog;
@@ -114,6 +36,34 @@ import io.lettuce.core.ScoredValue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.*;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.*;
+import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+
+import static java.util.regex.Pattern.compile;
 
 
 @Getter
@@ -1281,7 +1231,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         addRowLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.row_add));
 
         deleteRowLabel = new JLabel();
-        deleteRowLabel.setToolTipText("删除当前行");
+        deleteRowLabel.setToolTipText("删除选择行");
         deleteRowLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.row_delete));
         reloadLabel = new JLabel();
         reloadLabel.setToolTipText("重新加载");
@@ -1406,43 +1356,63 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         });
 
         SwingTools.addMouseClickedListener(deleteRowLabel, e -> {
-            if (RedisType.STRING.equals(RedisTabbedPanel.this.redisKeyInfo.getType())) {
-                return;
-            }
-            int conform = SwingTools.showConfirmDialogYNC(null, "是否确认删除？", "删除确认");
-            if (conform == JOptionPane.YES_OPTION) {
-                TableColumnBean value = null;
-                int selectRow = ((ValueInfoPanel) valueInfoPanel).getSelectRow();
-                switch (redisKeyInfo.getType()) {
-                    case STRING:
-                    case LIST:
-                    case SET:
-                    case HASH:
-                        value = (TableColumnBean) redisDataTable.getValueAt(selectRow, 1);
-                        break;
-                    case ZSET:
-                        value = (TableColumnBean) redisDataTable.getValueAt(selectRow, 2);
-                        break;
-
-                    default:
-
-                        break;
-
+            try {
+                if (RedisType.STRING.equals(RedisTabbedPanel.this.redisKeyInfo.getType())) {
+                    return;
                 }
-                final byte[] finalValue = value.getValue();
-                byte[] key = redisKeyInfo.getKey();
-                String id = redisKeyInfo.getId();
-                int db = redisKeyInfo.getDb();
-                int index = redisKeyInfo.getPageBean().getStartIndex() + value.getIndex();
-                ResultRes<?> resultRes = BaseController.dispatcher(() -> redisConnectService.deleteRowKeyInfo(id, db, key, finalValue,index, redisKeyInfo.getType()));
-                if (resultRes.isRet()) {
-                    this.redisKeyInfo.setSize(this.redisKeyInfo.getSize()-1);
+
+                int[] selectedRows = redisDataTable.getSelectedRows();
+                List<Integer> list = new ArrayList<>();
+                for (int selectRow : selectedRows) {
+                    if (selectRow >= 0 && selectRow < actRow) {
+                        list.add(selectRow);
+                    }
+                }
+                if (list.size() <= 0) {
+                    return;
+                }
+                int conform = SwingTools.showConfirmDialogYNC(null, "选择" + redisDataTable.getSelectedRowCount() + "条记录，是否确认删除？", "删除确认");
+                if (conform == JOptionPane.YES_OPTION) {
+                    TableColumnBean value = null;
+                    for (int i = list.size() - 1; i >= 0; i--) {
+                        Integer selectRow = list.get(i);
+//                    int x = ((ValueInfoPanel) valueInfoPanel).getSelectRow();
+                        switch (redisKeyInfo.getType()) {
+                            case STRING:
+                            case LIST:
+                            case SET:
+                            case HASH:
+                                value = (TableColumnBean) redisDataTable.getValueAt(selectRow, 1);
+                                break;
+                            case ZSET:
+                                value = (TableColumnBean) redisDataTable.getValueAt(selectRow, 2);
+                                break;
+
+                            default:
+
+                                break;
+
+                        }
+                        final byte[] finalValue = value.getValue();
+                        byte[] key = redisKeyInfo.getKey();
+                        String id = redisKeyInfo.getId();
+                        int db = redisKeyInfo.getDb();
+                        int index = redisKeyInfo.getPageBean().getStartIndex() + value.getIndex();
+                        ResultRes<?> resultRes = BaseController.dispatcher(() -> redisConnectService.deleteRowKeyInfo(id, db, key, finalValue, index, redisKeyInfo.getType()));
+                        if (resultRes.isRet()) {
+                            this.redisKeyInfo.setSize(this.redisKeyInfo.getSize() - 1);
 //                         RTableModel tableModel = (RTableModel)redisDataTable.getModel();
 //                         tableModel.removeRow(selectRow);
+                        } else {
+                            SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
+                            RedisTabbedPanel.this.updateUI(treeNode, pageBean);
+                            return;
+                        }
+                    }
                     RedisTabbedPanel.this.updateUI(treeNode, pageBean);
-                } else {
-                    SwingTools.showMessageErrorDialog(null, "删除失败："+resultRes.getMsg());
                 }
+            }catch (Exception ex){
+                ex.printStackTrace();
             }
         });
 
