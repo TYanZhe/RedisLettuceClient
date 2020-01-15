@@ -86,7 +86,10 @@ class ValueInfoPanel extends javax.swing.JPanel {
  * @author smart
  */
 public class RedisTabbedPanel extends javax.swing.JPanel {
-
+    /**
+     *
+     */
+    private static final long serialVersionUID = -47351539002785269L;
     private final static String TYPEHTML = "<html><p style='width:65px;font-family:-apple-system,BlinkMacSystemFont,PingFang SC,Verdana,Helvetica Neue,Microsoft Yahei,Hiragino Sans GB,Microsoft Sans Serif,WenQuanYi Micro Hei,sans-serif'>%s</p></html>";
     private final int borderWidth = 20;
     private final int tableRowHeight = 24;
@@ -105,10 +108,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     private AtomicBoolean updateStatus = new AtomicBoolean(true);
     private AtomicBoolean searchTexting = new AtomicBoolean(false);
     private MagnifyTextDialog magnifyTextDialog ;
-    /**
-     *
-     */
-    private static final long serialVersionUID = -47351539002785269L;
+
     private JTextField keyIdleTimeField;
     private JTextField keyNameField;
     private JTextField keySizeField;
@@ -1937,7 +1937,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         }else{
             cursor = redisKeyInfo.getCursor();
         }
-        String pattern =  searchTextField == null? null:searchTextField.getText();
+        String pattern =  searchTextField == null || StringUtils.isBlank(searchTextField.getText())? "*":searchTextField.getText();
+
         ResultRes<RedisKeyInfo> resultRes = BaseController.dispatcher(() -> redisConnectService.getRedisKeyInfo(item.getId(), item.getDb(), item.getKey(),cursor,pattern, pageBean,redisKeyInfo),isNeedGlassPanl,isLoading);
         if (resultRes.isRet()) {
             redisKeyInfo = resultRes.getData();

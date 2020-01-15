@@ -147,8 +147,13 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         final String allPattern = "*";
         int count ;
         int index = maxCount;
-        if(StringUtils.isNotBlank(pattern) && !allPattern.equals(pattern.trim())) {
-            pattern = pattern.trim();
+        if(StringUtils.isNotBlank(pattern)) {
+            if(allPattern.equals(pattern.trim())){
+                pattern = pattern.trim()+allPattern;
+            }else{
+                pattern = pattern.trim();
+            }
+
             final DbSizeCommand dbSizeCommand = new DbSizeCommand(id, db);
             dbSizeCommand.setPrintLog(false);
             final Long aLong = dbSizeCommand.execute();
@@ -158,7 +163,7 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
                 count = maxCount;
             }
         }else{
-            pattern = allPattern;
+            pattern = allPattern+allPattern;
             count = maxCount;
         }
         final RedisStructure redisStructure = super.executeJedisCommand(new RedisStructureCommand(id));
@@ -364,6 +369,8 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         }
         if(StringUtils.isNotBlank(pattern)){
             pattern = pattern.trim()+"*";
+        }else{
+            pattern = "**";
         }
         RedisKeyInfo redisKeyInfo = new RedisKeyInfo();
         //获取类型
@@ -500,9 +507,17 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         if(getScanResultSize(zscanResultValues) > pageBean.getRows()){
             if(zscanResultValues instanceof Collection){
                 Collection collection = (Collection) zscanResultValues;
-                for(int i = collection.size() - 1;i>=pageBean.getRows();i--){
-                    collection.remove(i);
+                List list = new ArrayList(pageBean.getRows());
+                int index = 0;
+                for (Object o : collection) {
+                    list.add(o);
+                    index++;
+                    if(index >= pageBean.getRows()){
+                        break;
+                    }
                 }
+                collection.clear();
+                collection.addAll(list);
             }else if(zscanResultValues instanceof Map){
                 Map map = (Map) zscanResultValues;
                 Set keySet = map.keySet();
