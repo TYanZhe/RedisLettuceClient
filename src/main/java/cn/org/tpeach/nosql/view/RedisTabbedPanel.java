@@ -1356,64 +1356,83 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         });
 
         SwingTools.addMouseClickedListener(deleteRowLabel, e -> {
-            try {
-                if (RedisType.STRING.equals(RedisTabbedPanel.this.redisKeyInfo.getType())) {
-                    return;
+
+            if (RedisType.STRING.equals(RedisTabbedPanel.this.redisKeyInfo.getType())) {
+                return;
+            }
+
+            int[] selectedRows = redisDataTable.getSelectedRows();
+            List<Integer> list = new ArrayList<>();
+            for (int selectRow : selectedRows) {
+                if (selectRow >= 0 && selectRow < actRow) {
+                    list.add(selectRow);
                 }
-
-                int[] selectedRows = redisDataTable.getSelectedRows();
-                List<Integer> list = new ArrayList<>();
-                for (int selectRow : selectedRows) {
-                    if (selectRow >= 0 && selectRow < actRow) {
-                        list.add(selectRow);
-                    }
-                }
-                if (list.size() <= 0) {
-                    return;
-                }
-                int conform = SwingTools.showConfirmDialogYNC(null, "选择" + redisDataTable.getSelectedRowCount() + "条记录，是否确认删除？", "删除确认");
-                if (conform == JOptionPane.YES_OPTION) {
-                    TableColumnBean value = null;
-                    for (int i = list.size() - 1; i >= 0; i--) {
-                        Integer selectRow = list.get(i);
-//                    int x = ((ValueInfoPanel) valueInfoPanel).getSelectRow();
-                        switch (redisKeyInfo.getType()) {
-                            case STRING:
-                            case LIST:
-                            case SET:
-                            case HASH:
-                                value = (TableColumnBean) redisDataTable.getValueAt(selectRow, 1);
-                                break;
-                            case ZSET:
-                                value = (TableColumnBean) redisDataTable.getValueAt(selectRow, 2);
-                                break;
-
-                            default:
-
-                                break;
-
-                        }
-                        final byte[] finalValue = value.getValue();
+            }
+            if (list.size() <= 0) {
+                return;
+            }
+            int conform = SwingTools.showConfirmDialogYNC(null, "选择" + redisDataTable.getSelectedRowCount() + "条记录，是否确认删除？", "删除确认");
+            if (conform == JOptionPane.YES_OPTION) {
+                Optional<RedisMainWindow> frame = Optional.ofNullable((RedisMainWindow)LarkFrame.frame) ;
+                RedisMainWindow redisMainWindow = frame.get();
+                StatePanel statePanel = redisMainWindow.getStatePanel();
+                statePanel.getLoadingGlassPane().setVisible(true);
+                SwingTools.swingWorkerExec(()->{
+                    try {
                         byte[] key = redisKeyInfo.getKey();
                         String id = redisKeyInfo.getId();
                         int db = redisKeyInfo.getDb();
-                        int index = redisKeyInfo.getPageBean().getStartIndex() + value.getIndex();
-                        ResultRes<?> resultRes = BaseController.dispatcher(() -> redisConnectService.deleteRowKeyInfo(id, db, key, finalValue, index, redisKeyInfo.getType()));
+                        TableColumnBean value = null;
+                        List<RedisKeyInfo> redisKeyInfos = new ArrayList<>();
+                        for (int i = list.size() - 1; i >= 0; i--) {
+                            Integer selectRow = list.get(i);
+                            RedisKeyInfo rowData = new RedisKeyInfo();
+                            rowData.setKey(key);
+                            rowData.setId(id);
+                            rowData.setDb(db);
+                            rowData.setType(redisKeyInfo.getType());
+    //                    int x = ((ValueInfoPanel) valueInfoPanel).getSelectRow();
+                            switch (redisKeyInfo.getType()) {
+                                case STRING:
+                                case LIST:
+                                case SET:
+                                    value = (TableColumnBean) redisDataTable.getValueAt(selectRow, 1);
+                                    rowData.setValue(value.getValue());
+                                    break;
+                                case HASH:
+                                    value = (TableColumnBean) redisDataTable.getValueAt(selectRow, 1);
+                                    rowData.setField(value.getValue());
+                                    break;
+                                case ZSET:
+                                    value = (TableColumnBean) redisDataTable.getValueAt(selectRow, 2);
+                                    rowData.setValue(value.getValue());
+                                    break;
+                                default:
+                                    break;
+                            }
+                            int index = redisKeyInfo.getPageBean().getStartIndex() + value.getIndex();
+                            rowData.setIndex(index);
+                            redisKeyInfos.add(rowData);
+                        }
+                        ResultRes<Integer> resultRes = BaseController.dispatcher(() -> redisConnectService.deleteRowKeyInfo(id, db, key, redisKeyInfo.getType(),redisKeyInfos),true,false);
                         if (resultRes.isRet()) {
-                            this.redisKeyInfo.setSize(this.redisKeyInfo.getSize() - 1);
-//                         RTableModel tableModel = (RTableModel)redisDataTable.getModel();
-//                         tableModel.removeRow(selectRow);
+                            this.redisKeyInfo.setSize(this.redisKeyInfo.getSize() - resultRes.getData());
+                            //  RTableModel tableModel = (RTableModel)redisDataTable.getModel();
+                            //  tableModel.removeRow(selectRow);
                         } else {
                             SwingTools.showMessageErrorDialog(null, resultRes.getMsg());
                             RedisTabbedPanel.this.updateUI(treeNode, pageBean);
                             return;
                         }
+                        RedisTabbedPanel.this.updateUI(treeNode, pageBean);
+                    }catch (Exception ex){
+                        ex.printStackTrace();
+                    }finally {
+                        statePanel.getLoadingGlassPane().setVisible(false);
                     }
-                    RedisTabbedPanel.this.updateUI(treeNode, pageBean);
-                }
-            }catch (Exception ex){
-                ex.printStackTrace();
+                });
             }
+
         });
 
         updatePageInfo();

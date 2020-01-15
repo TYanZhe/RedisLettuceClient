@@ -301,116 +301,117 @@ public class RToolBar extends JToolBar {
             //校验通过
             CountDownLatch countDownLatch = new CountDownLatch(threadCount);
             StatePanel.showLoading(true,() -> {
-                //连接
-                LinkedList<String> ids = new LinkedList<>();
-                for (int i = 0; i < threadCount; i++) {
-                    ids.add(StringUtils.getUUID());
-                }
-                for (String s : ids) {
-                    RedisConnectInfo conn = new RedisConnectInfo();
-                    conn.setId(s);
-                    //            conn.setStructure(RedisStructure.CLUSTER.getCode());
-                    //            conn.setHost("127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003,127.0.0.1:7004,127.0.0.1:7005");
-                    conn.setStructure(RedisStructure.SINGLE.getCode());
-                    conn.setHost(host);
-                    conn.setPort(port);
-                    RedisLarkPool.addOrUpdateConnectInfo(conn);
-                    String ping = new PingCommand(s).execute();
-                    if (!"PONG".equals(ping)) {
-                        throw new ServiceException("Ping命令执行失败");
-                    }
-                }
-
-
-                String format = DateUtils.format(new Date(), "yyyyMMddHHmmss");
-                byte[] key ;
-                switch (split[0]) {
-                    case "string":
-                        excuteBatch(countDownLatch, threadCount,ids, totalNum, (id, indexs) -> {
-                            try {
-                                indexs.forEach(index->{
-                                    SetnxString setnxString = new SetnxString(id, db, StringUtils.strToByte("Test_String_" + index + "_" + format),StringUtils.strToByte(StringUtils.getUUID()));
-                                    setnxString.setPrintLog(false);
-                                    setnxString.execute();
-                                });
-                            } catch (Exception e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-                        });
-                        break;
-                    case "zset":
-                        key = StringUtils.isNotBlank(keyInput) ? StringUtils.strToByte(keyInput) : StringUtils.strToByte("Test_Zset_" + format);
-                        excuteBatch(countDownLatch,threadCount, ids, totalNum, (id, indexs) -> {
-                            try {
-                                ScoredValue<byte[]>[] scoreValues = new ScoredValue[indexs.size()];
-                                for (int i = 0; i < indexs.size(); i++) {
-                                    scoreValues[i] = ScoredValue.fromNullable(indexs.get(i), StringUtils.strToByte("测试zset_" + indexs.get(i) + "_" + format));
-                                }
-                                new ZmAddSet(id, db, key, scoreValues).setPrintLog(false).execute();
-                            } catch (Exception e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-                        });
-                        break;
-                    case "hash":
-                        key = StringUtils.isNotBlank(keyInput) ? StringUtils.strToByte(keyInput) :StringUtils.strToByte("Test_Hash_" + format);
-                        excuteBatch(countDownLatch, threadCount,ids, totalNum, (id, indexs) -> {
-                            try {
-                                Map<byte[], byte[]> hash = new HashMap<>();
-                                indexs.forEach(index->{
-                                    hash.put(StringUtils.strToByte("测试Hash_" + index + "_" + format), StringUtils.strToByte(StringUtils.getUUID()));
-                                });
-                                new HmSetHash(id, db, key, hash).setPrintLog(false).execute();
-                            } catch (Exception e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-                        });
-                        break;
-                    case "list":
-                        key = StringUtils.isNotBlank(keyInput) ? StringUtils.strToByte(keyInput) :StringUtils.strToByte("Test_List_" + format);
-                        excuteBatch(countDownLatch, threadCount,ids, totalNum, (id, indexs) -> {
-                            try {
-                                byte[][] value = new byte[indexs.size()][];
-                                indexs.forEach(index->{
-                                    value[index] = StringUtils.strToByte("测试List_" +index +"_"+ format);
-                                });
-                                new LpushList(id, db, key, value).setPrintLog(false).execute();
-                            } catch (Exception e) {
-
-                                e.printStackTrace();
-                            }
-                        });
-                        break;
-                    case "set":
-                        key = StringUtils.isNotBlank(keyInput) ? StringUtils.strToByte(keyInput) :StringUtils.strToByte("Test_Set_" + format);
-                        excuteBatch(countDownLatch,threadCount, ids, totalNum, (id, indexs) -> {
-                            try {
-                                byte[][] value = new byte[indexs.size()][];
-                                indexs.forEach(index->{
-                                    value[index] = StringUtils.strToByte("测试List_" +index +"_"+ format);
-                                });
-                                new SAddSet(id, db, key, value).setPrintLog(false).execute();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
-                        });
-                        break;
-                    default:
-
-                        break;
-                }
                 try {
-                    countDownLatch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    //连接
+                    LinkedList<String> ids = new LinkedList<>();
+                    for (int i = 0; i < threadCount; i++) {
+                        ids.add(StringUtils.getUUID());
+                    }
+                    for (String s : ids) {
+                        RedisConnectInfo conn = new RedisConnectInfo();
+                        conn.setId(s);
+                        //            conn.setStructure(RedisStructure.CLUSTER.getCode());
+                        //            conn.setHost("127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003,127.0.0.1:7004,127.0.0.1:7005");
+                        conn.setStructure(RedisStructure.SINGLE.getCode());
+                        conn.setHost(host);
+                        conn.setPort(port);
+                        conn.setAuth(redisConnectInfo.getAuth());
+                        RedisLarkPool.addOrUpdateConnectInfo(conn);
+                        String ping = new PingCommand(s).execute();
+                        if (!"PONG".equals(ping)) {
+                            throw new ServiceException("Ping命令执行失败");
+                        }
+                    }
+
+
+                    String format = DateUtils.format(new Date(), "yyyyMMddHHmmss");
+                    byte[] key;
+                    switch (split[0]) {
+                        case "string":
+                            excuteBatch(countDownLatch, threadCount, ids, totalNum, (id, indexs) -> {
+                                try {
+                                    indexs.forEach(index -> {
+                                        SetnxString setnxString = new SetnxString(id, db, StringUtils.strToByte("Test_String_" + index + "_" + format), StringUtils.strToByte(StringUtils.getUUID()));
+                                        setnxString.setPrintLog(false);
+                                        setnxString.execute();
+                                    });
+                                } catch (Exception e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                            });
+                            break;
+                        case "zset":
+                            key = StringUtils.isNotBlank(keyInput) ? StringUtils.strToByte(keyInput) : StringUtils.strToByte("Test_Zset_" + format);
+                            excuteBatch(countDownLatch, threadCount, ids, totalNum, (id, indexs) -> {
+                                try {
+                                    ScoredValue<byte[]>[] scoreValues = new ScoredValue[indexs.size()];
+                                    for (int i = 0; i < indexs.size(); i++) {
+                                        scoreValues[i] = ScoredValue.fromNullable(indexs.get(i), StringUtils.strToByte("测试zset_" + indexs.get(i) + "_" + format));
+                                    }
+                                    new ZmAddSet(id, db, key, scoreValues).setPrintLog(false).execute();
+                                } catch (Exception e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                            });
+                            break;
+                        case "hash":
+                            key = StringUtils.isNotBlank(keyInput) ? StringUtils.strToByte(keyInput) : StringUtils.strToByte("Test_Hash_" + format);
+                            excuteBatch(countDownLatch, threadCount, ids, totalNum, (id, indexs) -> {
+                                try {
+                                    Map<byte[], byte[]> hash = new HashMap<>();
+                                    indexs.forEach(index -> {
+                                        hash.put(StringUtils.strToByte("测试Hash_" + index + "_" + format), StringUtils.strToByte(StringUtils.getUUID()));
+                                    });
+                                    new HmSetHash(id, db, key, hash).setPrintLog(false).execute();
+                                } catch (Exception e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                            });
+                            break;
+                        case "list":
+                            key = StringUtils.isNotBlank(keyInput) ? StringUtils.strToByte(keyInput) : StringUtils.strToByte("Test_List_" + format);
+                            excuteBatch(countDownLatch, threadCount, ids, totalNum, (id, indexs) -> {
+                                try {
+                                    byte[][] value = indexs.stream().map(index->StringUtils.strToByte("测试List_" + index + "_" + format))
+                                    .toArray(byte[][]::new);
+                                    new LpushList(id, db, key, value).setPrintLog(false).execute();
+                                } catch (Exception e) {
+
+                                    e.printStackTrace();
+                                }
+                            });
+                            break;
+                        case "set":
+                            key = StringUtils.isNotBlank(keyInput) ? StringUtils.strToByte(keyInput) : StringUtils.strToByte("Test_Set_" + format);
+                            excuteBatch(countDownLatch, threadCount, ids, totalNum, (id, indexs) -> {
+                                try {
+                                    byte[][] value = indexs.stream().map(index->StringUtils.strToByte("测试Set_" + index + "_" + format))
+                                            .toArray(byte[][]::new);
+                                    new SAddSet(id, db, key, value).setPrintLog(false).execute();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            });
+                            break;
+                        default:
+
+                            break;
+                    }
+                    try {
+                        countDownLatch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }catch (Exception ex){
+                    SwingTools.showMessageMessageDialog(LarkFrame.frame,"批量插入失败:"+ ex.getMessage(), "提示");
                 }
 
             },false,true,-1,(s,t)->{
-                SwingTools.showMessageMessageDialog(LarkFrame.frame,"批量插入成功,耗时："+t+"s","提示");
+                SwingTools.showMessageMessageDialog(LarkFrame.frame,"执行完成,耗时："+t+"s","提示");
             });
         }catch (Exception e){
             SwingTools.showMessageErrorDialog(null, "参数有误，未执行任何操作:\n"+ServiceProxy.getStackTrace(e));

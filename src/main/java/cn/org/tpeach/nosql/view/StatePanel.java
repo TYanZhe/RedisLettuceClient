@@ -1,32 +1,5 @@
 package cn.org.tpeach.nosql.view;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.text.DecimalFormat;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
-import java.util.stream.IntStream;
-
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-
 import cn.org.tpeach.nosql.constant.ConfigConstant;
 import cn.org.tpeach.nosql.constant.PublicConstant;
 import cn.org.tpeach.nosql.constant.RedisInfoKeyConstant;
@@ -34,17 +7,28 @@ import cn.org.tpeach.nosql.framework.LarkFrame;
 import cn.org.tpeach.nosql.redis.bean.RedisTreeItem;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.ConfigParser;
-import cn.org.tpeach.nosql.tools.MapUtils;
-import cn.org.tpeach.nosql.tools.MathUtils;
-import cn.org.tpeach.nosql.tools.StringUtils;
-import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.component.PrefixTextLabel;
 import cn.org.tpeach.nosql.view.component.RButton;
 import cn.org.tpeach.nosql.view.dialog.MonitorDialog;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.swing.*;
+import java.awt.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.stream.IntStream;
 
 @Getter
 @Setter
@@ -125,7 +109,7 @@ public class StatePanel extends JPanel {
         this.add(Box.createHorizontalStrut(5));
 
 
-        loadingGlassPane = getLoadingGlassPane();
+        loadingGlassPane = buildLoadingGlassPane();
     }
     private void addStrut(Component comp){
         this.add(Box.createHorizontalStrut(5));
@@ -164,7 +148,7 @@ public class StatePanel extends JPanel {
         return imageIcon;
     }
 
-    private JPanel getLoadingGlassPane(){
+    private JPanel buildLoadingGlassPane(){
         JPanel loadingGlassPane = new JPanel();
         loadingGlassbutton = new RButton();
 //        button.setText("Loading data, please wait...");
@@ -218,17 +202,21 @@ public class StatePanel extends JPanel {
             hiddenDeque.add(loadId);
             loadingDataDeque.add(loadingData);
             String globalTimeOutFlag = ConfigParser.getInstance().getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.LOADING_GLOBEL_TIMEOGT_ENABLED, "0");
-
+            // 超时自动取消
             if(timeOut > 0 && !"1".equals(globalTimeOutFlag)) {
                 CountDownLatch countDownLatch = new CountDownLatch(1);
                 LarkFrame.executorService.execute(() -> {
                     try {
                         loadingData.setTimeouThread(Thread.currentThread());
+                    } finally {
                         countDownLatch.countDown();
+                    }
+                    try {
                         TimeUnit.MILLISECONDS.sleep(timeOut);
                         Optional.ofNullable(loadingData.getRequestThread()).ifPresent(t -> t.interrupt());
-                    } catch (Exception e) {
-                    } finally {
+                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+                    }finally {
                         loadingData.setTimeouThread(null);
                     }
                 });
@@ -249,6 +237,7 @@ public class StatePanel extends JPanel {
                         if(!release){
                             log.debug("耗时统计线程:{},{}",Thread.currentThread(),statePanel.loadingLabel.isVisible());
                         }
+                        //状态栏显示耗时
                         String text = statePanel.loadingLabel.getText();
                         if (StringUtils.isNotBlank(text)) {
                             try {
@@ -303,11 +292,11 @@ public class StatePanel extends JPanel {
                     doInBackground.run();
                     return "OK";
                 },()->{
+                    Optional.ofNullable(loadingData.getTimeouThread()).ifPresent(t->t.interrupt());
                     isFinish.set(true);
                     Double time =  maxLoadingTime();
                     hiddenDeque.remove(loadId);
                     loadingDataDeque.remove(loadingData);
-                    Optional.ofNullable(loadingData.getTimeouThread()).ifPresent(t->t.interrupt());
                     showGlassQueue.remove(loadId);
                     if(hiddenLister != null){
                         hiddenLister.accept(loadId,loadingData.getSecondTime());

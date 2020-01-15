@@ -97,7 +97,7 @@ public interface IRedisConnectService {
 
     Long addRowKeyInfo(RedisKeyInfo keyInfo,boolean isLeftList);
     
-    Long deleteRowKeyInfo(String id,int db,byte[] key,byte[] valueOrField,int index,RedisType type);
+    Integer deleteRowKeyInfo(String id, int db, byte[] key, RedisType type, List<RedisKeyInfo> keyInfoList);
 
     Boolean remamenx(String id, int db,final byte[] oldkey, final byte[] newkey);
 

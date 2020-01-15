@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 
@@ -700,36 +701,69 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
     }
 
     @Override
-    public Long deleteRowKeyInfo(String id,int db,byte[] key,byte[] valueOrField,int index,RedisType type) {
-        Long count = 1L;
+    public Integer deleteRowKeyInfo(String id, int db, byte[] key, RedisType type, List<RedisKeyInfo> keyInfoList) {
+        if(CollectionUtils.isEmpty(keyInfoList)){
+            return 0;
+        }
+        int count = 1;
         switch (type) {
             case STRING:
                 break;
             case LIST:
                 //查看下标的值是否相等
-                List<byte[]> list = super.executeJedisCommand(new LrangeList(id, db, key, index, index));
-                if(CollectionUtils.isEmpty(list)){
-                    throw new ServiceException("删除失败，数据已更新");
+                for (RedisKeyInfo redisKeyInfo : keyInfoList) {
+                    List<byte[]> list = super.executeJedisCommand(new LrangeList(id, db, key, redisKeyInfo.getIndex(), redisKeyInfo.getIndex()));
+                    if(CollectionUtils.isEmpty(list)){
+                        throw new ServiceException("删除失败，数据已更新");
+                    }
+                    byte[] oldValue = list.get(0);
+                    if(!Arrays.equals(redisKeyInfo.getValue(), oldValue)) {
+                        throw new ServiceException("the row has been changed and can't be deleted row.Reload and try again");
+                    }
+                    super.executeJedisCommand(new LdelRowList(id, db, key,  redisKeyInfo.getIndex()));
                 }
-                byte[] oldValue = list.get(0);
-                if(!Arrays.equals(valueOrField, oldValue)) {
-                    throw new ServiceException("the row has been changed and can't be deleted row.Reload and try again");
-                }
-                super.executeJedisCommand(new LdelRowList(id, db, key, index));
                 break;
             case SET:
-                super.executeJedisCommand(new SremSet(id, db, key,valueOrField));
+
+               count = excuteBatch(type,keyInfoList,v-> super.executeJedisCommand(new SremSet(id, db, key,v)));
                 break;
             case HASH:
-                count = super.executeJedisCommand(new HdelHash(id, db, key,valueOrField));
+                count = excuteBatch(type,keyInfoList,v-> super.executeJedisCommand(new HdelHash(id, db, key,v)));
                 break;
             case ZSET:
-                super.executeJedisCommand(new ZremSet(id, db, key,valueOrField));
+                count = excuteBatch(type,keyInfoList,v-> super.executeJedisCommand(new ZremSet(id, db, key,v)));
                 break;
             default:
                 logger.error("未知的类型：" + type);
                 throw new ServiceException("未知的类型：" + type);
 
+        }
+        return count;
+    }
+
+    private int excuteBatch(RedisType type ,List<RedisKeyInfo> keyInfoList,Consumer<byte[][]> consumer){
+        List<RedisKeyInfo> keyInfos = new ArrayList<>();
+        int count = 0;
+        for (RedisKeyInfo redisKeyInfo : keyInfoList) {
+             keyInfos.add(redisKeyInfo);
+             if(keyInfos.size() >= 1000){
+                 if(RedisType.HASH.equals(type)){
+                     consumer.accept(keyInfos.stream().map(RedisKeyInfo::getField).toArray(byte[][]::new));
+                 }else{
+                     consumer.accept(keyInfos.stream().map(RedisKeyInfo::getValue).toArray(byte[][]::new));
+                 }
+                 count += keyInfos.size();
+                 keyInfos.clear();
+             }
+        }
+        if(CollectionUtils.isNotEmpty(keyInfos)){
+            if(RedisType.HASH.equals(type)){
+                consumer.accept(keyInfos.stream().map(RedisKeyInfo::getField).toArray(byte[][]::new));
+            }else{
+                consumer.accept(keyInfos.stream().map(RedisKeyInfo::getValue).toArray(byte[][]::new));
+            }
+            count += keyInfos.size();
+            keyInfos.clear();
         }
         return count;
     }
