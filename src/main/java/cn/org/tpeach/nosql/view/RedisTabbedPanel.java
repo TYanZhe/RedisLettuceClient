@@ -25,7 +25,7 @@ import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.*;
 import cn.org.tpeach.nosql.view.dialog.AddRowDialog;
 import cn.org.tpeach.nosql.view.dialog.LoadingAssistDialog;
-import cn.org.tpeach.nosql.view.dialog.MagnifyTextDialog;
+import cn.org.tpeach.nosql.view.dialog.TextAreaDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import cn.org.tpeach.nosql.view.menu.JRedisPopupMenu;
 import cn.org.tpeach.nosql.view.menu.MenuManager;
@@ -104,10 +104,10 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
     protected RedisKeyInfo redisKeyInfo;
     private PageBean pageBean = new PageBean();
     private int resultTab = 0;
-    private OnlyReadArea resultTextArea;
+    private OnlyReadArea resultTextArea,jsonTextArea,csvTextArea;
     private AtomicBoolean updateStatus = new AtomicBoolean(true);
     private AtomicBoolean searchTexting = new AtomicBoolean(false);
-    private MagnifyTextDialog magnifyTextDialog ;
+    private TextAreaDialog magnifyTextDialog ;
 
     private JTextField keyIdleTimeField;
     private JTextField keyNameField;
@@ -929,7 +929,7 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 if (e.getClickCount() == 2 && StringUtils.isNotBlank(fieldArea.getText())) {
                     String flag = ConfigParser.getInstance().getString(ConfigConstant.Section.EXPERIMENT, ConfigConstant.MAGNIFYTEXT_DIALOG_SWITH, "0");
                     if ("1".equals(flag)) {
-                        MagnifyTextDialog magnifyTextDialog = getMagnifyTextDialog();
+                        TextAreaDialog magnifyTextDialog = getMagnifyTextDialog();
                         if(StringUtils.isBlank(fieldArea.getText())||selectKeyViewComn.getSelectedIndex() != 0){
                             magnifyTextDialog.setEditable(false);
                         }
@@ -1052,8 +1052,9 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
                 textArea.setEditable(true);
             } else if ("2".equals(dicBean.getCode())) {
                 if(StringUtils.isNotEmpty(tableColumnBean.getShowValue())){
-                    text = GsonUtil.toPrettyFormat(tableColumnBean.getShowValue());
-                    if(text.equals(tableColumnBean.getShowValue())){
+                    try{
+                        text = GsonUtil.gson2String(GsonUtil.gsonToBean(tableColumnBean.getShowValue(), Object.class));
+                    }catch (Exception e){
                         throw new ServiceException("Format Json Fail!");
                     }
                 }
@@ -1292,6 +1293,9 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         addToPagePanel(lastPageLabel);
         addToPagePanel(gotoPagefield);
         addToPagePanel(totalPage);
+        JLabel noticeLabel = new JLabel("仅在文本选项下可编辑");
+        noticeLabel.setForeground(Color.GRAY );
+        addToPagePanel(noticeLabel);
         pagePanel.add(Box.createHorizontalGlue());
 
         SwingTools.addMouseClickedListener(deleteLabel, e -> deleteBtnActionPerformed(e));
@@ -1808,7 +1812,8 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         leftTablePanel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
         JLabel gridLabel = createVerticalLabel(LarkFrame.getI18nUpText(I18nKey.RedisResource.GRID), true);
         JLabel textLabel = createVerticalLabel(LarkFrame.getI18nUpText(I18nKey.RedisResource.TEXT), false);
-
+        JLabel jsonLabel = createVerticalLabel("JSON", false);
+        JLabel csvLabel = createVerticalLabel("CSV", false);
 
         gridLabel.setToolTipText("show grid result");
         gridLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.grid));
@@ -1816,17 +1821,28 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
         textLabel.setToolTipText("show text result");
         textLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.text));
         addStrutVerticalPanel(leftTablePanel, textLabel, true, 2, false, null);
-
+        jsonLabel.setToolTipText("show json result");
+        jsonLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.json));
+        addStrutVerticalPanel(leftTablePanel, jsonLabel, true, 2, false, null);
+        csvLabel.setToolTipText("show csv result");
+        csvLabel.setIcon(PublicConstant.Image.getImageIcon(PublicConstant.Image.csv));
+        addStrutVerticalPanel(leftTablePanel, csvLabel, true, 2, false, null);
 
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new BorderLayout());
         textPanel.setBackground(Color.WHITE);
-
+        JPanel jsonPanel = new JPanel();
+        jsonPanel.setLayout(new BorderLayout());
+        jsonPanel.setBackground(Color.WHITE);
+        JPanel csvPanel = new JPanel();
+        csvPanel.setLayout(new BorderLayout());
+        csvPanel.setBackground(Color.WHITE);
         SwingTools.addMouseClickedListener(textLabel,e ->{
             if(resultTab != 1){
                 resultTab = 1;
                 if(resultTextArea == null){
                     resultTextArea = new OnlyReadArea();
+                    SwingTools.addTextCopyMenu(resultTextArea);
                     resultTextArea.setLimit(false);
                     resultTextArea.setCandy(Color.white);
                     resultTextArea.setForeground(Color.black);
@@ -1843,8 +1859,128 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             }
 
         });
+        SwingTools.addMouseClickedListener(jsonLabel,e ->{
+            if(resultTab != 3){
+                resultTab = 3;
+                if(jsonTextArea == null){
+                    jsonTextArea = new OnlyReadArea();
+                    SwingTools.addTextCopyMenu(jsonTextArea);
+                    jsonTextArea.setLimit(false);
+                    jsonTextArea.setCandy(Color.white);
+                    jsonTextArea.setForeground(Color.black);
+                    jsonPanel.add(jsonTextArea,BorderLayout.CENTER);
+                }
+                jsonTextArea.setText(getTableJson(redisKeyInfo));
+                tableScrollPanel.setViewportView(jsonPanel);
+            }
+        });
+
+        SwingTools.addMouseClickedListener(csvLabel,e ->{
+            if(resultTab != 4){
+                resultTab = 4;
+                if(csvTextArea == null){
+                    csvTextArea = new OnlyReadArea();
+                    SwingTools.addTextCopyMenu(csvTextArea);
+                    csvTextArea.setLimit(false);
+                    csvTextArea.setCandy(Color.white);
+                    csvTextArea.setForeground(Color.black);
+                    csvPanel.add(csvTextArea,BorderLayout.CENTER);
+                }
+                csvTextArea.setText(getTableCsv(redisKeyInfo));
+                tableScrollPanel.setViewportView(csvPanel);
+            }
+        });
+
+
+
     }
 
+    private String getTableCsv(RedisKeyInfo redisKeyInfo){
+        StringBuilder sb = new StringBuilder();
+        Vector[] tableContext = getTableContext(redisKeyInfo);
+        Vector<String> titleVector = tableContext[0];
+        String[] title = new String[titleVector.size()-2];
+        boolean flag = false;
+        for (int i = 1; i < titleVector.size()-1; i++) {
+            String s = titleVector.get(i);
+            if(!flag){
+                flag = true;
+            }else{
+                sb.append(",");
+            }
+            sb.append(StringUtils.
+            getCsvTypeStr(s));
+        }
+        sb.append("\r\n");
+        Vector<Vector<TableColumnBean>> vector = tableContext[1];
+        for (Vector<TableColumnBean> columnBeans : vector) {
+            flag = false;
+            for (int i = 1; i < columnBeans.size(); i++) {
+                String s = columnBeans.get(i).getShowValue();
+                if (!flag) {
+                    flag = true;
+                } else {
+                    sb.append(",");
+                }
+                sb.append(StringUtils.getCsvTypeStr(s));
+            }
+            sb.append("\r\n");
+        }
+
+        return sb.toString();
+    }
+
+
+
+
+    private String getTableJson(RedisKeyInfo redisKeyInfo){
+        Vector[] tableContext = getTableContext(redisKeyInfo);
+        if(ArraysUtil.isEmpty(tableContext) && tableContext.length < 2){
+            return "";
+        }
+        Vector<Vector<TableColumnBean>> vector = tableContext[1];
+        if(CollectionUtils.isNotEmpty(vector)){
+            switch (redisKeyInfo.getType()){
+                case STRING:
+                   return vector.get(0).get(1).getShowValue();
+                case LIST:
+                case SET:
+                    List<String> list = new ArrayList<>();
+                    for (Vector<TableColumnBean> tableColumnBeans : vector) {
+                        list.add(tableColumnBeans.get(1).getShowValue());
+                    }
+                    return GsonUtil.gson2String(list);
+                case HASH:
+                    List<Map<String,Object>> maps = new ArrayList<>();
+                    for (Vector<TableColumnBean> tableColumnBeans : vector) {
+                        Map<String,Object> map = new HashMap<>(2);
+                        String showValue = tableColumnBeans.get(2).getShowValue();
+                        try{
+                            map.put(tableColumnBeans.get(1).getShowValue(),GsonUtil.gsonToBean(showValue, Object.class));
+                        }catch (Exception e){
+                            map.put(tableColumnBeans.get(1).getShowValue(),tableColumnBeans.get(2).getShowValue());
+                        }
+                        maps.add(map);
+                    }
+                    String s = GsonUtil.gson2String(maps);
+                    return s ;
+                case ZSET:
+                    List<Map<String,Object>> maps2 = new ArrayList<>();
+                    for (Vector<TableColumnBean> tableColumnBeans : vector) {
+                        Map<String,Object> map = new HashMap<>(2);
+                        map.put("SCORE",tableColumnBeans.get(1).getShowValue());
+                        map.put("MEMBER",tableColumnBeans.get(2).getShowValue());
+                        maps2.add(map);
+                    }
+                    return GsonUtil.gson2String(maps2);
+                default:
+                    return "";
+
+            }
+        }
+        return "";
+
+    }
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	private String getTableText(RedisKeyInfo redisKeyInfo){
         Vector[] tableContext = getTableContext(redisKeyInfo);
@@ -1854,7 +1990,6 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             title[i-1] = titleVector.get(i);
         }
 
-        tableContext[0].toArray(title);
         TextForm.TextFormBulider bulider = TextForm.bulider().title(title);
         Vector<Vector<TableColumnBean>> vector = tableContext[1];
         for (Vector<TableColumnBean> columnBeans : vector) {
@@ -2089,9 +2224,9 @@ public class RedisTabbedPanel extends javax.swing.JPanel {
             magnifyTextDialog = null;
         }
     }
-    public MagnifyTextDialog getMagnifyTextDialog() {
+    public TextAreaDialog getMagnifyTextDialog() {
         if(magnifyTextDialog == null){
-            magnifyTextDialog = new MagnifyTextDialog(null,null);
+            magnifyTextDialog = new TextAreaDialog(null,null);
         }
         return magnifyTextDialog;
     }

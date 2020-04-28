@@ -46,7 +46,7 @@ public class RedisLarkFactory {
 			//获取上下文
 			RedisLark redisLark;
 			RedisLarkContext<K,V> redisLarkContext = RedisLarkPool.getRedisLarkContext(conn.getId());
-			if (redisLarkContext == null || refresh ) {
+			if (redisLarkContext == null || refresh || !redisLarkContext.isConnect()) {
 				redisStructure = RedisStructure.getRedisStructure(conn.getStructure());
 				// 根据Structure生成对应的连接服务，并缓存到pool
 				if (redisStructure == RedisStructure.UNKNOW) {
@@ -70,7 +70,9 @@ public class RedisLarkFactory {
 					}
 				}else {
 					redisLarkContext.setRedisLark(redisLark);
+					redisLarkContext.setRefresh(true);
 				}
+				redisLarkContext.setConnect(true);
 				RedisLarkPool.addRedisLarkContext(conn.getId(), redisLarkContext);
 				LarkFrame.larkLog.sendInfo(now,conn.getName(),"AUTH");
 				LarkFrame.larkLog.receivedInfo(conn.getName(), "connected");

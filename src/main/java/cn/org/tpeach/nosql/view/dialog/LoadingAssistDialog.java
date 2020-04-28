@@ -7,7 +7,7 @@ import lombok.Setter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-public class LoadingAssistDialog extends MagnifyTextDialog {
+public class LoadingAssistDialog extends TextAreaDialog {
     @Setter
     private boolean autoSubmit = true;
     private static final class SingleHolder{

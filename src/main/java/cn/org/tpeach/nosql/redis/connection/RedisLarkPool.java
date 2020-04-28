@@ -27,11 +27,22 @@ public class RedisLarkPool {
 		return pool.get(id);
 	}
 
-	public static void destory(String id) {
+	public static RedisLarkContext destory(String id) {
 		final RedisLarkContext remove = pool.remove(id);
 		if(remove != null){
 			LarkFrame.executorService.execute(()->{try{remove.close();}catch (Exception e){}});
 		}
+		return remove;
+
+	}
+
+	public static RedisLarkContext disConnect(String id) {
+		final RedisLarkContext context = pool.get(id);
+		if(context != null){
+			context.setConnect(false);
+			LarkFrame.executorService.execute(()->{try{context.close();}catch (Exception e){}});
+		}
+		return context;
 
 	}
 

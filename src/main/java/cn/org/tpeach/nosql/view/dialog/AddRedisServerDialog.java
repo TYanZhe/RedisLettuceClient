@@ -320,7 +320,7 @@ public class AddRedisServerDialog extends AbstractRowDialog<RedisConnectInfo, Re
                     consumer.accept(item);
                     this.dispose();
                 } else {
-                    SwingTools.showMessageErrorDialog(this, "未知错误：添加配置失败");
+                    SwingTools.showMessageErrorDialog(this, "添加配置失败:"+resultRes.getMsg());
                 }
             } catch (ServiceException ex) {
                 SwingTools.showMessageErrorDialog(this, ex.getMessage());

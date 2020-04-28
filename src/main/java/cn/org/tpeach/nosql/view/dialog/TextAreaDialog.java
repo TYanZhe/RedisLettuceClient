@@ -10,7 +10,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.function.Consumer;
 
-public class MagnifyTextDialog extends BaseDialog<String,String>{
+public class TextAreaDialog extends BaseDialog<Object,String>{
 
 
     @Setter
@@ -18,23 +18,31 @@ public class MagnifyTextDialog extends BaseDialog<String,String>{
     private String text;
     private boolean needBtn;
     private RTextArea textArea;
-
+    @Setter
+    @Getter
+    private boolean needClose = true;
     protected RTextArea getTextArea() {
         return textArea;
     }
     protected void setTextArea(RTextArea textArea) {
         this.textArea = textArea;
     }
-    public MagnifyTextDialog(JFrame parent, String s) {
+    public TextAreaDialog(JFrame parent, Object s) {
         super(parent, s);
         textArea = new RTextArea( );
          reset();
     }
+    public void setPlaceholder(String s){
+        textArea.setPlaceholder(s);
+    }
 
+    public void clearAreaText(){
+        textArea.setText(null);
+    }
 
 
     @Override
-    public void initDialog(String s) {
+    public void initDialog(Object s) {
         Dimension screenSize = SwingTools.getScreenSize();
         int width = (int) (screenSize.width * 0.35);
         int minHeight = this.getMinHeight();
@@ -82,7 +90,9 @@ public class MagnifyTextDialog extends BaseDialog<String,String>{
         if(this.consumer != null){
             this.consumer.accept(textArea.getText());
         }
-        this.close();
+        if(needClose){
+            this.close();
+        }
     }
     @Override
     public synchronized void open(){

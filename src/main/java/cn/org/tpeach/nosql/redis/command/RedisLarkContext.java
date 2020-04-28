@@ -48,6 +48,13 @@ public class RedisLarkContext<K,V> {
     @Setter
     private RedisLark<K,V> redisLark;
     private RedisConnectInfo redisConnectInfo;
+    @Getter
+    @Setter
+    private boolean connect = true;
+
+    @Getter
+    @Setter
+    private boolean refresh;
 
     public RedisLarkContext(RedisLark<K,V> redisLark,RedisConnectInfo redisConnectInfo) {
         if(redisLark == null || redisConnectInfo == null){
@@ -112,7 +119,9 @@ public class RedisLarkContext<K,V> {
 
     public RedisVersion getRedisVersion() {
         if(this.version == null) {
-            Map<String, String> infoMap = getInfo(!redisConnectInfo.isTest());
+            //测试 或者 重新连接不打印info信息
+            Map<String, String> infoMap = getInfo(!(redisConnectInfo.isTest() || refresh));
+            refresh = false;
             if(MapUtils.isNotEmpty(infoMap)){
                 this.version = RedisVersion.getRedisVersion(infoMap.get(RedisInfoKeyConstant.redisVersion));
             }
@@ -625,5 +634,10 @@ public class RedisLarkContext<K,V> {
 
     public void removeListener(AbstractLarkRedisPubSubListener<K, V> listener){
         redisLark.removeListener(listener);
+    }
+
+
+    public boolean isOpen(){
+        return redisLark.isOpen();
     }
 }

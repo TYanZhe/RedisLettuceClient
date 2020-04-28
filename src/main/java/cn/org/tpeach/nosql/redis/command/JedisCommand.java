@@ -8,10 +8,12 @@ import cn.org.tpeach.nosql.redis.bean.RedisConnectInfo;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkFactory;
 import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.tools.StringUtils;
+import io.lettuce.core.RedisException;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 
@@ -42,7 +44,7 @@ public abstract class JedisCommand<T> implements ICommand<T> {
     public T execute() {
         RedisLarkFactory conn = BeanContext.getBean("redisLarkFactory", RedisLarkFactory.class);
         @SuppressWarnings("unchecked")
-		final RedisLarkContext<byte[],byte[]> redisLarkContext = conn.connectRedis(id);
+        RedisLarkContext<byte[],byte[]> redisLarkContext = conn.connectRedis(id);
         final RedisVersion redisVersion = redisLarkContext.getRedisVersion();
         final RedisVersion supportVersion = getSupportVersion();
         if(redisVersion == null) {
@@ -60,12 +62,35 @@ public abstract class JedisCommand<T> implements ICommand<T> {
         String command = sendCommand();
         excuteBefore(redisLarkContext);
         LocalDateTime now = LocalDateTime.now();
-        T t;
+        T t = null;
         try{
              t = concreteCommand(redisLarkContext);
         }catch (Exception e){
             LarkFrame.larkLog.receivedError(redisConnectInfo.getName(),"",e);
-            throw e;
+            //尝试重连
+            if(e instanceof RedisException && e.getCause() instanceof IOException){
+                int index = 1;
+                while (index <= 3){
+                    RedisLarkPool.disConnect(id);
+                    try{
+                        now = LocalDateTime.now();
+                        LarkFrame.larkLog.sendInfo(now,redisConnectInfo.getName(),"%s","尝试重连"+index+"次");
+                        redisLarkContext = conn.connectRedis(id);
+                        excuteBefore(redisLarkContext);
+                        t = concreteCommand(redisLarkContext);
+                        break;
+                    }catch (Exception e1){
+                        if(index == 3){
+                            LarkFrame.larkLog.receivedError(redisConnectInfo.getName(),"",e1);
+                            throw e1;
+                        }
+                    }finally {
+                        index++;
+                    }
+                }
+            }else{
+                throw e;
+            }
         }
 //        LarkFrame.larkLog.info("[Server %s] Response Received : %s ", Color.BLUE.darker(),redisConnectInfo.getName(),t);
         if(command != null && printLog){

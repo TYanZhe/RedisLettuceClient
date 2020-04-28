@@ -462,4 +462,23 @@ public class StringUtils {
 		}
 		return humenText;
 	}
+
+	public static String getCsvTypeStr(String s){
+		if(StringUtils.isBlank(s)){
+			s= "";
+		}else  {
+			boolean c = false;
+			if(s.contains("\"")){
+				c = true;
+				s = s.replace("\"","\"\"");
+			}
+			if(s.contains(",") || s.contains("，")){
+				c = true;
+			}
+			if(c){
+				s = "\""+s+"\"";
+			}
+		}
+		return s;
+	}
 }

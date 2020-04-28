@@ -80,7 +80,9 @@ public interface IRedisConnectService {
 
     RedisKeyInfo addSingleKeyInfo(RedisKeyInfo keyInfo);
 
-    RedisKeyInfo getRedisKeyInfo(String id, int db, byte[] key, ScanCursor cursor,String pattern,PageBean pageBean,RedisKeyInfo srcKeyInfo);
+    List<Map<String,String>> getStringByKeys(String id, int db, byte[][] keys);
+
+    RedisKeyInfo getRedisKeyInfo(String id, int db, byte[] key, ScanCursor cursor, String pattern, PageBean pageBean, RedisKeyInfo srcKeyInfo);
 
     String flushDb(String id, int db);
 

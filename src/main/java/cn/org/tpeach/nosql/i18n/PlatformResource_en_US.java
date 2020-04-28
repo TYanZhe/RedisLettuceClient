@@ -66,6 +66,8 @@ public class PlatformResource_en_US extends ListResourceBundle {
                     {I18nKey.RedisResource.EXCEPTION.getKey(), "Exception"},
                     {I18nKey.RedisResource.ACTIVATE.getKey(), "Activate"},
                     {I18nKey.RedisResource.PUB_SUB.getKey(), "Pub/Sub"},
+                    {I18nKey.RedisResource.DELETEBYKEY.getKey(), "DELETE KEYS"},
+                    {I18nKey.RedisResource.GETBYKEY.getKey(), "GET KEYS"},
             };
 
     @Override

@@ -178,7 +178,7 @@ public class DeleteRedisKeyDialog extends BaseDialog<RTreeNode,String>{
 			topPanel.add(createRowBox(serverLabel, serverTextLabel));
 			topPanel.add(createRowBox(dbIndexLabel, dbIndexTextLabel));
 			topPanel.add(createRowBox(keyPatternLabel, keyPatternTextLabel));
-		topPanel.add(createRowBox(keyPatternLabelTime, keyPatternTimeText));
+			topPanel.add(createRowBox(keyPatternLabelTime, keyPatternTimeText));
 			topPanel.add(Box.createVerticalStrut(5));
 
 

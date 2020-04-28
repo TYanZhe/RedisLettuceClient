@@ -353,6 +353,40 @@ public class RedisConnectServiceImpl extends BaseRedisService implements IRedisC
         return keyInfo;
 
     }
+    @Override
+    public  List<Map<String,String>> getStringByKeys(String id, int db, byte[][] keys){
+        List<Map<String,String>> list = new ArrayList<>();
+        List<Map<String,String>> others = new ArrayList<>();
+        Map<String,String> map = new HashMap<>(1);
+        map.put("KEY","VALUE");
+        list.add(map);
+        map = new HashMap<>(1);
+        map.put("  --  ","不匹配类型");
+        others.add(map);
+        if(!ArraysUtil.isEmpty(keys)){
+            for (byte[] key : keys) {
+                TypeCommand typeCommand = new TypeCommand(id, db, key);
+                typeCommand.setPrintLog(false);
+                String typeStr = super.executeJedisCommand(typeCommand);
+                RedisType type = RedisType.getRedisType(typeStr);
+                map = new HashMap<>(1);
+                if (type == RedisType.STRING) {
+                    byte[] bytes = super.executeJedisCommand(new GetString(id, db, key));
+                    map.put(StringUtils.byteToStr(key),StringUtils.byteToStr(bytes));
+                    list.add(map);
+                }else{
+                    map.put(StringUtils.byteToStr(key),"type:"+type.getType());
+                    others.add(map);
+                }
+            }
+        }
+        if(others.size() > 1){
+            list.addAll(others);
+        }
+        others.clear();
+        return list;
+
+    }
 
     /**
      *

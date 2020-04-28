@@ -80,6 +80,8 @@ public class I18nKey {
 		EXCEPTION,
 		ACTIVATE,
 		PUB_SUB,
+		DELETEBYKEY,
+		GETBYKEY,
 		/**不支持的版本异常*/
 		VERSION_NOTSUPPORT;
 

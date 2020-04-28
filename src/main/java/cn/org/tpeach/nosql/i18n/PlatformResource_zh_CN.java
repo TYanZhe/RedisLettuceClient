@@ -66,6 +66,8 @@ public class PlatformResource_zh_CN extends ListResourceBundle {
                     {I18nKey.RedisResource.EXCEPTION.getKey(), "异常"},
                     {I18nKey.RedisResource.ACTIVATE.getKey(), "设为活动对象"},
                     {I18nKey.RedisResource.PUB_SUB.getKey(), "订阅发布"},
+                    {I18nKey.RedisResource.DELETEBYKEY.getKey(), "删除指定键"},
+                    {I18nKey.RedisResource.GETBYKEY.getKey(), "获取指定键"},
             };
 
     @Override

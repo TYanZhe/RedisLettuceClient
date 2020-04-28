@@ -148,6 +148,8 @@ public class PublicConstant {
         public final static String page_reload = "image/page/sync.png";
         public final static String grid = "image/page/grid_16px_1205810.png";
         public final static String text = "image/page/translate.png";
+        public final static String csv = "image/page/csv.png";
+        public final static String json = "image/page/json.png";
 
         public final static String close = "image/page/close.png";
         //https://www.easyicon.net/iconsearch/iconset:Material-Design-icons/7/?m=yes&f=iconsetid&s=

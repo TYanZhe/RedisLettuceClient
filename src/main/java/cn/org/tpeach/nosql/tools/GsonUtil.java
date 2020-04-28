@@ -15,7 +15,7 @@ public class GsonUtil {
     static {
         if (gson == null) {
             //属性为空的时候输出来的json字符串是有键值key,显示形式是"key":null
-            gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").setPrettyPrinting().create();
+            gson = new GsonBuilder().serializeNulls().setDateFormat("yyyy-MM-dd HH:mm:ss").setPrettyPrinting().create();
         }
     }
 
@@ -46,13 +46,14 @@ public class GsonUtil {
      * @param cls
      * @return
      */
-    public static <T> T GsonToBean(String jsonString, Class<T> cls) {
+    public static <T> T gsonToBean(String jsonString, Class<T> cls) {
         T t = null;
         if (gson != null) {
             t = gson.fromJson(jsonString, cls);
         }
         return t;
     }
+
 
 
     /**

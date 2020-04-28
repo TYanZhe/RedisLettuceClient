@@ -220,7 +220,7 @@ public class AddRedisKeyRowDialog extends AbstractRowDialog<RedisTreeItem, Redis
                 consumer.accept(keyInfo);
                 this.dispose();
             } else {
-                SwingTools.showMessageErrorDialog(this, "未知错误：添加失败");
+                SwingTools.showMessageErrorDialog(this, "添加失败:"+res.getMsg());
 
             }
         });

@@ -16,15 +16,14 @@ import cn.org.tpeach.nosql.redis.connection.RedisLarkPool;
 import cn.org.tpeach.nosql.redis.service.IRedisConfigService;
 import cn.org.tpeach.nosql.redis.service.IRedisConnectService;
 import cn.org.tpeach.nosql.service.ServiceProxy;
-import cn.org.tpeach.nosql.tools.CollectionUtils;
-import cn.org.tpeach.nosql.tools.StringUtils;
-import cn.org.tpeach.nosql.tools.SwingTools;
+import cn.org.tpeach.nosql.tools.*;
 import cn.org.tpeach.nosql.view.*;
 import cn.org.tpeach.nosql.view.common.ServiceManager;
 import cn.org.tpeach.nosql.view.component.RTabbedPane;
 import cn.org.tpeach.nosql.view.dialog.AddRedisKeyRowDialog;
 import cn.org.tpeach.nosql.view.dialog.AddRedisServerDialog;
 import cn.org.tpeach.nosql.view.dialog.DeleteRedisKeyDialog;
+import cn.org.tpeach.nosql.view.dialog.TextAreaDialog;
 import cn.org.tpeach.nosql.view.jtree.RTreeNode;
 import io.lettuce.core.KeyScanCursor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,9 +36,8 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -390,6 +388,10 @@ public enum MenuManager {
         //控制台
         JMenuItem consoleItem = getJMenuItem(I18nKey.RedisResource.MENU_CONSOLE, PublicConstant.Image.getImageIcon(PublicConstant.Image.cmd_console,14,14));
         consoleItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        //批量删除指定键
+        JMenuItem deleteByKeyItem = getJMenuItem(I18nKey.RedisResource.DELETEBYKEY, PublicConstant.Image.getImageIcon(PublicConstant.Image.cmd_console,14,14));
+        //批量获取指定键
+        JMenuItem getByKeyItem = getJMenuItem(I18nKey.RedisResource.GETBYKEY, PublicConstant.Image.getImageIcon(PublicConstant.Image.cmd_console,14,14));
         batchDelItem.addActionListener(e -> {
             String keyPattern = SwingTools.showInputDialog(null, "请输入删除键的表达式", LarkFrame.getI18nText(I18nKey.RedisResource.DELETES), null);
             if (StringUtils.isNotBlank(keyPattern)) {
@@ -460,8 +462,71 @@ public enum MenuManager {
             }
         });
         consoleItem.addActionListener(e -> openConsolePane(logTabbedPane, tree));
+        deleteByKeyItem.addActionListener(e->{
+            RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent();
+            RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
+            TextAreaDialog textAreaDialog = new TextAreaDialog(LarkFrame.frame, redisTreeItem);
+            textAreaDialog.setPlaceholder("使用\\n或,分隔");
+            textAreaDialog.setTitle("删除指定键");
+            textAreaDialog.open(s-> {
+                int conform = SwingTools.showConfirmDialogYNC(null, "是否确认删除？", "删除确认");
+                if(conform == JOptionPane.YES_OPTION){
+                    textAreaDialog.setNeedClose(true);
+                    if(StringUtils.isNotBlank(s)){
+                        s = s.replaceAll("\\n", ",");
+                        String[] split = s.split(",");
+                        if(!ArraysUtil.isEmpty(split)){
+                            byte[][] bytes = Arrays.stream(split).map(item -> StringUtils.strToByte(item)).toArray(size -> new byte[size][]);
+                            ResultRes<Long> dispatcher = BaseController.dispatcher(() ->redisConnectService.deleteKeys(redisTreeItem.getId(), redisTreeItem.getDb(), bytes),true,false);
+                            if(dispatcher.isRet()) {
+                                SwingTools.showMessageInfoDialog(textAreaDialog,"删除数量："+dispatcher.getData(),"删除完成");
+                            }else{
+                                SwingTools.showMessageErrorDialog(null,dispatcher.getMsg());
+                            }
+                        }
+                    }
+                }else{
+                    textAreaDialog.setNeedClose(false);
+                }
+
+            });
+        });
+        getByKeyItem.addActionListener(e->{
+            RTreeNode node = (RTreeNode) tree.getLastSelectedPathComponent();
+            RedisTreeItem redisTreeItem = (RedisTreeItem) node.getUserObject();
+            TextAreaDialog textAreaDialog = new TextAreaDialog(LarkFrame.frame, redisTreeItem);
+            textAreaDialog.setPlaceholder("使用\\n或,分隔,仅支持获取STRING类型");
+            textAreaDialog.open(s-> {
+                if(StringUtils.isNotBlank(s)){
+                    s = s.replaceAll("\\n", ",");
+                    String[] split = s.split(",");
+                    if(!ArraysUtil.isEmpty(split)) {
+                        byte[][] bytes = Arrays.stream(split).map(item -> StringUtils.strToByte(item)).toArray(size -> new byte[size][]);
+                        ResultRes<List<Map<String,String>>> dispatcher = BaseController.dispatcher(() ->redisConnectService.getStringByKeys(redisTreeItem.getId(), redisTreeItem.getDb(), bytes),true,false);
+                        textAreaDialog.setNeedClose(false);
+                        if(dispatcher.isRet()) {
+                            textAreaDialog.clearAreaText();
+                            StringBuilder stringBuilder = new StringBuilder();
+                            for (Map<String, String> map : dispatcher.getData()) {
+                                for (Map.Entry<String, String> entry : map.entrySet()) {
+                                    stringBuilder.append(StringUtils.getCsvTypeStr(entry.getKey())+","+StringUtils.getCsvTypeStr(entry.getValue())+"\r\n");
+                                }
+                            }
+                            textAreaDialog.setPlaceholder(null);
+                            textAreaDialog.setText( stringBuilder.toString());
+                            textAreaDialog.setEditable(false);
+                            textAreaDialog.open();
+                        }else{
+                            SwingTools.showMessageErrorDialog(null,dispatcher.getMsg());
+                        }
+                    }
+
+                }
+            });
+        });
+
         dbAttrItem.setEnabled(false);
-        putPopMenuItem(popMenu,addItem,batchDelItem,reloadItem,consoleItem,dbAttrItem,flushDbItem);
+        putPopMenuItem(popMenu,addItem,deleteByKeyItem,batchDelItem,getByKeyItem,reloadItem,consoleItem,dbAttrItem,flushDbItem);
         return popMenu;
     }
 
@@ -635,9 +700,10 @@ public enum MenuManager {
     }
 
     public void removeKey(JTree tree, RTreeNode node, RTabbedPane topTabbedPane, Consumer<RTreeNode> confirmFun) {
-        int confirm = SwingTools.showConfirmDialogYNC(null, "是否确认删除？", "删除确认");
+        RedisTreeItem item = (RedisTreeItem) node.getUserObject();
+        int confirm = SwingTools.showConfirmDialogYNC(null, "是否确认删除KEY:"+StringUtils.byteToStr(item.getKey())+"？", "删除确认");
         if (confirm == JOptionPane.YES_OPTION) {
-            RedisTreeItem item = (RedisTreeItem) node.getUserObject();
+
             ResultRes<Long> res = BaseController.dispatcher(() -> redisConnectService.deleteKeys(item.getId(), item.getDb(), item.getKey()));
             if (res.isRet()) {
 //				SwingTools.removeTreeNode(tree,node);
